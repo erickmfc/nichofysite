@@ -1,326 +1,238 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
-import { PricingCard } from '@/components/ui/PricingCard'
+import { PreLoader } from '@/components/ui/PreLoader'
+import { AnimatedPromptBar } from '@/components/ui/AnimatedPromptBar'
+import { FlyingContentCards } from '@/components/ui/FlyingContentCards'
+import { InfiniteContentFlow } from '@/components/ui/InfiniteContentFlow'
+import { ProjectsCarousel } from '@/components/ui/ProjectsCarousel'
+import { PainPointSection } from '@/components/ui/PainPointSection'
+import { HowItWorksSection } from '@/components/ui/HowItWorksSection'
 
 export default function HomePage() {
+  const [isLoading, setIsLoading] = useState(true)
+  const [currentContent, setCurrentContent] = useState('')
+  const [showCards, setShowCards] = useState(false)
+
+  const handleContentGenerated = (content: string) => {
+    setCurrentContent(content)
+    setShowCards(true)
+    setTimeout(() => setShowCards(false), 3000)
+  }
+
+  const handlePreLoaderComplete = () => {
+    setIsLoading(false)
+  }
+
+  if (isLoading) {
+    return <PreLoader onComplete={handlePreLoaderComplete} />
+  }
+
   return (
     <main className="min-h-screen">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-b from-white to-gray-50 py-20">
+      {/* Hero Section - A Fábrica de Conteúdo */}
+      <section className="min-h-screen relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-500 to-primary-700 animate-gradient">
+        <div className="absolute inset-0 bg-black/10"></div>
+        
+        {/* Conteúdo Principal */}
+        <div className="relative z-10 min-h-screen flex items-center justify-center px-4">
+          <div className="text-center max-w-4xl mx-auto">
+            {/* Título Principal */}
+            <h1 className="text-6xl md:text-8xl font-bold text-white mb-8 animate-text-reveal">
+              Sua fábrica de conteúdo.
+              <br />
+              <span className="text-yellow-400">Em instantes.</span>
+            </h1>
+            
+            {/* Subtítulo */}
+            <p className="text-xl md:text-2xl text-white/90 mb-12 animate-text-reveal" style={{ animationDelay: '0.8s' }}>
+              Veja a mágica acontecer em tempo real
+            </p>
+            
+            {/* Caixa de Texto Animada */}
+            <div className="relative animate-text-reveal" style={{ animationDelay: '1.5s' }}>
+              <AnimatedPromptBar onContentGenerated={handleContentGenerated} />
+              
+              {/* Cards Voando */}
+              <FlyingContentCards content={currentContent} isActive={showCards} />
+            </div>
+          </div>
+        </div>
+        
+        {/* Elementos Decorativos */}
+        <div className="absolute top-20 left-20 w-32 h-32 bg-yellow-400/20 rounded-full animate-float"></div>
+        <div className="absolute bottom-20 right-20 w-24 h-24 bg-white/10 rounded-full animate-float" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-10 w-16 h-16 bg-yellow-400/30 rounded-full animate-float" style={{ animationDelay: '2s' }}></div>
+      </section>
+
+      {/* Seção de Dor Interativa */}
+      <PainPointSection />
+
+      {/* Como Funciona - Timeline Interativa */}
+      <HowItWorksSection />
+
+      {/* Rio Infinito de Conteúdo */}
+      <section className="min-h-screen relative bg-gradient-to-b from-gray-900 to-black">
         <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <h1 className="text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400">
-                  Conteúdo especializado para seu nicho em minutos
-                </h1>
-                <p className="text-xl text-gray-600 mb-8">
-                  Conteúdo certo, no tempo certo. Textos profissionais para redes sociais, 
-                  blogs e newsletters.
-                </p>
-                <div className="flex gap-4">
-                  <Button size="lg">
-                    Começar Grátis
-                  </Button>
-                  <Button variant="outline" size="lg">
-                    Ver Exemplos
-                  </Button>
+          <div className="text-center mb-16 pt-20">
+            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 animate-text-reveal">
+              Conteúdo Infinito
+            </h2>
+            <p className="text-xl md:text-2xl text-white/80 max-w-3xl mx-auto animate-text-reveal" style={{ animationDelay: '0.5s' }}>
+              Para todos os nichos. O tempo todo. Veja nossa IA criando conteúdo em tempo real.
+            </p>
+          </div>
+          
+          <div className="relative h-[600px] overflow-hidden rounded-3xl bg-gradient-to-br from-gray-800/30 to-gray-900/50 backdrop-blur-sm border border-white/20 shadow-2xl">
+            <InfiniteContentFlow />
+            
+            {/* Overlay com estatísticas */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-black/70 backdrop-blur-md rounded-2xl px-8 py-4 text-white text-center border border-white/20 shadow-lg">
+              <div className="flex items-center space-x-8">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-yellow-400 drop-shadow-lg">10+</div>
+                  <div className="text-sm text-white/90 font-medium">Nichos</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-yellow-400 drop-shadow-lg">∞</div>
+                  <div className="text-sm text-white/90 font-medium">Conteúdo</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-yellow-400 drop-shadow-lg">24/7</div>
+                  <div className="text-sm text-white/90 font-medium">Disponível</div>
                 </div>
               </div>
-              <div className="relative">
-                <div className="p-6 bg-white rounded-2xl shadow-lg">
-                  <div className="mb-4">
-                    <h3 className="font-medium text-gray-600">Solicitação:</h3>
-                    <p className="text-gray-800">
-                      "Preciso de um post sobre prevenção de doenças cardíacas para Instagram"
-                    </p>
-                  </div>
-                  <div className="p-4 bg-primary-50 rounded-lg">
-                    <h3 className="font-medium text-gray-600 mb-2">Conteúdo Gerado:</h3>
-                    <p className="text-gray-800">
-                      "💓 Cuidar do coração é essencial! Confira 5 hábitos que podem 
-                      prevenir doenças cardíacas: 1. Alimentação balanceada 2. Exercícios 
-                      regulares 3. Controle do estresse..."
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Problema-Solução */}
-      <section className="py-20">
+      {/* Carrossel de Projetos */}
+      <section className="py-20 bg-gradient-to-br from-gray-900 to-black text-white">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-16">
-            <h2 className="text-3xl font-bold mb-6">Desafios na Criação de Conteúdo Especializado</h2>
-            <p className="text-xl text-gray-600">
-              Profissionais e empresas enfrentam diversos obstáculos ao criar conteúdo 
-              técnico e especializado. O NichoFy resolve esses problemas.
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Nossos Projetos em Destaque
+            </h2>
+            <p className="text-xl text-white/80 max-w-2xl mx-auto">
+              Veja alguns dos trabalhos incríveis que criamos para nossos clientes
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="p-6 bg-white rounded-2xl shadow-lg">
-              <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
-                <span className="text-2xl">⏰</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Tempo Limitado</h3>
-              <p className="text-gray-600">
-                Profissionais não têm tempo para criar conteúdo técnico de qualidade.
-              </p>
-            </div>
-            <div className="p-6 bg-white rounded-2xl shadow-lg">
-              <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
-                <span className="text-2xl">🎯</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Conhecimento Técnico</h3>
-              <p className="text-gray-600">
-                Falta de expertise em comunicação para nichos específicos.
-              </p>
-            </div>
-            <div className="p-6 bg-white rounded-2xl shadow-lg">
-              <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
-                <span className="text-2xl">📈</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Consistência</h3>
-              <p className="text-gray-600">
-                Dificuldade em manter uma presença digital constante e relevante.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Nichos */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-16">
-            <h2 className="text-3xl font-bold mb-6">Nichos Atendidos</h2>
-            <p className="text-xl text-gray-600">
-              Conteúdo especializado para diferentes áreas, desenvolvido por 
-              profissionais com profundo conhecimento em cada nicho.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="p-6 bg-white rounded-2xl shadow-lg">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center mb-4">
-                <span className="text-3xl">⚖️</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Direito</h3>
-              <p className="text-gray-600">
-                Conteúdo jurídico especializado para advogados e escritórios.
-              </p>
-            </div>
-            <div className="p-6 bg-white rounded-2xl shadow-lg">
-              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-700 rounded-xl flex items-center justify-center mb-4">
-                <span className="text-3xl">👨‍⚕️</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Saúde</h3>
-              <p className="text-gray-600">
-                Conteúdo médico e de bem-estar para profissionais da saúde.
-              </p>
-            </div>
-            <div className="p-6 bg-white rounded-2xl shadow-lg">
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl flex items-center justify-center mb-4">
-                <span className="text-3xl">💻</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Tecnologia</h3>
-              <p className="text-gray-600">
-                Conteúdo técnico e inovador para empresas de tecnologia.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Como Funciona */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-16">
-            <h2 className="text-3xl font-bold mb-6">Como Funciona</h2>
-            <p className="text-xl text-gray-600">
-              Processo simples e eficiente para gerar conteúdo especializado.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="p-6 bg-white rounded-2xl shadow-lg">
-              <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
-                <span className="text-2xl">1</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Escolha o Nicho</h3>
-              <p className="text-gray-600">
-                Selecione sua área de atuação e o tipo de conteúdo desejado.
-              </p>
-            </div>
-            <div className="p-6 bg-white rounded-2xl shadow-lg">
-              <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
-                <span className="text-2xl">2</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Faça o Pedido</h3>
-              <p className="text-gray-600">
-                Descreva o conteúdo que você precisa de forma simples e objetiva.
-              </p>
-            </div>
-            <div className="p-6 bg-white rounded-2xl shadow-lg">
-              <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
-                <span className="text-2xl">3</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Receba o Conteúdo</h3>
-              <p className="text-gray-600">
-                Em minutos, receba seu conteúdo pronto para publicação.
-              </p>
-            </div>
-          </div>
+          
+          <ProjectsCarousel projects={[]} />
         </div>
       </section>
 
       {/* Depoimentos */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-16">
-            <h2 className="text-3xl font-bold mb-6">O que nossos clientes dizem</h2>
-            <p className="text-xl text-gray-600">
-              Histórias reais de profissionais que transformaram sua presença digital.
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              O que nossos clientes dizem
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Histórias reais de quem transformou seu negócio com a NichoFy
             </p>
           </div>
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="p-6 bg-white rounded-2xl shadow-lg">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-                  <span className="text-xl">👨‍⚕️</span>
-                </div>
-                <div>
-                  <h3 className="font-semibold">Dr. Carlos Silva</h3>
-                  <p className="text-gray-600">Clínica Médica</p>
-                </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Depoimento 1 */}
+            <div className="bg-gray-50 rounded-2xl p-8 text-center hover:shadow-lg transition-shadow animate-fade-in-up">
+              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl">👨‍💼</span>
               </div>
-              <p className="text-gray-600">
-                "O NichoFy revolucionou nossa presença digital. Conseguimos aumentar 
-                nosso engajamento em 300% em apenas 3 meses."
+              <p className="text-gray-700 mb-6 italic">
+                "A NichoFy revolucionou nossa presença digital. Em 3 meses, aumentamos nossas vendas em 200% e nossa equipe economizou 15 horas por semana."
               </p>
+              <div>
+                <p className="font-bold text-gray-900">Carlos Silva</p>
+                <p className="text-sm text-gray-600">Proprietário - Cafeteria Artesanal</p>
+              </div>
             </div>
-            <div className="p-6 bg-white rounded-2xl shadow-lg">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-                  <span className="text-xl">⚖️</span>
-                </div>
-                <div>
-                  <h3 className="font-semibold">Dra. Ana Santos</h3>
-                  <p className="text-gray-600">Escritório de Advocacia</p>
-                </div>
+
+            {/* Depoimento 2 */}
+            <div className="bg-gray-50 rounded-2xl p-8 text-center hover:shadow-lg transition-shadow animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl">✂️</span>
               </div>
-              <p className="text-gray-600">
-                "Conteúdo jurídico de alta qualidade, entregue rapidamente. 
-                Perfeito para manter nossa autoridade no mercado."
+              <p className="text-gray-700 mb-6 italic">
+                "Nunca pensei que conteúdo pudesse fazer tanta diferença. Agora temos fila de espera e nossos clientes nos indicam constantemente."
               </p>
+              <div>
+                <p className="font-bold text-gray-900">Marina Santos</p>
+                <p className="text-sm text-gray-600">Proprietária - Barbearia Style</p>
+              </div>
+            </div>
+
+            {/* Depoimento 3 */}
+            <div className="bg-gray-50 rounded-2xl p-8 text-center hover:shadow-lg transition-shadow animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl">⚖️</span>
+              </div>
+              <p className="text-gray-700 mb-6 italic">
+                "O conteúdo educativa que criamos estabeleceu nossa autoridade no mercado. Agora somos referência em direito trabalhista na região."
+              </p>
+              <div>
+                <p className="font-bold text-gray-900">Dr. Roberto Lima</p>
+                <p className="text-sm text-gray-600">Sócio - Advocacia & Justiça</p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Planos */}
-      <section className="py-20">
+      {/* Estatísticas */}
+      <section className="py-20 bg-gradient-to-r from-primary-600 to-primary-700 text-white">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-16">
-            <h2 className="text-3xl font-bold mb-6">Planos e Preços</h2>
-            <p className="text-xl text-gray-600">
-              Escolha o plano ideal para o seu negócio e comece a gerar conteúdo 
-              profissional hoje mesmo.
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Números que impressionam
+            </h2>
+            <p className="text-xl text-white/80 max-w-2xl mx-auto">
+              Resultados reais de quem confia na NichoFy
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <PricingCard
-              title="Grátis"
-              price="R$0/mês"
-              description="Perfeito para começar"
-              highlight="Experimente gratuitamente por 14 dias"
-              features={[
-                { text: '5 conteúdos/mês', included: true, tooltip: 'Conteúdos de até 500 palavras' },
-                { text: 'Acesso a 1 nicho', included: true, tooltip: 'Escolha entre nossos nichos disponíveis' },
-                { text: 'Personalização básica', included: true, tooltip: 'Ajuste de tom e estilo básico' },
-                { text: 'Entrega via WhatsApp', included: true },
-                { text: 'Suporte por e-mail (48h)', included: true },
-                { text: 'Acesso a múltiplos nichos', included: false },
-                { text: 'Personalização avançada', included: false },
-                { text: 'Revisão humana', included: false },
-                { text: 'Suporte prioritário', included: false }
-              ]}
-            />
-
-            <PricingCard
-              title="Básico"
-              price="R$97/mês"
-              description="Ideal para profissionais independentes"
-              highlight="Economia de 30% no plano anual"
-              features={[
-                { text: '35 conteúdos/mês', included: true, tooltip: 'Conteúdos de até 1000 palavras' },
-                { text: 'Acesso a 2 nichos', included: true },
-                { text: 'Personalização interna', included: true, tooltip: 'Ajuste de tom, estilo e formato' },
-                { text: 'Entrega via WhatsApp e painel', included: true },
-                { text: 'Suporte por e-mail (24h)', included: true },
-                { text: 'Ajustes limitados', included: true, tooltip: 'Até 2 revisões por conteúdo' },
-                { text: 'Revisão humana', included: false },
-                { text: 'Personalização avançada', included: false },
-                { text: 'Suporte prioritário', included: false }
-              ]}
-              paymentLink="https://buy.stripe.com/test_00geXH0zp0lyffy6op"
-            />
-
-            <PricingCard
-              title="Premium"
-              price="R$197/mês"
-              description="Perfeito para pequenas empresas"
-              highlight="Mais de 1000 clientes satisfeitos"
-              features={[
-                { text: '70 conteúdos/mês', included: true, tooltip: 'Conteúdos de até 2000 palavras' },
-                { text: 'Acesso a todos os nichos', included: true },
-                { text: 'Personalização avançada', included: true, tooltip: 'Ajuste completo de tom, estilo e formato' },
-                { text: 'Revisão humana básica', included: true, tooltip: 'Revisão de qualidade e adequação' },
-                { text: 'Entrega em todos os formatos', included: true },
-                { text: 'Suporte prioritário (chat)', included: true },
-                { text: 'Ajustes limitados', included: true, tooltip: 'Até 3 revisões por conteúdo' },
-                { text: 'Calendário editorial', included: true },
-                { text: 'API para integração', included: false },
-                { text: 'Gerente de conta dedicada', included: false }
-              ]}
-              popular={true}
-              paymentLink="https://buy.stripe.com/test_bIY7vf2Hx1pCd7qeUU"
-            />
-
-            <PricingCard
-              title="Ultra"
-              price="R$497/mês"
-              description="Solução completa para empresas"
-              highlight="Solução personalizada para sua empresa"
-              features={[
-                { text: '100+ conteúdos/mês', included: true, tooltip: 'Conteúdos de qualquer tamanho' },
-                { text: 'Acesso a todos os nichos', included: true },
-                { text: 'Personalização total', included: true, tooltip: 'Personalização completa e exclusiva' },
-                { text: 'Revisão humana especializada', included: true, tooltip: 'Revisão por especialistas do nicho' },
-                { text: 'API para integração', included: true },
-                { text: 'Gerente de conta dedicada', included: true },
-                { text: 'Treinamento personalizado', included: true },
-                { text: 'Calendário editorial avançado', included: true },
-                { text: 'Relatórios de desempenho', included: true }
-              ]}
-              contactSales={true}
-            />
+          
+          <div className="grid md:grid-cols-4 gap-8 text-center">
+            <div className="animate-count-up">
+              <div className="text-5xl font-bold text-yellow-400 mb-2">500+</div>
+              <p className="text-white/80">Clientes satisfeitos</p>
+            </div>
+            <div className="animate-count-up" style={{ animationDelay: '0.2s' }}>
+              <div className="text-5xl font-bold text-yellow-400 mb-2">50K+</div>
+              <p className="text-white/80">Posts criados</p>
+            </div>
+            <div className="animate-count-up" style={{ animationDelay: '0.4s' }}>
+              <div className="text-5xl font-bold text-yellow-400 mb-2">95%</div>
+              <p className="text-white/80">Taxa de satisfação</p>
+            </div>
+            <div className="animate-count-up" style={{ animationDelay: '0.6s' }}>
+              <div className="text-5xl font-bold text-yellow-400 mb-2">24h</div>
+              <p className="text-white/80">Suporte disponível</p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Final */}
-      <section className="py-20 bg-primary-600 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-8">Pronto para transformar sua presença digital?</h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Comece agora mesmo a gerar conteúdo profissional e especializado.
+      {/* Planos e CTA Final */}
+      <section className="min-h-screen relative bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+        <div className="text-center max-w-4xl mx-auto px-4">
+          <h2 className="text-6xl md:text-8xl font-bold text-white mb-8 animate-text-reveal">
+            Sua marca merece ser vista.
+          </h2>
+          <p className="text-2xl text-white/90 mb-12 animate-text-reveal" style={{ animationDelay: '0.8s' }}>
+            Vamos começar?
           </p>
-          <Button variant="outline" size="lg" className="bg-white text-primary-600 hover:bg-gray-100">
-            Começar Gratuitamente
-          </Button>
+          
+          <div className="animate-text-reveal" style={{ animationDelay: '1.2s' }}>
+            <Button 
+              size="lg" 
+              className="bg-white text-orange-600 hover:bg-gray-100 font-bold px-12 py-6 text-2xl shadow-2xl hover:shadow-white/25 transition-all duration-300 transform hover:scale-105"
+            >
+              🚀 Testar o NichoFy de Graça
+            </Button>
+          </div>
         </div>
       </section>
     </main>

@@ -8,6 +8,14 @@
   --background-end-rgb: 249, 250, 251;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(
@@ -15,16 +23,298 @@ body {
     rgb(var(--background-start-rgb)),
     rgb(var(--background-end-rgb))
   );
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @layer base {
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold tracking-tight;
   }
+  
+  /* Melhorar acessibilidade para foco */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2;
+  }
+  
+  /* Melhorar legibilidade de links */
+  a {
+    @apply transition-colors duration-200;
+  }
+  
+  /* Melhorar contraste de texto */
+  p, span, div {
+    @apply text-gray-800;
+  }
 }
 
 @layer components {
   .container {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* Animações suaves para elementos interativos */
+  .btn-hover {
+    @apply transition-all duration-200 ease-in-out;
+  }
+  
+  /* Melhorar acessibilidade de botões */
+  button:disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
+  
+  /* Estilos para formulários */
+  input, textarea, select {
+    @apply transition-colors duration-200;
+  }
+  
+  input:focus, textarea:focus, select:focus {
+    @apply ring-2 ring-primary-500 border-primary-500;
+  }
+}
+
+@layer utilities {
+  /* Utilitários para acessibilidade */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  
+  /* Melhorar performance de animações */
+  .animate-smooth {
+    animation-duration: 0.3s;
+    animation-timing-function: ease-in-out;
+  }
+  
+  /* Animações para a página inicial */
+  @keyframes fly-in {
+    0% {
+      opacity: 0;
+      transform: translateY(30px) scale(0.9) rotate(0deg);
+    }
+    50% {
+      opacity: 0.7;
+      transform: translateY(-5px) scale(1.02) rotate(2deg);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1) rotate(var(--rotation, 0deg));
+    }
+  }
+  
+  @keyframes fly-in-delayed {
+    0% {
+      opacity: 0;
+      transform: translateY(30px) scale(0.9) rotate(0deg);
+    }
+    50% {
+      opacity: 0.7;
+      transform: translateY(-5px) scale(1.02) rotate(2deg);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1) rotate(var(--rotation, 0deg));
+    }
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+  
+  @keyframes gradient-shift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  
+  @keyframes text-reveal {
+    0% {
+      opacity: 0;
+      transform: translateY(15px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes content-flow {
+    0% {
+      transform: translateY(100vh);
+      opacity: 0;
+    }
+    10% {
+      opacity: 0.8;
+    }
+    90% {
+      opacity: 0.8;
+    }
+    100% {
+      transform: translateY(-100vh);
+      opacity: 0;
+    }
+  }
+  
+  .animate-fly-in {
+    animation: fly-in 1.5s ease-out forwards;
+  }
+  
+  .animate-fly-in-delayed {
+    animation: fly-in-delayed 1.5s ease-out forwards;
+  }
+  
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
+  }
+  
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient-shift 12s ease infinite;
+  }
+  
+  .animate-text-reveal {
+    animation: text-reveal 1s ease-out forwards;
+  }
+  
+  .animate-content-flow {
+    animation: content-flow 20s linear infinite;
+  }
+  
+  /* Animações para o processo interativo */
+  @keyframes glow {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 40px rgba(59, 130, 246, 0.8);
+    }
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.05);
+      opacity: 0.8;
+    }
+  }
+  
+  @keyframes slide-in-left {
+    0% {
+      opacity: 0;
+      transform: translateX(-100px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes slide-in-right {
+    0% {
+      opacity: 0;
+      transform: translateX(100px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite;
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 1.5s ease-in-out infinite;
+  }
+  
+  .animate-slide-in-left {
+    animation: slide-in-left 0.8s ease-out forwards;
+  }
+  
+  .animate-slide-in-right {
+    animation: slide-in-right 0.8s ease-out forwards;
+  }
+  
+  /* Animações para depoimentos e estatísticas */
+  @keyframes fade-in-up {
+    0% {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes count-up {
+    0% {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  .animate-fade-in-up {
+    animation: fade-in-up 0.8s ease-out forwards;
+  }
+  
+  .animate-count-up {
+    animation: count-up 1s ease-out forwards;
+  }
+  
+  /* Animações para o InfiniteContentFlow */
+  @keyframes slideUp {
+    0% {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+  }
+  
+  @keyframes fadeInUp {
+    0% {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
 } 

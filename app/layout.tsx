@@ -1,13 +1,61 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { Button } from '@/components/ui/Button'
+import { DynamicHeader } from '@/components/ui/DynamicHeader'
+import { AuthProvider } from '@/components/auth/AuthProvider'
+import Link from 'next/link'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'NichoFy - Conteúdo certo, no tempo certo',
   description: 'Plataforma que combina IA especializada e gerenciamento humano para gerar conteúdo profissional para nichos específicos.',
+  keywords: ['conteúdo', 'IA', 'inteligência artificial', 'marketing digital', 'redes sociais', 'blog', 'nichos', 'especializado'],
+  authors: [{ name: 'NichoFy' }],
+  creator: 'NichoFy',
+  publisher: 'NichoFy',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL('https://nichofy.com'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'NichoFy - Conteúdo certo, no tempo certo',
+    description: 'Plataforma que combina IA especializada e gerenciamento humano para gerar conteúdo profissional para nichos específicos.',
+    url: 'https://nichofy.com',
+    siteName: 'NichoFy',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'NichoFy - Conteúdo especializado para seu nicho',
+      },
+    ],
+    locale: 'pt_BR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'NichoFy - Conteúdo certo, no tempo certo',
+    description: 'Plataforma que combina IA especializada e gerenciamento humano para gerar conteúdo profissional para nichos específicos.',
+    images: ['/og-image.jpg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 }
 
 export default function RootLayout({
@@ -18,29 +66,12 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={inter.className}>
-        <header className="fixed w-full bg-white/80 backdrop-blur-sm border-b z-50">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center gap-8">
-                <span className="text-2xl font-bold text-primary-600">NichoFy</span>
-                <nav className="hidden md:flex items-center gap-6">
-                  <a href="#recursos" className="text-gray-600 hover:text-primary-600 transition-colors">Recursos</a>
-                  <a href="#diferenciais" className="text-gray-600 hover:text-primary-600 transition-colors">Diferenciais</a>
-                  <a href="#precos" className="text-gray-600 hover:text-primary-600 transition-colors">Preços</a>
-                  <a href="#sobre" className="text-gray-600 hover:text-primary-600 transition-colors">Sobre</a>
-                </nav>
-              </div>
-              <div className="flex items-center gap-4">
-                <Button variant="ghost">Entrar</Button>
-                <Button>Começar Agora</Button>
-              </div>
-            </div>
-          </div>
-        </header>
-        <div className="pt-16">
-          {children}
-        </div>
-        <footer className="bg-gray-900 text-white py-12">
+        <AuthProvider>
+          <DynamicHeader />
+          <main>
+            {children}
+          </main>
+          <footer className="bg-gray-900 text-white py-12">
           <div className="container mx-auto px-4">
             <div className="grid md:grid-cols-4 gap-8">
               <div>
@@ -52,25 +83,26 @@ export default function RootLayout({
               <div>
                 <h4 className="font-semibold mb-4">Produto</h4>
                 <ul className="space-y-2">
-                  <li><a href="#recursos" className="text-gray-400 hover:text-white transition-colors">Recursos</a></li>
-                  <li><a href="#precos" className="text-gray-400 hover:text-white transition-colors">Preços</a></li>
-                  <li><a href="#sobre" className="text-gray-400 hover:text-white transition-colors">Sobre</a></li>
+                  <li><Link href="/nichos" className="text-gray-400 hover:text-white transition-colors">Nichos</Link></li>
+                  <li><Link href="/precos" className="text-gray-400 hover:text-white transition-colors">Preços</Link></li>
+                  <li><Link href="/exemplos" className="text-gray-400 hover:text-white transition-colors">Exemplos</Link></li>
                 </ul>
               </div>
               <div>
                 <h4 className="font-semibold mb-4">Legal</h4>
                 <ul className="space-y-2">
-                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Termos</a></li>
-                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Privacidade</a></li>
-                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Cookies</a></li>
+                  <li><Link href="/termos" className="text-gray-400 hover:text-white transition-colors">Termos</Link></li>
+                  <li><Link href="/privacidade" className="text-gray-400 hover:text-white transition-colors">Privacidade</Link></li>
+                  <li><Link href="/cookies" className="text-gray-400 hover:text-white transition-colors">Cookies</Link></li>
+                  <li><Link href="/admin/login" className="text-gray-400 hover:text-white transition-colors">Admin</Link></li>
                 </ul>
               </div>
               <div>
                 <h4 className="font-semibold mb-4">Contato</h4>
                 <ul className="space-y-2">
-                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Suporte</a></li>
-                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Contato</a></li>
-                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">FAQ</a></li>
+                  <li><Link href="/contato" className="text-gray-400 hover:text-white transition-colors">Suporte</Link></li>
+                  <li><Link href="/contato" className="text-gray-400 hover:text-white transition-colors">Contato</Link></li>
+                  <li><Link href="/faq" className="text-gray-400 hover:text-white transition-colors">FAQ</Link></li>
                 </ul>
               </div>
             </div>
@@ -79,6 +111,7 @@ export default function RootLayout({
             </div>
           </div>
         </footer>
+        </AuthProvider>
       </body>
     </html>
   )

@@ -7,14 +7,12 @@ Uma plataforma moderna para gerenciamento de nichos, construída com Next.js 14.
 - Next.js 14
 - TypeScript
 - Tailwind CSS
-- Supabase
 - Stripe
 
 ## Pré-requisitos
 
 - Node.js 18.17 ou superior
 - npm ou yarn
-- Conta no Supabase
 - Conta no Stripe
 
 ## Instalação
@@ -36,7 +34,7 @@ yarn install
 ```bash
 cp .env.example .env.local
 ```
-Edite o arquivo `.env.local` com suas credenciais do Supabase e Stripe.
+Edite o arquivo `.env.local` com suas credenciais do Stripe.
 
 4. Inicie o servidor de desenvolvimento:
 ```bash
@@ -55,7 +53,6 @@ nichofysite/
 ├── components/         # Componentes React reutilizáveis
 │   └── ui/            # Componentes de UI básicos
 ├── lib/               # Configurações e utilitários
-│   ├── supabase.ts    # Configuração do Supabase
 │   └── stripe.ts      # Configuração do Stripe
 └── public/            # Arquivos estáticos
 ```

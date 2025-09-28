@@ -4,7 +4,7 @@ import React from 'react'
 import { cn } from '@/lib/utils'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'outline'
+  variant?: 'default' | 'outline' | 'ghost'
   size?: 'default' | 'sm' | 'lg'
 }
 
@@ -21,6 +21,7 @@ export const Button: React.FC<ButtonProps> = ({
         {
           'bg-primary-600 text-white hover:bg-primary-700': variant === 'default',
           'border border-gray-200 bg-white text-gray-900 hover:bg-gray-100': variant === 'outline',
+          'text-gray-600 hover:text-primary-600 hover:bg-primary-50': variant === 'ghost',
           'h-9 px-4 py-2': size === 'default',
           'h-8 px-3 text-sm': size === 'sm',
           'h-11 px-8 text-lg': size === 'lg',

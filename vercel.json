@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "name": "nichofy",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_FIREBASE_API_KEY": "AIzaSyCyND0kw70kzPofmq8_dK0K_gFF1qV1Jdo",
+    "NEXT_PUBLIC_FIREBASE_PROJECT_ID": "nichofy-cb282",
+    "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "nichofy-cb282.firebaseapp.com",
+    "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "nichofy-cb282.firebasestorage.app",
+    "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "621379290571",
+    "NEXT_PUBLIC_FIREBASE_APP_ID": "1:621379290571:web:ee5e75df2079378959e24e",
+    "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID": "G-DVBG19K4ZQ"
+  },
+  "domains": [
+    "nichofy.shop",
+    "www.nichofy.shop"
+  ]
+}

@@ -1,0 +1,24 @@
+[
+  {
+    "id": "exemplo-1",
+    "title": "Projeto Exemplo 1",
+    "description": "Este é um exemplo de projeto que você pode usar como modelo",
+    "image": "/projects/exemplo-1.jpg",
+    "category": "Design",
+    "tags": ["UI/UX", "Web Design"],
+    "date": "2024-01-15",
+    "featured": true,
+    "url": "https://exemplo.com"
+  },
+  {
+    "id": "exemplo-2", 
+    "title": "Projeto Exemplo 2",
+    "description": "Outro exemplo de projeto para demonstrar a funcionalidade",
+    "image": "/projects/exemplo-2.jpg",
+    "category": "Desenvolvimento",
+    "tags": ["React", "Next.js"],
+    "date": "2024-01-20",
+    "featured": false,
+    "url": "https://exemplo2.com"
+  }
+]

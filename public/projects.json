@@ -1,0 +1,68 @@
+[
+  {
+    "id": "cafeteria-artesanal",
+    "title": "Cafeteria Artesanal",
+    "description": "Posts sobre café especial e ambiente aconchegante para uma cafeteria local",
+    "image": "/projects/cafeteria-artesanal.jpg",
+    "category": "Gastronomia",
+    "tags": ["Café", "Ambiente"],
+    "date": "2024-01-15",
+    "featured": true,
+    "url": "https://exemplo.com"
+  },
+  {
+    "id": "barbearia-moderna", 
+    "title": "Barbearia Moderna",
+    "description": "Conteúdo sobre cortes modernos e cuidados masculinos para barbearia",
+    "image": "/projects/barbearia-moderna.jpg",
+    "category": "Beleza",
+    "tags": ["Cortes", "Masculino"],
+    "date": "2024-01-20",
+    "featured": true,
+    "url": "https://exemplo2.com"
+  },
+  {
+    "id": "advocacia-direito",
+    "title": "Escritório de Advocacia",
+    "description": "Posts sobre direito trabalhista e consultoria jurídica",
+    "image": "/projects/advocacia-direito.jpg",
+    "category": "Direito",
+    "tags": ["Jurídico", "Consultoria"],
+    "date": "2024-01-25",
+    "featured": true,
+    "url": "https://exemplo3.com"
+  },
+  {
+    "id": "academia-fitness",
+    "title": "Academia Fitness",
+    "description": "Conteúdo motivacional e dicas de treino para academia",
+    "image": "/projects/academia-fitness.jpg",
+    "category": "Saúde",
+    "tags": ["Fitness", "Treino"],
+    "date": "2024-02-01",
+    "featured": true,
+    "url": "https://exemplo4.com"
+  },
+  {
+    "id": "loja-roupas",
+    "title": "Loja de Roupas",
+    "description": "Posts sobre moda e tendências para loja de roupas",
+    "image": "/projects/loja-roupas.jpg",
+    "category": "Moda",
+    "tags": ["Fashion", "Tendências"],
+    "date": "2024-02-05",
+    "featured": true,
+    "url": "https://exemplo5.com"
+  },
+  {
+    "id": "restaurante-gourmet",
+    "title": "Restaurante Gourmet",
+    "description": "Conteúdo sobre pratos especiais e ambiente sofisticado",
+    "image": "/projects/restaurante-gourmet.jpg",
+    "category": "Gastronomia",
+    "tags": ["Gourmet", "Chef"],
+    "date": "2024-02-10",
+    "featured": true,
+    "url": "https://exemplo6.com"
+  }
+]

@@ -1,8 +1,45 @@
 'use client'
 
+import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 
 export default function ContatoPage() {
+  const [formData, setFormData] = useState({
+    nome: '',
+    email: '',
+    departamento: 'Suporte Técnico',
+    mensagem: ''
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setSubmitStatus('idle')
+
+    try {
+      // Simular envio do formulário
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Aqui você integraria com um serviço de email ou API
+      console.log('Dados do formulário:', formData)
+      
+      setSubmitStatus('success')
+      setFormData({ nome: '', email: '', departamento: 'Suporte Técnico', mensagem: '' })
+    } catch (error) {
+      setSubmitStatus('error')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }))
+  }
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
@@ -26,50 +63,89 @@ export default function ContatoPage() {
             <div className="grid md:grid-cols-2 gap-12">
               <div>
                 <h2 className="text-3xl font-bold mb-8">Envie sua Mensagem</h2>
-                <form className="space-y-6">
+                
+                {submitStatus === 'success' && (
+                  <div className="mb-6 p-4 bg-green-50 text-green-600 rounded-lg">
+                    Mensagem enviada com sucesso! Entraremos em contato em breve.
+                  </div>
+                )}
+                
+                {submitStatus === 'error' && (
+                  <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-lg">
+                    Erro ao enviar mensagem. Tente novamente ou entre em contato por email.
+                  </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="nome" className="block text-sm font-medium text-gray-700 mb-2">
                       Nome
                     </label>
                     <input
+                      id="nome"
+                      name="nome"
                       type="text"
+                      value={formData.nome}
+                      onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       placeholder="Seu nome completo"
+                      required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                       E-mail
                     </label>
                     <input
+                      id="email"
+                      name="email"
                       type="email"
+                      value={formData.email}
+                      onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       placeholder="seu@email.com"
+                      required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="departamento" className="block text-sm font-medium text-gray-700 mb-2">
                       Departamento
                     </label>
-                    <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                      <option>Suporte Técnico</option>
-                      <option>Comercial</option>
-                      <option>Financeiro</option>
-                      <option>Outros</option>
+                    <select 
+                      id="departamento"
+                      name="departamento"
+                      value={formData.departamento}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    >
+                      <option value="Suporte Técnico">Suporte Técnico</option>
+                      <option value="Comercial">Comercial</option>
+                      <option value="Financeiro">Financeiro</option>
+                      <option value="Outros">Outros</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="mensagem" className="block text-sm font-medium text-gray-700 mb-2">
                       Mensagem
                     </label>
                     <textarea
+                      id="mensagem"
+                      name="mensagem"
+                      value={formData.mensagem}
+                      onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       rows={4}
                       placeholder="Como podemos ajudar?"
+                      required
                     />
                   </div>
-                  <Button size="lg" className="w-full">
-                    Enviar Mensagem
+                  <Button 
+                    type="submit" 
+                    size="lg" 
+                    className="w-full"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Enviando...' : 'Enviar Mensagem'}
                   </Button>
                 </form>
               </div>
