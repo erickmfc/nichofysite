@@ -47,6 +47,15 @@ body {
   p, span, div {
     @apply text-gray-800;
   }
+  
+  /* Padronizar cores de texto para melhor contraste */
+  .text-gray-600 {
+    @apply text-gray-700;
+  }
+  
+  .text-gray-500 {
+    @apply text-gray-600;
+  }
 }
 
 @layer components {

@@ -89,10 +89,10 @@ export const InfiniteContentFlow = () => {
             {group.map((item, itemIndex) => (
               <div
                 key={item.id}
-                className={`absolute w-72 h-28 ${nicheColors[item.niche]} rounded-xl shadow-lg p-4 text-white backdrop-blur-sm border border-white/20`}
+                className={`absolute w-64 sm:w-72 h-24 sm:h-28 ${nicheColors[item.niche]} rounded-xl shadow-lg p-3 sm:p-4 text-white backdrop-blur-sm border border-white/20`}
                 style={{
-                  left: `${20 + itemIndex * 30}%`,
-                  top: `${30 + itemIndex * 15}%`,
+                  left: `${15 + itemIndex * 25}%`,
+                  top: `${25 + itemIndex * 20}%`,
                   animation: `fadeInUp 1s ease-out forwards`,
                   animationDelay: `${itemIndex * 0.3}s`
                 }}
@@ -105,7 +105,7 @@ export const InfiniteContentFlow = () => {
                     {item.platform}
                   </span>
                 </div>
-                <h3 className="font-bold text-sm mb-1 leading-tight drop-shadow-md">
+                <h3 className="font-bold text-xs sm:text-sm mb-1 leading-tight drop-shadow-md">
                   {item.title}
                 </h3>
                 <p className="text-xs leading-relaxed line-clamp-2 font-medium drop-shadow-sm">

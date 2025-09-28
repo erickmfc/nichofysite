@@ -56,7 +56,7 @@ const PainCard: React.FC<PainCardProps> = ({ icon, title, problem, solution, del
                 ? 'opacity-0 transform translate-y-4' 
                 : 'opacity-100 transform translate-y-0'
               }
-              ${isHovered ? 'text-white' : 'text-gray-600'}
+              ${isHovered ? 'text-white' : 'text-gray-800'}
             `}>
               {problem}
             </p>

@@ -47,7 +47,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
         <div className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400">
           {price}
         </div>
-        <p className="text-gray-600">{description}</p>
+        <p className="text-gray-700">{description}</p>
         {highlight && (
           <div className="mt-4 p-2 bg-primary-50 rounded-lg text-primary-700 text-sm">
             {highlight}
@@ -63,7 +63,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
             }`}>
               {feature.included ? '✓' : '×'}
             </span>
-            <span className={`${feature.included ? 'text-gray-900' : 'text-gray-500'} group-hover:text-primary-600 transition-colors`}>
+            <span className={`${feature.included ? 'text-gray-900' : 'text-gray-600'} group-hover:text-primary-600 transition-colors`}>
               {feature.text}
             </span>
             {feature.tooltip && (

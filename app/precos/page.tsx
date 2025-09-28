@@ -29,7 +29,7 @@ export default function PrecosPage() {
               <div className="text-4xl font-bold text-gray-900 mb-2">
                 R$ 97<span className="text-lg text-gray-600">/mês</span>
               </div>
-              <p className="text-gray-600">Perfeito para começar</p>
+              <p className="text-gray-700">Perfeito para começar</p>
             </div>
             
             <ul className="space-y-4 mb-8">
@@ -74,7 +74,7 @@ export default function PrecosPage() {
               <div className="text-4xl font-bold text-gray-900 mb-2">
                 R$ 197<span className="text-lg text-gray-600">/mês</span>
               </div>
-              <p className="text-gray-600">Para negócios em crescimento</p>
+              <p className="text-gray-700">Para negócios em crescimento</p>
             </div>
             
             <ul className="space-y-4 mb-8">
@@ -116,7 +116,7 @@ export default function PrecosPage() {
               <div className="text-4xl font-bold text-gray-900 mb-2">
                 R$ 497<span className="text-lg text-gray-600">/mês</span>
               </div>
-              <p className="text-gray-600">Para grandes empresas</p>
+              <p className="text-gray-700">Para grandes empresas</p>
             </div>
             
             <ul className="space-y-4 mb-8">
@@ -161,7 +161,7 @@ export default function PrecosPage() {
         <h3 className="text-2xl font-bold text-gray-900 mb-4">
           🛡️ Garantia de 30 dias
         </h3>
-        <p className="text-gray-600 max-w-2xl mx-auto">
+        <p className="text-gray-700 max-w-2xl mx-auto">
           Não gostou? Cancele em até 30 dias e receba seu dinheiro de volta. 
           Sem perguntas, sem complicações.
         </p>

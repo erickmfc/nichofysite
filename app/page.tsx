@@ -39,14 +39,14 @@ export default function HomePage() {
         <div className="relative z-10 min-h-screen flex items-center justify-center px-4">
           <div className="text-center max-w-4xl mx-auto">
             {/* Título Principal */}
-            <h1 className="text-6xl md:text-8xl font-bold text-white mb-8 animate-text-reveal">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-bold text-white mb-6 md:mb-8 animate-text-reveal leading-tight">
               Sua fábrica de conteúdo.
               <br />
               <span className="text-yellow-400">Em instantes.</span>
             </h1>
             
             {/* Subtítulo */}
-            <p className="text-xl md:text-2xl text-white/90 mb-12 animate-text-reveal" style={{ animationDelay: '0.8s' }}>
+            <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-8 md:mb-12 animate-text-reveal px-4" style={{ animationDelay: '0.8s' }}>
               Veja a mágica acontecer em tempo real
             </p>
             
@@ -61,9 +61,9 @@ export default function HomePage() {
         </div>
         
         {/* Elementos Decorativos */}
-        <div className="absolute top-20 left-20 w-32 h-32 bg-yellow-400/20 rounded-full animate-float"></div>
-        <div className="absolute bottom-20 right-20 w-24 h-24 bg-white/10 rounded-full animate-float" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-10 w-16 h-16 bg-yellow-400/30 rounded-full animate-float" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-10 left-4 sm:top-20 sm:left-20 w-16 h-16 sm:w-32 sm:h-32 bg-yellow-400/20 rounded-full animate-float"></div>
+        <div className="absolute bottom-10 right-4 sm:bottom-20 sm:right-20 w-12 h-12 sm:w-24 sm:h-24 bg-white/10 rounded-full animate-float" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-2 sm:left-10 w-8 h-8 sm:w-16 sm:h-16 bg-yellow-400/30 rounded-full animate-float" style={{ animationDelay: '2s' }}></div>
       </section>
 
       {/* Seção de Dor Interativa */}

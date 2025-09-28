@@ -191,8 +191,8 @@ export const DynamicHeader: React.FC = () => {
           <div className={`
             py-4 space-y-4 border-t transition-colors duration-300
             ${isScrolled 
-              ? 'border-gray-200' 
-              : 'border-white/20'
+              ? 'border-gray-200 bg-white/95 backdrop-blur-md' 
+              : 'border-white/20 bg-black/80 backdrop-blur-md'
             }
           `}>
             <Link 

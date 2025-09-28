@@ -78,26 +78,26 @@ export const AnimatedPromptBar: React.FC<AnimatedPromptBarProps> = ({ onContentG
   }, [])
 
   return (
-    <div className="relative max-w-2xl mx-auto">
+    <div className="relative max-w-2xl mx-auto px-4">
       <div className="relative">
         <input
           type="text"
           value={currentPrompt}
           readOnly
-          className="w-full px-6 py-4 text-lg bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all duration-300"
+          className="w-full px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all duration-300"
           placeholder="Digite sua solicitação..."
         />
         {isTyping && (
-          <div className="absolute right-6 top-1/2 -translate-y-1/2">
-            <div className={`w-0.5 h-6 bg-white transition-opacity duration-100 ${showCursor ? 'opacity-100' : 'opacity-0'}`} />
+          <div className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2">
+            <div className={`w-0.5 h-4 sm:h-6 bg-white transition-opacity duration-100 ${showCursor ? 'opacity-100' : 'opacity-0'}`} />
           </div>
         )}
       </div>
       
-      <div className="mt-6 text-center">
+      <div className="mt-4 sm:mt-6 text-center">
         <Button 
           size="lg" 
-          className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-bold px-8 py-4 text-lg shadow-2xl hover:shadow-yellow-500/25 transition-all duration-300 transform hover:scale-105"
+          className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-bold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg shadow-2xl hover:shadow-yellow-500/25 transition-all duration-300 transform hover:scale-105 w-full sm:w-auto"
         >
           ✨ Criar meu conteúdo (Grátis)
         </Button>

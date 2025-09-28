@@ -181,16 +181,6 @@ export default function NichosPage() {
       subtitle="Conteúdo especializado e profissional para cada área de atuação"
       features={["✨ Especialistas certificados", "📚 Conteúdo atualizado", "🎯 Resultados comprovados"]}
     >
-      <div className="text-center mb-16">
-        <h2 className="text-4xl font-bold text-gray-900 mb-4">
-          Nichos Especializados
-        </h2>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Desenvolvemos conteúdo técnico e especializado para cada área, 
-          com conhecimento profundo e experiência prática.
-        </p>
-      </div>
-
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
         {nichos.map((nicho, index) => (
           <div 
@@ -220,7 +210,7 @@ export default function NichosPage() {
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 {nicho.title}
               </h3>
-              <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+              <p className="text-gray-700 text-sm mb-4 leading-relaxed">
                 {nicho.description}
               </p>
               
@@ -228,7 +218,7 @@ export default function NichosPage() {
                 {nicho.topics.map((topic, topicIndex) => (
                   <div key={topicIndex} className="flex items-start gap-2">
                     <span className="text-blue-500 text-sm mt-0.5">•</span>
-                    <span className="text-sm text-gray-600">{topic}</span>
+                    <span className="text-sm text-gray-700">{topic}</span>
                   </div>
                 ))}
               </div>

@@ -33,12 +33,12 @@ export const HowItWorksSection: React.FC = () => {
 
       <div className="container mx-auto px-4 relative z-10">
         {/* Título */}
-        <div className="text-center mb-16">
-          <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+        <div className="text-center mb-12 md:mb-16 px-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
             Do pedido ao post pronto em{' '}
             <span className="text-primary-600">3 passos</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
             Simples, rápido e eficiente. Veja como funciona:
           </p>
         </div>
@@ -84,32 +84,37 @@ export const HowItWorksSection: React.FC = () => {
         </div>
 
         {/* Timeline Mobile */}
-        <div className="md:hidden space-y-8">
+        <div className="md:hidden space-y-6 px-4">
           {steps.map((step, index) => (
-            <div key={index} className="flex items-center space-x-6">
-              {/* Número */}
-              <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold bg-gradient-to-br from-primary-500 to-primary-700 text-white">
-                {index + 1}
-              </div>
+            <div key={index} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <div className="flex items-start space-x-4">
+                {/* Número */}
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-gradient-to-br from-primary-500 to-primary-700 text-white flex-shrink-0">
+                  {index + 1}
+                </div>
 
-              {/* Conteúdo */}
-              <div className="flex-1">
-                <h3 className="text-xl font-bold mb-2 text-primary-600">
-                  {step.title}
-                </h3>
-                <p className="text-gray-600 text-sm mb-2">{step.description}</p>
-                <p className="text-xs text-gray-500 italic">"{step.example}"</p>
+                {/* Conteúdo */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <span className="text-2xl">{step.icon}</span>
+                    <h3 className="text-lg font-bold text-primary-600">
+                      {step.title}
+                    </h3>
+                  </div>
+                  <p className="text-gray-600 text-sm mb-3 leading-relaxed">{step.description}</p>
+                  <div className="bg-primary-50 rounded-lg p-3 border border-primary-100">
+                    <p className="text-xs font-medium text-gray-700 mb-1">Exemplo:</p>
+                    <p className="text-xs text-gray-600 italic">"{step.example}"</p>
+                  </div>
+                </div>
               </div>
-
-              {/* Ícone */}
-              <div className="text-3xl">{step.icon}</div>
             </div>
           ))}
         </div>
 
         {/* Call to Action */}
-        <div className="text-center mt-16">
-          <div className="bg-gradient-to-r from-primary-500 to-primary-700 text-white px-8 py-4 rounded-full text-lg font-bold shadow-2xl hover:shadow-primary-500/25 transition-all duration-300 transform hover:scale-105 inline-block">
+        <div className="text-center mt-12 md:mt-16 px-4">
+          <div className="bg-gradient-to-r from-primary-500 to-primary-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-bold shadow-2xl hover:shadow-primary-500/25 transition-all duration-300 transform hover:scale-105 inline-block w-full sm:w-auto">
             🚀 Começar agora é grátis!
           </div>
         </div>
