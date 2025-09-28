@@ -1,8 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { DynamicHeader } from '@/components/ui/DynamicHeader'
-import { AuthProvider } from '@/components/auth/AuthProvider'
 import Link from 'next/link'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -66,12 +64,10 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={inter.className}>
-        <AuthProvider>
-          <DynamicHeader />
-          <main>
-            {children}
-          </main>
-          <footer className="bg-gray-900 text-white py-12">
+        <main>
+          {children}
+        </main>
+        <footer className="bg-gray-900 text-white py-12">
           <div className="container mx-auto px-4">
             <div className="grid md:grid-cols-4 gap-8">
               <div>
@@ -111,7 +107,6 @@ export default function RootLayout({
             </div>
           </div>
         </footer>
-        </AuthProvider>
       </body>
     </html>
   )
