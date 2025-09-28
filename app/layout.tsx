@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { DynamicHeader } from '@/components/ui/DynamicHeader'
 import Link from 'next/link'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -64,6 +65,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={inter.className}>
+        <DynamicHeader />
         <main>
           {children}
         </main>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
+import { MobileHeader } from '@/components/ui/MobileHeader'
 import Link from 'next/link'
 
 export default function MobileLoginPage() {
@@ -31,18 +32,12 @@ export default function MobileLoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-primary-50 to-white">
-      {/* Header Mobile */}
-      <div className="bg-white shadow-sm">
-        <div className="px-4 py-4">
-          <Link href="/" className="inline-block">
-            <h1 className="text-2xl font-bold text-primary-600">NichoFy</h1>
-          </Link>
-        </div>
-      </div>
+    <main className="min-h-screen bg-gradient-to-br from-primary-50 to-white flex flex-col">
+      {/* Header Mobile com Menu */}
+      <MobileHeader title="NichoFy" showMenu={true} />
 
       {/* Conteúdo Principal */}
-      <div className="px-4 py-8">
+      <div className="flex-1 px-4 py-8">
         <div className="max-w-sm mx-auto">
           {/* Título */}
           <div className="text-center mb-8">
