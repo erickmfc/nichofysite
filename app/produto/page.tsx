@@ -239,7 +239,7 @@ export default function ProdutoPage() {
           </p>
           <div className="flex gap-4 justify-center">
             <Button variant="outline" size="lg" className="bg-white text-primary-600 hover:bg-gray-100">
-              Teste Grátis
+              Ver Preços
             </Button>
             <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-primary-600">
               Ver Exemplos

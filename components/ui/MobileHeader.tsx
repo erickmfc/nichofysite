@@ -155,22 +155,10 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
 
               {/* Footer do Menu */}
               <div className="px-6 py-4 border-t border-gray-200">
-                <div className="space-y-3">
-                  <Link 
-                    href="/auth" 
-                    className="block w-full"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <Button className="w-full bg-primary-600 hover:bg-primary-700 text-white">
-                      Entrar / Cadastrar
-                    </Button>
-                  </Link>
-                  
-                  <div className="text-center">
-                    <p className="text-xs text-gray-500">
-                      © 2024 NichoFy
-                    </p>
-                  </div>
+                <div className="text-center">
+                  <p className="text-xs text-gray-500">
+                    © 2024 NichoFy
+                  </p>
                 </div>
               </div>
             </div>

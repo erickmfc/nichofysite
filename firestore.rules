@@ -1,40 +1,239 @@
-rules_version='2'
+rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Regras para pedidos (orders)
+    
+    // ========================================
+    // FUNÇÕES AUXILIARES
+    // ========================================
+    
+    // Função para verificar se é admin
+    function isAdmin() {
+      return request.auth != null && 
+             request.auth.token.email == 'admin@nichofy.com';
+    }
+    
+    // Função para verificar se é usuário autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Função para verificar se é o próprio usuário
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+    
+    // ========================================
+    // PEDIDOS (ORDERS) - Sistema Principal
+    // ========================================
+    
     match /orders/{orderId} {
-      allow read, write: if request.auth != null;
-      allow create: if true; // Permitir criação sem autenticação para formulários públicos
+      // Admin tem controle total sobre todos os pedidos
+      allow read, write, delete: if isAdmin();
+      
+      // Usuários podem criar pedidos (formulário público)
+      allow create: if true;
+      
+      // Usuários autenticados podem ler seus próprios pedidos
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Usuários podem atualizar apenas feedback dos seus pedidos
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid &&
+                       // Apenas campos específicos podem ser atualizados
+                       request.resource.data.keys().hasAll(['feedback', 'updatedAt']) &&
+                       request.resource.data.keys().size() <= 2;
     }
     
-    // Regras para usuários (users)
+    // ========================================
+    // USUÁRIOS (USERS) - Gestão de Contas
+    // ========================================
+    
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Admin tem controle total sobre todos os usuários
+      allow read, write, delete: if isAdmin();
+      
+      // Usuários podem ler e escrever apenas seus próprios dados
+      allow read, write: if isOwner(userId);
+      
+      // Permitir criação de novos usuários
+      allow create: if isAuthenticated() && request.auth.uid == userId;
     }
     
-    // Regras para conteúdo (content)
+    // ========================================
+    // CONTEÚDO (CONTENT) - Posts e Artigos
+    // ========================================
+    
     match /content/{contentId} {
-      allow read: if true; // Conteúdo público para leitura
-      allow write: if request.auth != null;
-    }
-    
-    // Regras para configurações (settings)
-    match /settings/{settingId} {
+      // Admin tem controle total sobre todo conteúdo
+      allow read, write, delete: if isAdmin();
+      
+      // Conteúdo público para leitura
       allow read: if true;
-      allow write: if request.auth != null;
+      
+      // Usuários autenticados podem criar conteúdo
+      allow create: if isAuthenticated();
+      
+      // Usuários podem atualizar apenas seu próprio conteúdo
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
     }
     
-    // Regras para nichos (nichos)
+    // ========================================
+    // CONFIGURAÇÕES (SETTINGS) - Sistema
+    // ========================================
+    
+    match /settings/{settingId} {
+      // Admin tem controle total sobre configurações
+      allow read, write, delete: if isAdmin();
+      
+      // Configurações públicas para leitura
+      allow read: if true;
+      
+      // Usuários não podem modificar configurações
+      allow write: if false;
+    }
+    
+    // ========================================
+    // NICHOS (NICHOS) - Categorias
+    // ========================================
+    
     match /nichos/{nichoId} {
-      allow read: if true; // Nichos públicos
-      allow write: if request.auth != null;
+      // Admin tem controle total sobre nichos
+      allow read, write, delete: if isAdmin();
+      
+      // Nichos públicos para leitura
+      allow read: if true;
+      
+      // Usuários não podem modificar nichos
+      allow write: if false;
     }
     
-    // Regras para projetos (projects)
+    // ========================================
+    // PROJETOS (PROJECTS) - Portfolio
+    // ========================================
+    
     match /projects/{projectId} {
-      allow read: if true; // Projetos públicos
-      allow write: if request.auth != null;
+      // Admin tem controle total sobre projetos
+      allow read, write, delete: if isAdmin();
+      
+      // Projetos públicos para leitura
+      allow read: if true;
+      
+      // Usuários não podem modificar projetos
+      allow write: if false;
+    }
+    
+    // ========================================
+    // TEMPLATES - Modelos de Conteúdo
+    // ========================================
+    
+    match /templates/{templateId} {
+      // Admin tem controle total sobre templates
+      allow read, write, delete: if isAdmin();
+      
+      // Templates públicos para leitura
+      allow read: if true;
+      
+      // Usuários não podem modificar templates
+      allow write: if false;
+    }
+    
+    // ========================================
+    // NOTIFICAÇÕES - Sistema de Alertas
+    // ========================================
+    
+    match /notifications/{notificationId} {
+      // Admin tem controle total sobre notificações
+      allow read, write, delete: if isAdmin();
+      
+      // Usuários podem ler suas próprias notificações
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Usuários podem marcar como lida
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.keys().hasAll(['isRead', 'readAt']);
+    }
+    
+    // ========================================
+    // PAGAMENTOS - Sistema Financeiro
+    // ========================================
+    
+    match /payments/{paymentId} {
+      // Admin tem controle total sobre pagamentos
+      allow read, write, delete: if isAdmin();
+      
+      // Usuários podem ler seus próprios pagamentos
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Usuários não podem modificar pagamentos
+      allow write: if false;
+    }
+    
+    // ========================================
+    // ANALYTICS - Métricas e Estatísticas
+    // ========================================
+    
+    match /analytics/{analyticsId} {
+      // Admin tem controle total sobre métricas
+      allow read, write, delete: if isAdmin();
+      
+      // Usuários podem ler suas próprias métricas
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Sistema pode criar métricas automaticamente
+      allow create: if true;
+      
+      // Usuários não podem modificar métricas
+      allow update, delete: if false;
+    }
+    
+    // ========================================
+    // FEEDBACK - Avaliações e Comentários
+    // ========================================
+    
+    match /feedback/{feedbackId} {
+      // Admin tem controle total sobre feedback
+      allow read, write, delete: if isAdmin();
+      
+      // Feedback público para leitura
+      allow read: if true;
+      
+      // Usuários autenticados podem criar feedback
+      allow create: if isAuthenticated();
+      
+      // Usuários podem atualizar apenas seu próprio feedback
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
+    }
+    
+    // ========================================
+    // LOGS - Registro de Atividades
+    // ========================================
+    
+    match /logs/{logId} {
+      // Apenas admin pode ler logs
+      allow read: if isAdmin();
+      
+      // Sistema pode criar logs automaticamente
+      allow create: if true;
+      
+      // Ninguém pode modificar ou deletar logs
+      allow update, delete: if false;
+    }
+    
+    // ========================================
+    // REGRAS PADRÃO - Negar tudo não especificado
+    // ========================================
+    
+    // Negar acesso a qualquer documento não especificado
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

@@ -169,7 +169,7 @@ export default function RedesSociaisPage() {
             Comece agora mesmo a gerar conteúdo profissional e especializado para suas redes sociais.
           </p>
           <Button variant="outline" size="lg" className="bg-white text-primary-600 hover:bg-gray-100">
-            Começar Gratuitamente
+            Saiba Mais
           </Button>
         </div>
       </section>

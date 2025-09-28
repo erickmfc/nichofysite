@@ -115,7 +115,7 @@ export const HowItWorksSection: React.FC = () => {
         {/* Call to Action */}
         <div className="text-center mt-12 md:mt-16 px-4">
           <div className="bg-gradient-to-r from-primary-500 to-primary-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-bold shadow-2xl hover:shadow-primary-500/25 transition-all duration-300 transform hover:scale-105 inline-block w-full sm:w-auto">
-            🚀 Começar agora é grátis!
+            🚀 Saiba mais sobre nossos planos!
           </div>
         </div>
       </div>

@@ -13,6 +13,9 @@ export const DynamicHeader: React.FC = () => {
       setIsScrolled(scrollY > 100) // Muda após 100px de scroll
     }
 
+    // Verificar scroll inicial
+    handleScroll()
+    
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
@@ -24,7 +27,7 @@ export const DynamicHeader: React.FC = () => {
   return (
     <header 
       className={`
-        fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out
+        fixed top-0 left-0 right-0 z-[9999] transition-all duration-500 ease-in-out
         ${isScrolled 
           ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200/20' 
           : 'bg-transparent'
@@ -133,15 +136,15 @@ export const DynamicHeader: React.FC = () => {
             </Link>
           </nav>
 
-          {/* Desktop CTA Buttons */}
+          {/* Botões de Ação */}
           <div className="hidden lg:flex items-center space-x-4">
             <Link 
-              href="/contato" 
+              href="/login" 
               className={`
                 text-sm font-medium transition-colors duration-300 hover:scale-105
                 ${isScrolled 
-                  ? 'text-primary-600 hover:text-primary-700' 
-                  : 'text-white/80 hover:text-white'
+                  ? 'text-gray-700 hover:text-gray-900' 
+                  : 'text-white/90 hover:text-white'
                 }
               `}
             >
@@ -149,12 +152,12 @@ export const DynamicHeader: React.FC = () => {
             </Link>
             
             <Link 
-              href="/produto" 
+              href="/login?mode=signup" 
               className={`
-                px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg
+                px-6 py-3 rounded-full font-medium text-sm transition-all duration-300 transform hover:scale-105
                 ${isScrolled 
-                  ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-orange-500/25' 
-                  : 'border-2 border-white text-white hover:bg-white/10 backdrop-blur-sm'
+                  ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-lg hover:shadow-xl' 
+                  : 'bg-white text-primary-600 hover:bg-gray-100 shadow-lg hover:shadow-xl'
                 }
               `}
             >
@@ -197,14 +200,14 @@ export const DynamicHeader: React.FC = () => {
         {/* Mobile Menu Overlay */}
         {isMobileMenuOpen && (
           <div 
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998] lg:hidden"
             onClick={() => setIsMobileMenuOpen(false)}
           />
         )}
 
         {/* Mobile Menu */}
         <div className={`
-          lg:hidden fixed top-16 left-0 right-0 z-50 transform transition-all duration-300 ease-out
+          lg:hidden fixed top-16 left-0 right-0 z-[9999] transform transition-all duration-300 ease-out
           ${isMobileMenuOpen 
             ? 'translate-y-0 opacity-100' 
             : '-translate-y-4 opacity-0 pointer-events-none'
@@ -337,40 +340,34 @@ export const DynamicHeader: React.FC = () => {
               </Link>
             </div>
 
-            {/* Action Buttons */}
-            <div className="px-6 py-4 space-y-3 border-t border-gray-200/20">
+            {/* Botões de Ação Mobile */}
+            <div className="px-6 py-4 border-t border-gray-200/20 space-y-3">
               <Link 
-                href="/contato" 
+                href="/login" 
                 className={`
-                  flex items-center justify-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200
+                  block w-full text-center px-4 py-3 rounded-xl font-medium transition-all duration-200
                   ${isScrolled 
-                    ? 'text-primary-600 hover:bg-primary-50 border border-primary-200' 
-                    : 'text-white/80 hover:bg-white/10 border border-white/20'
+                    ? 'text-gray-700 hover:bg-gray-100 border border-gray-200' 
+                    : 'text-white hover:bg-white/10 border border-white/20'
                   }
                 `}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <span>Entrar</span>
+                Entrar
               </Link>
               
               <Link 
-                href="/produto" 
+                href="/login?mode=signup" 
                 className={`
-                  flex items-center justify-center space-x-2 px-4 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105
+                  block w-full text-center px-4 py-3 rounded-xl font-medium transition-all duration-200
                   ${isScrolled 
-                    ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg hover:shadow-orange-500/25' 
-                    : 'bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 shadow-lg hover:shadow-yellow-400/25'
+                    ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-lg' 
+                    : 'bg-white text-primary-600 hover:bg-gray-100 shadow-lg'
                   }
                 `}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                <span>Começar Agora</span>
+                Começar Agora
               </Link>
             </div>
           </div>

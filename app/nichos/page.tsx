@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/Button'
 import { ResponsiveTemplate } from '@/components/ui/ResponsiveTemplate'
 import Link from 'next/link'
+import { PublicNavbar } from '@/components/layout/PublicNavbar'
 
 interface Nicho {
   id: string
@@ -175,12 +176,45 @@ const nichos: Nicho[] = [
 
 export default function NichosPage() {
   return (
-    <ResponsiveTemplate
-      colorScheme="primary"
-      title="Nossos Nichos"
-      subtitle="Conteúdo especializado e profissional para cada área de atuação"
-      features={["✨ Especialistas certificados", "📚 Conteúdo atualizado", "🎯 Resultados comprovados"]}
-    >
+    <div className="min-h-screen">
+      <PublicNavbar />
+      <div className="pt-16">
+        <ResponsiveTemplate
+          colorScheme="primary"
+          title="Nichos Especializados"
+          subtitle="Conteúdo profissional criado por IA treinada especificamente para cada área de negócio"
+          features={["🤖 IA especializada por nicho", "📈 Resultados comprovados", "⚡ Criação em segundos"]}
+        >
+      {/* Introdução */}
+      <div className="text-center mb-16">
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+          Por que escolher nichos especializados?
+        </h2>
+        <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          <div className="bg-blue-50 rounded-xl p-6">
+            <div className="text-3xl mb-4">🎯</div>
+            <h3 className="font-semibold text-gray-900 mb-2">Precisão</h3>
+            <p className="text-gray-600 text-sm">
+              Cada nicho tem sua linguagem, tom e necessidades específicas. Nossa IA entende essas nuances.
+            </p>
+          </div>
+          <div className="bg-green-50 rounded-xl p-6">
+            <div className="text-3xl mb-4">⚡</div>
+            <h3 className="font-semibold text-gray-900 mb-2">Velocidade</h3>
+            <p className="text-gray-600 text-sm">
+              Conteúdo profissional criado em segundos, não horas. Foque no que realmente importa.
+            </p>
+          </div>
+          <div className="bg-purple-50 rounded-xl p-6">
+            <div className="text-3xl mb-4">📈</div>
+            <h3 className="font-semibold text-gray-900 mb-2">Resultados</h3>
+            <p className="text-gray-600 text-sm">
+              Conteúdo que converte, engaja e vende. Testado e aprovado por mais de 1.200 empresas.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
         {nichos.map((nicho, index) => (
           <div 
@@ -235,6 +269,8 @@ export default function NichosPage() {
           </div>
         ))}
       </div>
-    </ResponsiveTemplate>
+        </ResponsiveTemplate>
+      </div>
+    </div>
   )
 }

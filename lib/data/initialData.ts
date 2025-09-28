@@ -1,5 +1,5 @@
 // Dados iniciais para popular o banco de dados
-import type { Nicho, Template, Settings } from '@/lib/types'
+import type { Nicho, Template, Settings } from '@/lib/types/index'
 
 // Nichos iniciais
 export const initialNichos: Omit<Nicho, 'id' | 'createdAt' | 'updatedAt'>[] = [

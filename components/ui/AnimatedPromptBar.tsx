@@ -99,7 +99,7 @@ export const AnimatedPromptBar: React.FC<AnimatedPromptBarProps> = ({ onContentG
           size="lg" 
           className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-bold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg shadow-2xl hover:shadow-yellow-500/25 transition-all duration-300 transform hover:scale-105 w-full sm:w-auto"
         >
-          ✨ Criar meu conteúdo (Grátis)
+          ✨ Criar meu conteúdo
         </Button>
       </div>
     </div>

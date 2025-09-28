@@ -1,17 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
-import { PreLoader } from '@/components/ui/PreLoader'
 import { AnimatedPromptBar } from '@/components/ui/AnimatedPromptBar'
 import { FlyingContentCards } from '@/components/ui/FlyingContentCards'
 import { InfiniteContentFlow } from '@/components/ui/InfiniteContentFlow'
 import { ProjectsCarousel } from '@/components/ui/ProjectsCarousel'
 import { PainPointSection } from '@/components/ui/PainPointSection'
 import { HowItWorksSection } from '@/components/ui/HowItWorksSection'
+import { PublicNavbar } from '@/components/layout/PublicNavbar'
 
 export default function HomePage() {
-  const [isLoading, setIsLoading] = useState(true)
   const [currentContent, setCurrentContent] = useState('')
   const [showCards, setShowCards] = useState(false)
 
@@ -21,18 +20,13 @@ export default function HomePage() {
     setTimeout(() => setShowCards(false), 3000)
   }
 
-  const handlePreLoaderComplete = () => {
-    setIsLoading(false)
-  }
-
-  if (isLoading) {
-    return <PreLoader onComplete={handlePreLoaderComplete} />
-  }
-
   return (
     <main className="min-h-screen">
+      {/* Public Navbar */}
+      <PublicNavbar />
+      
       {/* Hero Section - A Fábrica de Conteúdo */}
-      <section className="min-h-screen relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-500 to-primary-700 animate-gradient">
+      <section className="min-h-screen relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-500 to-primary-700 animate-gradient pt-16">
         <div className="absolute inset-0 bg-black/10"></div>
         
         {/* Conteúdo Principal */}
@@ -40,15 +34,31 @@ export default function HomePage() {
           <div className="text-center max-w-4xl mx-auto">
             {/* Título Principal */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-bold text-white mb-6 md:mb-8 animate-text-reveal leading-tight">
-              Sua fábrica de conteúdo.
+              Transforme ideias em
               <br />
-              <span className="text-yellow-400">Em instantes.</span>
+              <span className="text-yellow-400">posts que vendem</span>
             </h1>
             
             {/* Subtítulo */}
             <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-8 md:mb-12 animate-text-reveal px-4" style={{ animationDelay: '0.8s' }}>
-              Veja a mágica acontecer em tempo real
+              IA especializada + mais de 10 nichos = conteúdo profissional em segundos
             </p>
+            
+            {/* Benefícios em destaque */}
+            <div className="flex flex-wrap justify-center gap-4 mb-8 animate-text-reveal" style={{ animationDelay: '1.2s' }}>
+              <div className="flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+                <span className="text-yellow-400 mr-2">⚡</span>
+                <span className="text-white text-sm font-medium">Criação em 30 segundos</span>
+              </div>
+              <div className="flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+                <span className="text-yellow-400 mr-2">🎯</span>
+                <span className="text-white text-sm font-medium">10+ nichos especializados</span>
+              </div>
+              <div className="flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+                <span className="text-yellow-400 mr-2">📈</span>
+                <span className="text-white text-sm font-medium">Resultados comprovados</span>
+              </div>
+            </div>
             
             {/* Caixa de Texto Animada */}
             <div className="relative animate-text-reveal" style={{ animationDelay: '1.5s' }}>
@@ -142,12 +152,18 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-2xl">👨‍💼</span>
               </div>
+              <div className="flex justify-center mb-4">
+                <div className="flex text-yellow-400">
+                  {'★'.repeat(5)}
+                </div>
+              </div>
               <p className="text-gray-700 mb-6 italic">
-                "A NichoFy revolucionou nossa presença digital. Em 3 meses, aumentamos nossas vendas em 200% e nossa equipe economizou 15 horas por semana."
+                "A NichoFy revolucionou nossa presença digital. Em 3 meses, aumentamos nossas vendas em 200% e nossa equipe economizou 15 horas por semana. O conteúdo é sempre relevante e profissional."
               </p>
               <div>
                 <p className="font-bold text-gray-900">Carlos Silva</p>
                 <p className="text-sm text-gray-600">Proprietário - Cafeteria Artesanal</p>
+                <p className="text-xs text-gray-500 mt-1">São Paulo, SP</p>
               </div>
             </div>
 
@@ -156,12 +172,18 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-2xl">✂️</span>
               </div>
+              <div className="flex justify-center mb-4">
+                <div className="flex text-yellow-400">
+                  {'★'.repeat(5)}
+                </div>
+              </div>
               <p className="text-gray-700 mb-6 italic">
-                "Nunca pensei que conteúdo pudesse fazer tanta diferença. Agora temos fila de espera e nossos clientes nos indicam constantemente."
+                "Nunca pensei que conteúdo pudesse fazer tanta diferença. Agora temos fila de espera e nossos clientes nos indicam constantemente. A NichoFy entende perfeitamente nosso nicho."
               </p>
               <div>
                 <p className="font-bold text-gray-900">Marina Santos</p>
                 <p className="text-sm text-gray-600">Proprietária - Barbearia Style</p>
+                <p className="text-xs text-gray-500 mt-1">Rio de Janeiro, RJ</p>
               </div>
             </div>
 
@@ -170,12 +192,18 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-2xl">⚖️</span>
               </div>
+              <div className="flex justify-center mb-4">
+                <div className="flex text-yellow-400">
+                  {'★'.repeat(5)}
+                </div>
+              </div>
               <p className="text-gray-700 mb-6 italic">
-                "O conteúdo educativa que criamos estabeleceu nossa autoridade no mercado. Agora somos referência em direito trabalhista na região."
+                "O conteúdo educativo que criamos estabeleceu nossa autoridade no mercado. Agora somos referência em direito trabalhista na região. Aumentamos nossos clientes em 300%."
               </p>
               <div>
                 <p className="font-bold text-gray-900">Dr. Roberto Lima</p>
                 <p className="text-sm text-gray-600">Sócio - Advocacia & Justiça</p>
+                <p className="text-xs text-gray-500 mt-1">Belo Horizonte, MG</p>
               </div>
             </div>
           </div>
@@ -196,43 +224,66 @@ export default function HomePage() {
           
           <div className="grid md:grid-cols-4 gap-8 text-center">
             <div className="animate-count-up">
-              <div className="text-5xl font-bold text-yellow-400 mb-2">500+</div>
-              <p className="text-white/80">Clientes satisfeitos</p>
+              <div className="text-5xl font-bold text-yellow-400 mb-2">1.2K+</div>
+              <p className="text-white/80">Empresas transformadas</p>
             </div>
             <div className="animate-count-up" style={{ animationDelay: '0.2s' }}>
-              <div className="text-5xl font-bold text-yellow-400 mb-2">50K+</div>
-              <p className="text-white/80">Posts criados</p>
+              <div className="text-5xl font-bold text-yellow-400 mb-2">150K+</div>
+              <p className="text-white/80">Posts profissionais criados</p>
             </div>
             <div className="animate-count-up" style={{ animationDelay: '0.4s' }}>
-              <div className="text-5xl font-bold text-yellow-400 mb-2">95%</div>
+              <div className="text-5xl font-bold text-yellow-400 mb-2">98%</div>
               <p className="text-white/80">Taxa de satisfação</p>
             </div>
             <div className="animate-count-up" style={{ animationDelay: '0.6s' }}>
-              <div className="text-5xl font-bold text-yellow-400 mb-2">24h</div>
-              <p className="text-white/80">Suporte disponível</p>
+              <div className="text-5xl font-bold text-yellow-400 mb-2">30s</div>
+              <p className="text-white/80">Tempo médio de criação</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Planos e CTA Final */}
+      {/* CTA Final */}
       <section className="min-h-screen relative bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
         <div className="text-center max-w-4xl mx-auto px-4">
-          <h2 className="text-6xl md:text-8xl font-bold text-white mb-8 animate-text-reveal">
-            Sua marca merece ser vista.
+          <h2 className="text-5xl md:text-7xl font-bold text-white mb-8 animate-text-reveal">
+            Pare de perder vendas por falta de conteúdo.
           </h2>
-          <p className="text-2xl text-white/90 mb-12 animate-text-reveal" style={{ animationDelay: '0.8s' }}>
-            Vamos começar?
+          <p className="text-xl md:text-2xl text-white/90 mb-8 animate-text-reveal" style={{ animationDelay: '0.8s' }}>
+            Junte-se a mais de 1.200 empresas que já transformaram seus resultados
           </p>
+          
+          {/* Benefícios dos nossos planos */}
+          <div className="grid md:grid-cols-3 gap-6 mb-12 animate-text-reveal" style={{ animationDelay: '1s' }}>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+              <div className="text-3xl mb-3">🎯</div>
+              <h3 className="text-white font-semibold mb-2">Planos Flexíveis</h3>
+              <p className="text-white/80 text-sm">Escolha o plano ideal para seu negócio</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+              <div className="text-3xl mb-3">⚡</div>
+              <h3 className="text-white font-semibold mb-2">Sem Compromisso</h3>
+              <p className="text-white/80 text-sm">Cancele quando quiser</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+              <div className="text-3xl mb-3">📈</div>
+              <h3 className="text-white font-semibold mb-2">Resultados Rápidos</h3>
+              <p className="text-white/80 text-sm">Veja a diferença em 24h</p>
+            </div>
+          </div>
           
           <div className="animate-text-reveal" style={{ animationDelay: '1.2s' }}>
             <Button 
               size="lg" 
               className="bg-white text-orange-600 hover:bg-gray-100 font-bold px-12 py-6 text-2xl shadow-2xl hover:shadow-white/25 transition-all duration-300 transform hover:scale-105"
             >
-              🚀 Testar o NichoFy de Graça
+              🚀 Saiba Mais Sobre Nossos Planos
             </Button>
           </div>
+          
+          <p className="text-white/70 text-sm mt-6 animate-text-reveal" style={{ animationDelay: '1.4s' }}>
+            ✅ Sem cartão de crédito • ✅ Configuração em 2 minutos • ✅ Suporte 24/7
+          </p>
         </div>
       </section>
     </main>

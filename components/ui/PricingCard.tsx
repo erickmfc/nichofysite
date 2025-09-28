@@ -80,23 +80,31 @@ export const PricingCard: React.FC<PricingCardProps> = ({
           <Button 
             variant="outline" 
             className="w-full hover:bg-primary-50 hover:text-primary-600 transition-colors" 
-            onClick={() => window.location.href = 'mailto:comercial@nichofy.com'}
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                window.location.href = 'mailto:comercial@nichofy.com'
+              }
+            }}
           >
             Contato Comercial
           </Button>
         ) : paymentLink ? (
           <Button 
             className="w-full bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 transition-all duration-300" 
-            onClick={() => window.location.href = paymentLink}
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                window.location.href = paymentLink
+              }
+            }}
           >
-            Começar Agora
+            Saiba Mais
           </Button>
         ) : (
           <Button 
             variant="outline" 
             className="w-full hover:bg-primary-50 hover:text-primary-600 transition-colors"
           >
-            Começar Grátis
+            Ver Preços
           </Button>
         )}
       </div>
