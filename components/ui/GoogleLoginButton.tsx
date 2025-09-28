@@ -25,9 +25,6 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
     
     try {
       const provider = new GoogleAuthProvider()
-      provider.addScope('email')
-      provider.addScope('profile')
-      
       const result = await signInWithPopup(auth, provider)
       const user = result.user
       
@@ -52,23 +49,19 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
             theme: 'light'
           }
         })
-      } else {
-        // Atualizar dados existentes
-        await setDoc(doc(db, 'users', user.uid), {
-          name: user.displayName || userDoc.data().name,
-          email: user.email,
-          avatar: user.photoURL,
-          updatedAt: serverTimestamp()
-        }, { merge: true })
       }
       
       if (onSuccess) {
         onSuccess()
+      } else {
+        alert('Login com Google realizado com sucesso! Redirecionando...')
+        // Redirecionar após login Google
+        setTimeout(() => {
+          window.location.href = '/dashboard'
+        }, 1000)
       }
       
     } catch (error: any) {
-      console.error('Erro no login Google:', error)
-      
       let errorMessage = 'Erro ao fazer login com Google'
       
       switch (error.code) {
@@ -76,31 +69,25 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
           errorMessage = 'Login cancelado pelo usuário'
           break
         case 'auth/popup-blocked':
-          errorMessage = 'Popup bloqueado pelo navegador. Permita popups para este site.'
+          errorMessage = 'Popup bloqueado pelo navegador'
           break
         case 'auth/operation-not-allowed':
-          errorMessage = 'Google Sign-in não está habilitado no Firebase Console'
+          errorMessage = 'Google Sign-in não está habilitado'
           break
         case 'auth/unauthorized-domain':
-          errorMessage = 'Domínio não autorizado. Adicione localhost nas configurações do Firebase.'
-          break
-        case 'auth/invalid-credential':
-          errorMessage = 'Credenciais inválidas. Verifique a configuração do Google OAuth.'
-          break
-        case 'auth/network-request-failed':
-          errorMessage = 'Erro de rede. Verifique sua conexão com a internet.'
+          errorMessage = 'Domínio não autorizado'
           break
         case 'auth/too-many-requests':
-          errorMessage = 'Muitas tentativas. Tente novamente mais tarde.'
+          errorMessage = 'Muitas tentativas. Aguarde alguns minutos antes de tentar novamente.'
           break
         default:
-          errorMessage = `Erro: ${error.code} - ${error.message}`
+          errorMessage = `Erro: ${error.code}`
       }
       
       if (onError) {
         onError(errorMessage)
       } else {
-        alert(`❌ ${errorMessage}\n\nCódigo: ${error.code}`)
+        alert(errorMessage)
       }
     } finally {
       setIsLoading(false)
