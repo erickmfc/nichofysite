@@ -15,9 +15,5 @@
     "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "621379290571",
     "NEXT_PUBLIC_FIREBASE_APP_ID": "1:621379290571:web:ee5e75df2079378959e24e",
     "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID": "G-DVBG19K4ZQ"
-  },
-  "domains": [
-    "nichofy.shop",
-    "www.nichofy.shop"
-  ]
+  }
 }
