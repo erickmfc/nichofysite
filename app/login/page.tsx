@@ -68,14 +68,20 @@ function LoginForm() {
         // Executar todas as operações em paralelo
         await Promise.all(promises)
 
-        // Redirecionamento instantâneo
-        window.location.href = '/dashboard'
+        // Aguardar um momento para garantir que o estado seja atualizado
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
+        // Redirecionamento com router.push para melhor controle
+        router.push('/dashboard')
       } else {
         // LOGIN OTIMIZADO
         await signInWithEmailAndPassword(auth, email, password)
         
-        // Redirecionamento instantâneo
-        window.location.href = '/dashboard'
+        // Aguardar um momento para garantir que o estado seja atualizado
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
+        // Redirecionamento com router.push para melhor controle
+        router.push('/dashboard')
       }
     } catch (error: any) {
       console.error('Erro de autenticação:', error)
