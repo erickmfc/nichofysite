@@ -80,7 +80,7 @@ export default function LoginPage() {
       console.error('Erro de autenticação:', error)
       
       // Tratamento de erro otimizado
-      const errorMessages = {
+      const errorMessages: Record<string, string> = {
         'auth/user-not-found': 'Usuário não encontrado',
         'auth/wrong-password': 'Senha incorreta',
         'auth/invalid-email': 'Email inválido',
@@ -90,7 +90,8 @@ export default function LoginPage() {
         'auth/invalid-credential': 'Credenciais inválidas. Verifique email e senha.'
       }
       
-      setError(errorMessages[error.code] || 'Erro ao fazer login. Tente novamente.')
+      const errorCode = error.code as string
+      setError(errorMessages[errorCode] || 'Erro ao fazer login. Tente novamente.')
     } finally {
       setIsLoading(false)
     }
