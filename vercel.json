@@ -2,12 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "next build",
   "framework": "nextjs",
-  "eslint": {
-    "ignoreDuringBuilds": true
-  },
-  "typescript": {
-    "ignoreBuildErrors": false
-  },
   "headers": [
     {
       "source": "/(.*)",
