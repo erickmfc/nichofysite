@@ -5,24 +5,26 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { auth, db } from '@/lib/firebase'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { useToastNotifications } from '@/components/ui/Toast'
 
 function LoginForm() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const { success, error } = useToastNotifications()
   const mode = searchParams.get('mode')
   
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
 
   const isSignUp = mode === 'signup'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setError('')
+    setErrorMessage('')
 
     try {
       if (isSignUp) {
@@ -49,11 +51,13 @@ function LoginForm() {
           }
         })
 
+        success('Conta Criada! 🎉', 'Bem-vindo ao NichoFy! Redirecionando para o dashboard...')
         // Redirecionar
         router.push('/dashboard')
       } else {
         // Login
         await signInWithEmailAndPassword(auth, email, password)
+        success('Login Realizado! ✅', 'Bem-vindo de volta! Redirecionando...')
         router.push('/dashboard')
       }
     } catch (error: any) {
@@ -61,28 +65,28 @@ function LoginForm() {
       
       switch (error.code) {
         case 'auth/user-not-found':
-          setError('Usuário não encontrado')
+          error('Usuário não encontrado', 'Verifique o email e tente novamente.')
           break
         case 'auth/wrong-password':
-          setError('Senha incorreta')
+          error('Senha incorreta', 'Verifique sua senha e tente novamente.')
           break
         case 'auth/invalid-email':
-          setError('Email inválido')
+          error('Email inválido', 'Por favor, insira um email válido.')
           break
         case 'auth/email-already-in-use':
-          setError('Email já está em uso')
+          error('Email já está em uso', 'Este email já possui uma conta. Tente fazer login.')
           break
         case 'auth/weak-password':
-          setError('Senha deve ter pelo menos 6 caracteres')
+          error('Senha fraca', 'A senha deve ter pelo menos 6 caracteres.')
           break
         case 'auth/too-many-requests':
-          setError('Muitas tentativas. Aguarde alguns minutos.')
+          error('Muitas tentativas', 'Aguarde alguns minutos antes de tentar novamente.')
           break
         case 'auth/invalid-credential':
-          setError('Credenciais inválidas. Verifique email e senha.')
+          error('Credenciais inválidas', 'Verifique seu email e senha e tente novamente.')
           break
         default:
-          setError('Erro ao fazer login. Tente novamente.')
+          error('Erro de autenticação', 'Ocorreu um erro inesperado. Tente novamente.')
       }
     } finally {
       setIsLoading(false)
@@ -147,9 +151,9 @@ function LoginForm() {
             />
           </div>
 
-          {error && (
+          {errorMessage && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-              {error}
+              {errorMessage}
             </div>
           )}
 

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { User, onAuthStateChanged, signOut } from 'firebase/auth'
+import { useState, useEffect, useCallback } from 'react'
+import { onAuthStateChanged, signOut, User } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { useRouter } from 'next/navigation'
 
@@ -11,25 +11,38 @@ export const useAuth = () => {
   const router = useRouter()
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    // Otimizar listener do Firebase Auth
+    const unsubscribe = onAuthStateChanged(auth, (user: User | null) => {
       setUser(user)
       setLoading(false)
       
-      // REMOVER redirecionamento automático para evitar conflitos
-      // O redirecionamento deve ser feito apenas na página de login
+      // Redirecionamento otimizado apenas quando necessário
+      if (user && typeof window !== 'undefined') {
+        const currentPath = window.location.pathname
+        
+        // Redirecionar apenas se estiver na página de login ou inicial
+        if (currentPath === '/login' || currentPath === '/') {
+          // Usar setTimeout mínimo para não bloquear a UI
+          setTimeout(() => {
+            window.location.href = '/dashboard'
+          }, 100)
+        }
+      }
     })
 
     return () => unsubscribe()
   }, [])
 
-  const logout = async () => {
+  // Otimizar logout com useCallback
+  const logout = useCallback(async () => {
     try {
       await signOut(auth)
-      router.push('/')
+      // Redirecionamento instantâneo
+      window.location.href = '/'
     } catch (error) {
       console.error('Erro ao fazer logout:', error)
     }
-  }
+  }, [])
 
   return {
     user,

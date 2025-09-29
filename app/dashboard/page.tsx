@@ -305,20 +305,12 @@ export default function DashboardPage() {
                   />
                 </div>
                 
-                <button 
-                  onClick={handleGenerateContent}
-                  disabled={isGenerating || !selectedNiche || !topic}
-                  className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white py-4 px-6 rounded-xl font-bold text-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                <a 
+                  href="/criar-conteudo"
+                  className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white py-4 px-6 rounded-xl font-bold text-xl transition-all transform hover:scale-105 shadow-lg text-center inline-block"
                 >
-                  {isGenerating ? (
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
-                      Gerando conteúdo...
-                    </div>
-                  ) : (
-                    '🚀 Gerar Conteúdo Agora'
-                  )}
-                </button>
+                  🚀 Criar Conteúdo Agora
+                </a>
               </div>
             </div>
 
@@ -461,7 +453,13 @@ export default function DashboardPage() {
                 ) : (
                   <div className={`p-4 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-xl text-center`}>
                     <p className={`${currentColors.textSecondary} mb-2`}>🎯 Comece criando seu primeiro post!</p>
-                    <p className={`text-sm ${currentColors.textMuted}`}>Use o gerador acima para criar conteúdo profissional</p>
+                    <p className={`text-sm ${currentColors.textMuted} mb-4`}>Use o gerador acima para criar conteúdo profissional</p>
+                    <a 
+                      href="/meus-pedidos"
+                      className="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                    >
+                      Ver Meus Pedidos
+                    </a>
                   </div>
                 )}
               </div>

@@ -1,291 +1,412 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/Button'
-import { AnimatedPromptBar } from '@/components/ui/AnimatedPromptBar'
-import { FlyingContentCards } from '@/components/ui/FlyingContentCards'
-import { InfiniteContentFlow } from '@/components/ui/InfiniteContentFlow'
-import { ProjectsCarousel } from '@/components/ui/ProjectsCarousel'
-import { PainPointSection } from '@/components/ui/PainPointSection'
-import { HowItWorksSection } from '@/components/ui/HowItWorksSection'
-import { PublicNavbar } from '@/components/layout/PublicNavbar'
+import Link from 'next/link'
 
 export default function HomePage() {
-  const [currentContent, setCurrentContent] = useState('')
-  const [showCards, setShowCards] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: ''
+  })
+  const [isLoading, setIsLoading] = useState(false)
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
 
-  const handleContentGenerated = (content: string) => {
-    setCurrentContent(content)
-    setShowCards(true)
-    setTimeout(() => setShowCards(false), 3000)
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
   }
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    
+    // Simular cadastro
+    setTimeout(() => {
+      setIsLoading(false)
+      alert('Conta criada com sucesso! 🎉')
+    }, 2000)
+  }
+
+  // Dados dos cards de conteúdo para a animação
+  const contentCards = [
+    {
+      id: 1,
+      type: 'gastronomia',
+      title: 'Receita do Dia',
+      content: 'Risotto de Camarão com Açafrão',
+      image: '🍤',
+      color: 'from-orange-400 to-red-500',
+      delay: '0s'
+    },
+    {
+      id: 2,
+      type: 'beleza',
+      title: 'Tutorial',
+      content: 'Corte Bob Moderno - Passo a Passo',
+      image: '💇‍♀️',
+      color: 'from-pink-400 to-purple-500',
+      delay: '2s'
+    },
+    {
+      id: 3,
+      type: 'direito',
+      title: 'Jurisprudência',
+      content: 'Nova Lei Trabalhista: O que mudou?',
+      image: '⚖️',
+      color: 'from-blue-400 to-indigo-500',
+      delay: '4s'
+    },
+    {
+      id: 4,
+      type: 'tecnologia',
+      title: 'Tutorial',
+      content: 'Como criar um App em React Native',
+      image: '📱',
+      color: 'from-cyan-400 to-blue-500',
+      delay: '6s'
+    },
+    {
+      id: 5,
+      type: 'fitness',
+      title: 'Dica',
+      content: '5 Exercícios para Definir o Abdômen',
+      image: '💪',
+      color: 'from-green-400 to-teal-500',
+      delay: '8s'
+    },
+    {
+      id: 6,
+      type: 'educacao',
+      title: 'Infográfico',
+      content: 'História do Brasil: Período Colonial',
+      image: '📚',
+      color: 'from-yellow-400 to-orange-500',
+      delay: '10s'
+    }
+  ]
+
   return (
-    <main className="min-h-screen">
-      {/* Public Navbar */}
-      <PublicNavbar />
-      
-      {/* Hero Section - A Fábrica de Conteúdo */}
-      <section className="min-h-screen relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-500 to-primary-700 animate-gradient pt-16">
-        <div className="absolute inset-0 bg-black/10"></div>
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="absolute top-0 left-0 right-0 z-50 p-6">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-r from-orange-400 to-pink-500 rounded-xl flex items-center justify-center">
+              <span className="text-white text-xl font-bold">N</span>
+            </div>
+            <span className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-pink-600 bg-clip-text text-transparent">
+              NichoFy
+            </span>
+          </div>
+          
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link href="/nichos" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Nichos
+            </Link>
+            <Link href="/exemplos" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Exemplos
+            </Link>
+            <Link href="/precos" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Preços
+            </Link>
+            <Link href="/login" className="text-orange-600 hover:text-orange-700 transition-colors">
+              Entrar
+            </Link>
+          </nav>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="min-h-screen flex">
+        {/* Left Side - Creative Showcase */}
+        <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+          {/* Background Gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-blue-900 to-teal-900"></div>
+          
+          {/* Content River Animation */}
+          <div className="relative w-full h-full flex items-center justify-center">
+            {/* Floating Content Cards */}
+            <div className="absolute inset-0 overflow-hidden">
+              {contentCards.map((card) => (
+                <div
+                  key={card.id}
+                  className="absolute w-80 h-48 rounded-2xl shadow-2xl transform transition-all duration-1000 hover:scale-105"
+                  style={{
+                    animation: `floatUp 20s linear infinite`,
+                    animationDelay: card.delay,
+                    left: `${20 + (card.id * 15) % 60}%`,
+                    top: '100%'
+                  }}
+                >
+                  <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-2xl p-6 flex flex-col justify-between text-white relative overflow-hidden`}>
+                    {/* Background Pattern */}
+                    <div className="absolute inset-0 opacity-10">
+                      <div className="absolute top-4 right-4 text-6xl">{card.image}</div>
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="relative z-10">
+                      <div className="text-sm font-medium opacity-90 mb-2">{card.title}</div>
+                      <h3 className="text-xl font-bold leading-tight">{card.content}</h3>
+                    </div>
+                    
+                    {/* Footer */}
+                    <div className="relative z-10 flex items-center justify-between">
+                      <div className="text-sm opacity-80">@{card.type}</div>
+                      <div className="text-sm opacity-80">✨ NichoFy</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Overlay Text */}
+            <div className="relative z-20 text-center text-white px-8">
+              <h1 className="text-5xl font-bold mb-6 leading-tight">
+                Sua marca merece ser vista.
+              </h1>
+              <p className="text-xl opacity-90 max-w-md mx-auto">
+                Crie conteúdo profissional em segundos.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side - Action Form */}
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
+          <div className="w-full max-w-md">
+            {/* Mobile Header */}
+            <div className="lg:hidden text-center mb-8">
+              <div className="flex items-center justify-center space-x-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-pink-500 rounded-xl flex items-center justify-center">
+                  <span className="text-white text-2xl font-bold">N</span>
+                </div>
+                <span className="text-3xl font-bold bg-gradient-to-r from-orange-500 to-pink-600 bg-clip-text text-transparent">
+                  NichoFy
+                </span>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                Sua marca merece ser vista.
+              </h1>
+              <p className="text-gray-600">
+                Crie conteúdo profissional em segundos.
+              </p>
+            </div>
+
+            {/* Form */}
+            <div className="bg-white rounded-2xl shadow-xl p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+                Crie sua conta grátis
+              </h2>
+
+              {/* Social Login */}
+              <div className="space-y-3 mb-6">
+                <button className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
+                  <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                  Continuar com Google
+                </button>
+                
+                <button className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
+                  <svg className="w-5 h-5 mr-3" fill="#1877F2" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                  Continuar com Facebook
+                </button>
+              </div>
+
+              {/* Separator */}
+              <div className="relative mb-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">ou cadastre-se com seu email</span>
+                </div>
+              </div>
+
+              {/* Form Fields */}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nome completo
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                    placeholder="Seu nome completo"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                    placeholder="seu@email.com"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Senha
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                    placeholder="Sua senha"
+                    required
+                    minLength={6}
+                  />
+                </div>
+
+                {/* Terms Checkbox */}
+                <div className="flex items-start space-x-3">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    checked={agreedToTerms}
+                    onChange={(e) => setAgreedToTerms(e.target.checked)}
+                    className="mt-1 h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                    required
+                  />
+                  <label htmlFor="terms" className="text-sm text-gray-600">
+                    Eu concordo com os{' '}
+                    <Link href="/termos" className="text-orange-600 hover:text-orange-700">
+                      Termos de Uso
+                    </Link>{' '}
+                    e a{' '}
+                    <Link href="/privacidade" className="text-orange-600 hover:text-orange-700">
+                      Política de Privacidade
+                    </Link>
+                    .
+                  </label>
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={isLoading || !agreedToTerms}
+                  className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Criando conta...
+                    </div>
+                  ) : (
+                    'Criar Conta Agora'
+                  )}
+                </button>
+              </form>
+
+              {/* Login Link */}
+              <div className="mt-6 text-center">
+                <p className="text-gray-600">
+                  Já tem uma conta?{' '}
+                  <Link href="/login" className="text-orange-600 hover:text-orange-700 font-semibold">
+                    Acesse aqui
+                  </Link>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Mobile Animation */}
+      <div className="lg:hidden absolute top-0 left-0 right-0 h-64 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-blue-900 to-teal-900"></div>
         
-        {/* Conteúdo Principal */}
-        <div className="relative z-10 min-h-screen flex items-center justify-center px-4">
-          <div className="text-center max-w-4xl mx-auto">
-            {/* Título Principal */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-bold text-white mb-6 md:mb-8 animate-text-reveal leading-tight">
-              Transforme ideias em
-              <br />
-              <span className="text-yellow-400">posts que vendem</span>
-            </h1>
-            
-            {/* Subtítulo */}
-            <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-8 md:mb-12 animate-text-reveal px-4" style={{ animationDelay: '0.8s' }}>
-              IA especializada + mais de 10 nichos = conteúdo profissional em segundos
-            </p>
-            
-            {/* Benefícios em destaque */}
-            <div className="flex flex-wrap justify-center gap-4 mb-8 animate-text-reveal" style={{ animationDelay: '1.2s' }}>
-              <div className="flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-                <span className="text-yellow-400 mr-2">⚡</span>
-                <span className="text-white text-sm font-medium">Criação em 30 segundos</span>
-              </div>
-              <div className="flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-                <span className="text-yellow-400 mr-2">🎯</span>
-                <span className="text-white text-sm font-medium">10+ nichos especializados</span>
-              </div>
-              <div className="flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-                <span className="text-yellow-400 mr-2">📈</span>
-                <span className="text-white text-sm font-medium">Resultados comprovados</span>
-              </div>
-            </div>
-            
-            {/* Caixa de Texto Animada */}
-            <div className="relative animate-text-reveal" style={{ animationDelay: '1.5s' }}>
-              <AnimatedPromptBar onContentGenerated={handleContentGenerated} />
-              
-              {/* Cards Voando */}
-              <FlyingContentCards content={currentContent} isActive={showCards} />
-            </div>
-          </div>
-        </div>
-        
-        {/* Elementos Decorativos */}
-        <div className="absolute top-10 left-4 sm:top-20 sm:left-20 w-16 h-16 sm:w-32 sm:h-32 bg-yellow-400/20 rounded-full animate-float"></div>
-        <div className="absolute bottom-10 right-4 sm:bottom-20 sm:right-20 w-12 h-12 sm:w-24 sm:h-24 bg-white/10 rounded-full animate-float" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-2 sm:left-10 w-8 h-8 sm:w-16 sm:h-16 bg-yellow-400/30 rounded-full animate-float" style={{ animationDelay: '2s' }}></div>
-      </section>
-
-      {/* Seção de Dor Interativa */}
-      <PainPointSection />
-
-      {/* Como Funciona - Timeline Interativa */}
-      <HowItWorksSection />
-
-      {/* Rio Infinito de Conteúdo */}
-      <section className="min-h-screen relative bg-gradient-to-b from-gray-900 to-black">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16 pt-20">
-            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 animate-text-reveal">
-              Conteúdo Infinito
-            </h2>
-            <p className="text-xl md:text-2xl text-white/80 max-w-3xl mx-auto animate-text-reveal" style={{ animationDelay: '0.5s' }}>
-              Para todos os nichos. O tempo todo. Veja nossa IA criando conteúdo em tempo real.
-            </p>
-          </div>
-          
-          <div className="relative h-[600px] overflow-hidden rounded-3xl bg-gradient-to-br from-gray-800/30 to-gray-900/50 backdrop-blur-sm border border-white/20 shadow-2xl">
-            <InfiniteContentFlow />
-            
-            {/* Overlay com estatísticas */}
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-black/70 backdrop-blur-md rounded-2xl px-8 py-4 text-white text-center border border-white/20 shadow-lg">
-              <div className="flex items-center space-x-8">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-yellow-400 drop-shadow-lg">10+</div>
-                  <div className="text-sm text-white/90 font-medium">Nichos</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-yellow-400 drop-shadow-lg">∞</div>
-                  <div className="text-sm text-white/90 font-medium">Conteúdo</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-yellow-400 drop-shadow-lg">24/7</div>
-                  <div className="text-sm text-white/90 font-medium">Disponível</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Carrossel de Projetos */}
-      <section className="py-20 bg-gradient-to-br from-gray-900 to-black text-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Nossos Projetos em Destaque
-            </h2>
-            <p className="text-xl text-white/80 max-w-2xl mx-auto">
-              Veja alguns dos trabalhos incríveis que criamos para nossos clientes
-            </p>
-          </div>
-          
-          <ProjectsCarousel projects={[]} />
-        </div>
-      </section>
-
-      {/* Depoimentos */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              O que nossos clientes dizem
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Histórias reais de quem transformou seu negócio com a NichoFy
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Depoimento 1 */}
-            <div className="bg-gray-50 rounded-2xl p-8 text-center hover:shadow-lg transition-shadow animate-fade-in-up">
-              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl">👨‍💼</span>
-              </div>
-              <div className="flex justify-center mb-4">
-                <div className="flex text-yellow-400">
-                  {'★'.repeat(5)}
-                </div>
-              </div>
-              <p className="text-gray-700 mb-6 italic">
-                "A NichoFy revolucionou nossa presença digital. Em 3 meses, aumentamos nossas vendas em 200% e nossa equipe economizou 15 horas por semana. O conteúdo é sempre relevante e profissional."
-              </p>
-              <div>
-                <p className="font-bold text-gray-900">Carlos Silva</p>
-                <p className="text-sm text-gray-600">Proprietário - Cafeteria Artesanal</p>
-                <p className="text-xs text-gray-500 mt-1">São Paulo, SP</p>
-              </div>
-            </div>
-
-            {/* Depoimento 2 */}
-            <div className="bg-gray-50 rounded-2xl p-8 text-center hover:shadow-lg transition-shadow animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl">✂️</span>
-              </div>
-              <div className="flex justify-center mb-4">
-                <div className="flex text-yellow-400">
-                  {'★'.repeat(5)}
-                </div>
-              </div>
-              <p className="text-gray-700 mb-6 italic">
-                "Nunca pensei que conteúdo pudesse fazer tanta diferença. Agora temos fila de espera e nossos clientes nos indicam constantemente. A NichoFy entende perfeitamente nosso nicho."
-              </p>
-              <div>
-                <p className="font-bold text-gray-900">Marina Santos</p>
-                <p className="text-sm text-gray-600">Proprietária - Barbearia Style</p>
-                <p className="text-xs text-gray-500 mt-1">Rio de Janeiro, RJ</p>
-              </div>
-            </div>
-
-            {/* Depoimento 3 */}
-            <div className="bg-gray-50 rounded-2xl p-8 text-center hover:shadow-lg transition-shadow animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl">⚖️</span>
-              </div>
-              <div className="flex justify-center mb-4">
-                <div className="flex text-yellow-400">
-                  {'★'.repeat(5)}
-                </div>
-              </div>
-              <p className="text-gray-700 mb-6 italic">
-                "O conteúdo educativo que criamos estabeleceu nossa autoridade no mercado. Agora somos referência em direito trabalhista na região. Aumentamos nossos clientes em 300%."
-              </p>
-              <div>
-                <p className="font-bold text-gray-900">Dr. Roberto Lima</p>
-                <p className="text-sm text-gray-600">Sócio - Advocacia & Justiça</p>
-                <p className="text-xs text-gray-500 mt-1">Belo Horizonte, MG</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Estatísticas */}
-      <section className="py-20 bg-gradient-to-r from-primary-600 to-primary-700 text-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Números que impressionam
-            </h2>
-            <p className="text-xl text-white/80 max-w-2xl mx-auto">
-              Resultados reais de quem confia na NichoFy
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-4 gap-8 text-center">
-            <div className="animate-count-up">
-              <div className="text-5xl font-bold text-yellow-400 mb-2">1.2K+</div>
-              <p className="text-white/80">Empresas transformadas</p>
-            </div>
-            <div className="animate-count-up" style={{ animationDelay: '0.2s' }}>
-              <div className="text-5xl font-bold text-yellow-400 mb-2">150K+</div>
-              <p className="text-white/80">Posts profissionais criados</p>
-            </div>
-            <div className="animate-count-up" style={{ animationDelay: '0.4s' }}>
-              <div className="text-5xl font-bold text-yellow-400 mb-2">98%</div>
-              <p className="text-white/80">Taxa de satisfação</p>
-            </div>
-            <div className="animate-count-up" style={{ animationDelay: '0.6s' }}>
-              <div className="text-5xl font-bold text-yellow-400 mb-2">30s</div>
-              <p className="text-white/80">Tempo médio de criação</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Final */}
-      <section className="min-h-screen relative bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
-        <div className="text-center max-w-4xl mx-auto px-4">
-          <h2 className="text-5xl md:text-7xl font-bold text-white mb-8 animate-text-reveal">
-            Pare de perder vendas por falta de conteúdo.
-          </h2>
-          <p className="text-xl md:text-2xl text-white/90 mb-8 animate-text-reveal" style={{ animationDelay: '0.8s' }}>
-            Junte-se a mais de 1.200 empresas que já transformaram seus resultados
-          </p>
-          
-          {/* Benefícios dos nossos planos */}
-          <div className="grid md:grid-cols-3 gap-6 mb-12 animate-text-reveal" style={{ animationDelay: '1s' }}>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-              <div className="text-3xl mb-3">🎯</div>
-              <h3 className="text-white font-semibold mb-2">Planos Flexíveis</h3>
-              <p className="text-white/80 text-sm">Escolha o plano ideal para seu negócio</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-              <div className="text-3xl mb-3">⚡</div>
-              <h3 className="text-white font-semibold mb-2">Sem Compromisso</h3>
-              <p className="text-white/80 text-sm">Cancele quando quiser</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-              <div className="text-3xl mb-3">📈</div>
-              <h3 className="text-white font-semibold mb-2">Resultados Rápidos</h3>
-              <p className="text-white/80 text-sm">Veja a diferença em 24h</p>
-            </div>
-          </div>
-          
-          <div className="animate-text-reveal" style={{ animationDelay: '1.2s' }}>
-            <Button 
-              size="lg" 
-              className="bg-white text-orange-600 hover:bg-gray-100 font-bold px-12 py-6 text-2xl shadow-2xl hover:shadow-white/25 transition-all duration-300 transform hover:scale-105"
+        {/* Mobile Content Cards */}
+        <div className="absolute inset-0 overflow-hidden">
+          {contentCards.slice(0, 4).map((card) => (
+            <div
+              key={card.id}
+              className="absolute w-64 h-36 rounded-xl shadow-xl transform"
+              style={{
+                animation: `floatUpMobile 15s linear infinite`,
+                animationDelay: card.delay,
+                left: `${15 + (card.id * 20) % 70}%`,
+                top: '100%'
+              }}
             >
-              🚀 Saiba Mais Sobre Nossos Planos
-            </Button>
-          </div>
-          
-          <p className="text-white/70 text-sm mt-6 animate-text-reveal" style={{ animationDelay: '1.4s' }}>
-            ✅ Sem cartão de crédito • ✅ Configuração em 2 minutos • ✅ Suporte 24/7
-          </p>
+              <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-xl p-4 flex flex-col justify-between text-white relative overflow-hidden`}>
+                <div className="absolute inset-0 opacity-10">
+                  <div className="absolute top-2 right-2 text-4xl">{card.image}</div>
+                </div>
+                
+                <div className="relative z-10">
+                  <div className="text-xs font-medium opacity-90 mb-1">{card.title}</div>
+                  <h3 className="text-sm font-bold leading-tight">{card.content}</h3>
+                </div>
+                
+                <div className="relative z-10 flex items-center justify-between">
+                  <div className="text-xs opacity-80">@{card.type}</div>
+                  <div className="text-xs opacity-80">✨</div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-      </section>
-    </main>
+      </div>
+
+      {/* CSS Animations */}
+      <style jsx>{`
+        @keyframes floatUp {
+          0% {
+            transform: translateY(100vh) rotate(0deg);
+            opacity: 0;
+          }
+          10% {
+            opacity: 1;
+          }
+          90% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(-100vh) rotate(360deg);
+            opacity: 0;
+          }
+        }
+        
+        @keyframes floatUpMobile {
+          0% {
+            transform: translateY(100vh) rotate(0deg);
+            opacity: 0;
+          }
+          15% {
+            opacity: 1;
+          }
+          85% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(-100vh) rotate(360deg);
+            opacity: 0;
+          }
+        }
+      `}</style>
+    </div>
   )
-} 
+}

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/lib/contexts/ThemeContext'
+import { ToastProvider } from '@/components/ui/Toast'
 import Link from 'next/link'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -77,9 +78,11 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={inter.className}>
         <ThemeProvider>
-          <main>
-            {children}
-          </main>
+          <ToastProvider>
+            <main>
+              {children}
+            </main>
+          </ToastProvider>
         <footer className="bg-gray-900 text-white py-16">
           <div className="container mx-auto px-4">
             <div className="grid md:grid-cols-5 gap-8">
