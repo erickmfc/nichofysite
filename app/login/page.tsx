@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { auth, db } from '@/lib/firebase'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
@@ -115,7 +116,11 @@ function LoginForm() {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">NichoFy</h1>
+          <Link href="/" className="inline-block group">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+              NichoFy
+            </h1>
+          </Link>
           <p className="text-gray-600">
             {isSignUp ? 'Crie sua conta' : 'Entre na sua conta'}
           </p>
