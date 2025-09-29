@@ -1,44 +1,57 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { auth, db } from '@/lib/firebase'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
-import { useToastNotifications } from '@/components/ui/Toast'
 
-function LoginForm() {
+export default function LoginPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const { success, error } = useToastNotifications()
   const mode = searchParams.get('mode')
   
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
+  const [error, setError] = useState('')
 
   const isSignUp = mode === 'signup'
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Memoizar validação para evitar re-renders
+  const isFormValid = useMemo(() => {
+    if (isSignUp) {
+      return email && password && name && password.length >= 6
+    }
+    return email && password
+  }, [email, password, name, isSignUp])
+
+  // Otimizar handleSubmit com useCallback
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!isFormValid) return
+    
     setIsLoading(true)
-    setErrorMessage('')
+    setError('')
 
     try {
       if (isSignUp) {
-        // Cadastro
+        // CADASTRO OTIMIZADO - Operações paralelas
         const userCredential = await createUserWithEmailAndPassword(auth, email, password)
         const user = userCredential.user
 
-        // Atualizar perfil
+        // Executar operações em paralelo para máxima velocidade
+        const promises = []
+        
+        // Atualizar perfil (se necessário)
         if (name) {
-          await updateProfile(user, { displayName: name })
+          promises.push(updateProfile(user, { displayName: name }))
         }
-
+        
         // Salvar no Firestore
-        await setDoc(doc(db, 'users', user.uid), {
+        promises.push(setDoc(doc(db, 'users', user.uid), {
           name: name || user.displayName || 'Usuário',
           email: user.email,
           role: 'client',
@@ -49,49 +62,52 @@ function LoginForm() {
             language: 'pt',
             theme: 'light'
           }
-        })
+        }))
 
-        success('Conta Criada! 🎉', 'Bem-vindo ao NichoFy! Redirecionando para o dashboard...')
-        // Redirecionar
-        router.push('/dashboard')
+        // Executar todas as operações em paralelo
+        await Promise.all(promises)
+
+        // Redirecionamento instantâneo
+        window.location.href = '/dashboard'
       } else {
-        // Login
+        // LOGIN OTIMIZADO
         await signInWithEmailAndPassword(auth, email, password)
-        success('Login Realizado! ✅', 'Bem-vindo de volta! Redirecionando...')
-        router.push('/dashboard')
+        
+        // Redirecionamento instantâneo
+        window.location.href = '/dashboard'
       }
     } catch (error: any) {
       console.error('Erro de autenticação:', error)
       
-      switch (error.code) {
-        case 'auth/user-not-found':
-          error('Usuário não encontrado', 'Verifique o email e tente novamente.')
-          break
-        case 'auth/wrong-password':
-          error('Senha incorreta', 'Verifique sua senha e tente novamente.')
-          break
-        case 'auth/invalid-email':
-          error('Email inválido', 'Por favor, insira um email válido.')
-          break
-        case 'auth/email-already-in-use':
-          error('Email já está em uso', 'Este email já possui uma conta. Tente fazer login.')
-          break
-        case 'auth/weak-password':
-          error('Senha fraca', 'A senha deve ter pelo menos 6 caracteres.')
-          break
-        case 'auth/too-many-requests':
-          error('Muitas tentativas', 'Aguarde alguns minutos antes de tentar novamente.')
-          break
-        case 'auth/invalid-credential':
-          error('Credenciais inválidas', 'Verifique seu email e senha e tente novamente.')
-          break
-        default:
-          error('Erro de autenticação', 'Ocorreu um erro inesperado. Tente novamente.')
+      // Tratamento de erro otimizado
+      const errorMessages = {
+        'auth/user-not-found': 'Usuário não encontrado',
+        'auth/wrong-password': 'Senha incorreta',
+        'auth/invalid-email': 'Email inválido',
+        'auth/email-already-in-use': 'Email já está em uso',
+        'auth/weak-password': 'Senha deve ter pelo menos 6 caracteres',
+        'auth/too-many-requests': 'Muitas tentativas. Aguarde alguns minutos.',
+        'auth/invalid-credential': 'Credenciais inválidas. Verifique email e senha.'
       }
+      
+      setError(errorMessages[error.code] || 'Erro ao fazer login. Tente novamente.')
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [email, password, name, isSignUp, isFormValid])
+
+  // Otimizar handlers com useCallback
+  const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value)
+  }, [])
+
+  const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value)
+  }, [])
+
+  const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value)
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700 flex items-center justify-center p-4">
@@ -114,10 +130,11 @@ function LoginForm() {
               <input
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                onChange={handleNameChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 placeholder="Seu nome completo"
                 required={isSignUp}
+                autoComplete="name"
               />
             </div>
           )}
@@ -129,10 +146,11 @@ function LoginForm() {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              onChange={handleEmailChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               placeholder="seu@email.com"
               required
+              autoComplete="email"
             />
           </div>
 
@@ -143,24 +161,31 @@ function LoginForm() {
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              onChange={handlePasswordChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               placeholder="Sua senha"
               required
               minLength={6}
+              autoComplete={isSignUp ? "new-password" : "current-password"}
             />
           </div>
 
-          {errorMessage && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-              {errorMessage}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm animate-fade-in">
+              {error}
             </div>
           )}
 
           <button
             type="submit"
-            disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading || !isFormValid}
+            className={`
+              w-full font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform
+              ${isLoading || !isFormValid
+                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                : 'bg-blue-600 hover:bg-blue-700 text-white hover:scale-105 active:scale-95'
+              }
+            `}
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
@@ -177,7 +202,7 @@ function LoginForm() {
         <div className="mt-6 text-center space-y-2">
           <a
             href={isSignUp ? '/login' : '/login?mode=signup'}
-            className="text-blue-600 hover:text-blue-700 text-sm"
+            className="text-blue-600 hover:text-blue-700 text-sm transition-colors"
           >
             {isSignUp ? 'Já tem uma conta? Entre aqui' : 'Não tem uma conta? Cadastre-se'}
           </a>
@@ -185,7 +210,7 @@ function LoginForm() {
           <div>
             <a
               href="/"
-              className="text-gray-500 hover:text-gray-700 text-sm"
+              className="text-gray-500 hover:text-gray-700 text-sm transition-colors"
             >
               ← Voltar para o início
             </a>
@@ -193,20 +218,5 @@ function LoginForm() {
         </div>
       </div>
     </div>
-  )
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700 flex items-center justify-center">
-        <div className="text-white text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p>Carregando página de login...</p>
-        </div>
-      </div>
-    }>
-      <LoginForm />
-    </Suspense>
   )
 }
