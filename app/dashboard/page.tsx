@@ -3,12 +3,13 @@
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { PostsCounter } from '@/components/ui/PostsCounter'
-import { ContentIdeas } from '@/components/ui/ContentIdeas'
-import { QuickStats } from '@/components/ui/QuickStats'
-import { QuickTemplates } from '@/components/ui/QuickTemplates'
-import { ActivityFeed } from '@/components/ui/ActivityFeed'
-import { PostCalendar } from '@/components/ui/PostCalendar'
+// Componentes de UI removidos temporariamente para evitar conflitos
+// import { PostsCounter } from '@/components/ui/PostsCounter'
+// import { ContentIdeas } from '@/components/ui/ContentIdeas'
+// import { QuickStats } from '@/components/ui/QuickStats'
+// import { QuickTemplates } from '@/components/ui/QuickTemplates'
+// import { ActivityFeed } from '@/components/ui/ActivityFeed'
+// import { PostCalendar } from '@/components/ui/PostCalendar'
 
 export default function DashboardPage() {
   const { user, loading, logout } = useAuth()
@@ -471,25 +472,39 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Novos Widgets */}
+            {/* Widgets adicionais - implementados separadamente */}
             <div className="space-y-6">
-              {/* Estatísticas Rápidas */}
-              <QuickStats userId={user?.uid} />
+              {/* Link para página de conteúdo */}
+              <div className={`${currentColors.cardBackground} rounded-2xl shadow-xl p-6`}>
+                <h3 className={`text-lg font-semibold ${currentColors.textPrimary} mb-4`}>
+                  📚 Meu Conteúdo
+                </h3>
+                <p className={`${currentColors.textSecondary} text-sm mb-4`}>
+                  Gerencie todos os seus posts em um só lugar
+                </p>
+                <a 
+                  href="/meu-conteudo"
+                  className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors text-sm"
+                >
+                  Ver Meus Posts →
+                </a>
+              </div>
               
-              {/* Contador de Posts */}
-              <PostsCounter currentPlan="basic" postsUsed={postsCreated} />
-              
-              {/* Ideias de Conteúdo */}
-              <ContentIdeas niche="direito" />
-              
-              {/* Templates Rápidos */}
-              <QuickTemplates platform="instagram" />
-              
-              {/* Feed de Atividades */}
-              <ActivityFeed />
-              
-              {/* Calendário de Posts */}
-              <PostCalendar />
+              {/* Link para criar conteúdo */}
+              <div className={`${currentColors.cardBackground} rounded-2xl shadow-xl p-6`}>
+                <h3 className={`text-lg font-semibold ${currentColors.textPrimary} mb-4`}>
+                  ✨ Criar Conteúdo
+                </h3>
+                <p className={`${currentColors.textSecondary} text-sm mb-4`}>
+                  Use nossos templates e ideias para criar posts
+                </p>
+                <a 
+                  href="/criar-conteudo"
+                  className="inline-block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors text-sm"
+                >
+                  Criar Novo Post →
+                </a>
+              </div>
             </div>
           </div>
         </div>
