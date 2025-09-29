@@ -10,12 +10,19 @@ service cloud.firestore {
     // Função para verificar se é admin
     function isAdmin() {
       return request.auth != null && 
-             request.auth.token.email == 'admin@nichofy.com';
+             request.auth.token.email == 'admin@nichofy.com' &&
+             request.auth.token.email_verified == true;
     }
     
     // Função para verificar se é usuário autenticado
     function isAuthenticated() {
       return request.auth != null;
+    }
+    
+    // Função para verificar se é usuário autenticado com email verificado
+    function isVerifiedUser() {
+      return request.auth != null && 
+             request.auth.token.email_verified == true;
     }
     
     // Função para verificar se é o próprio usuário
@@ -32,7 +39,9 @@ service cloud.firestore {
       allow read, write, delete: if isAdmin();
       
       // Usuários podem criar pedidos (formulário público)
-      allow create: if true;
+      // Mas apenas com campos obrigatórios
+      allow create: if request.resource.data.keys().hasAll(['name', 'email', 'message', 'createdAt']) &&
+                       request.resource.data.keys().size() >= 4;
       
       // Usuários autenticados podem ler seus próprios pedidos
       allow read: if isAuthenticated() && 

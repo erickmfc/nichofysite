@@ -22,7 +22,15 @@ export default function DashboardPage() {
   const [isDarkMode, setIsDarkMode] = useState(false)
 
   useEffect(() => {
+    console.log('📊 Dashboard: Verificando autenticação', { 
+      user: !!user, 
+      loading, 
+      emailVerified: user?.emailVerified,
+      isProduction: process.env.NODE_ENV === 'production'
+    })
+    
     if (!loading && !user) {
+      console.log('📊 Dashboard: Usuário não autenticado, redirecionando para login')
       router.push('/login')
     }
   }, [user, loading, router])
@@ -70,7 +78,7 @@ export default function DashboardPage() {
   const currentColors = isDarkMode ? colors.dark : colors.light
 
   if (loading) {
-    return (
+  return (
       <div className={`min-h-screen ${currentColors.background} flex items-center justify-center`}>
         <div className="text-center">
           <div className={`animate-spin rounded-full h-16 w-16 border-b-4 ${isDarkMode ? 'border-cyan-400' : 'border-orange-500'} mx-auto mb-6`}></div>
