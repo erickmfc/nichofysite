@@ -37,9 +37,5 @@
       "destination": "/exemplos",
       "permanent": true
     }
-  ],
-  "images": {
-    "unoptimized": true,
-    "domains": ["images.unsplash.com", "via.placeholder.com"]
-  }
+  ]
 }
