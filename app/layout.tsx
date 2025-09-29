@@ -26,14 +26,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://nichofy.com'),
+  metadataBase: new URL('https://nichofy.shop'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     title: 'NichoFy - Sua Fábrica de Conteúdo em Instantes',
     description: 'Transforme seu negócio com conteúdo profissional criado por IA especializada. Mais de 10 nichos, resultados comprovados e suporte 24/7.',
-    url: 'https://nichofy.com',
+    url: 'https://nichofy.shop',
     siteName: 'NichoFy',
     images: [
       {

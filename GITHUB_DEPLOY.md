@@ -80,7 +80,7 @@ TTL: 300
 
 ### **URLs do Projeto:**
 - **GitHub:** https://github.com/erickmfc/nichofysite
-- **Vercel:** https://nichofysite.vercel.app (temporária)
+- **Vercel:** https://nichofy.shop (domínio principal)
 - **Produção:** https://nichofy.shop (após configurar DNS)
 
 ## 📋 **Checklist de Deploy:**

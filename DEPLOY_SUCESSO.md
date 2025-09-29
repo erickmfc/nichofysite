@@ -2,7 +2,7 @@
 
 ## Status do Projeto
 - ✅ **Deploy**: Concluído com sucesso
-- 🌐 **URL**: https://nichofysite-asropv06r-nichofys-projects.vercel.app
+- 🌐 **URL**: https://nichofy.shop
 - ⏱️ **Tempo de Build**: 50 segundos
 - 📊 **Status**: Ready (Pronto para uso)
 
@@ -124,7 +124,7 @@
 ## Comandos Úteis
 ```bash
 # Ver logs do deploy
-vercel inspect nichofysite-asropv06r-nichofys-projects.vercel.app --logs
+vercel inspect nichofy.shop --logs
 
 # Listar deployments
 vercel ls
@@ -133,7 +133,7 @@ vercel ls
 vercel --prod
 
 # Redeploy
-vercel redeploy nichofysite-asropv06r-nichofys-projects.vercel.app
+vercel redeploy nichofy.shop
 ```
 
 ## Status Final

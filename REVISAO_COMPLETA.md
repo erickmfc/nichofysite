@@ -75,7 +75,7 @@ Error: Cannot find module './682.js'
 ## URLs de Acesso
 
 ### Produção
-- 🌐 **Principal**: https://nichofysite-eirj47p97-nichofys-projects.vercel.app
+- 🌐 **Principal**: https://nichofy.shop
 - 🔍 **Inspeção**: https://vercel.com/nichofys-projects/nichofysite/67Mw5f1ND8b5eqzy6N939xhcznnH
 
 ### Desenvolvimento
