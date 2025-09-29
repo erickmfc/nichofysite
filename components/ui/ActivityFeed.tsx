@@ -3,164 +3,121 @@
 import { useState, useEffect } from 'react'
 
 interface Activity {
-  id: number
-  action: string
-  content: string
-  time: string
-  type: 'success' | 'info' | 'warning' | 'error'
+  id: string
+  type: 'post_created' | 'post_published' | 'template_used' | 'plan_upgraded'
+  title: string
+  description: string
+  timestamp: Date
   icon: string
+  color: string
 }
 
-const mockActivities: Activity[] = [
-  { 
-    id: 1, 
-    action: "Post criado", 
-    content: "Nova lei trabalhista: o que mudou?", 
-    time: "2 horas atrás", 
-    type: "success",
-    icon: "📝"
-  },
-  { 
-    id: 2, 
-    action: "Nicho usado", 
-    content: "Direito", 
-    time: "4 horas atrás", 
-    type: "info",
-    icon: "🎯"
-  },
-  { 
-    id: 3, 
-    action: "Template aplicado", 
-    content: "Post motivacional", 
-    time: "1 dia atrás", 
-    type: "warning",
-    icon: "📋"
-  },
-  { 
-    id: 4, 
-    action: "Login realizado", 
-    content: "Dashboard acessado", 
-    time: "2 dias atrás", 
-    type: "info",
-    icon: "🔐"
-  },
-  { 
-    id: 5, 
-    action: "Conteúdo aprovado", 
-    content: "Dicas de contratação", 
-    time: "3 dias atrás", 
-    type: "success",
-    icon: "✅"
-  }
-]
+interface ActivityFeedProps {
+  className?: string
+}
 
-export const ActivityFeed = () => {
+export const ActivityFeed: React.FC<ActivityFeedProps> = ({ className = '' }) => {
   const [activities, setActivities] = useState<Activity[]>([])
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Simular carregamento
-    const timer = setTimeout(() => {
-      setActivities(mockActivities)
-      setIsLoading(false)
-    }, 800)
-
-    return () => clearTimeout(timer)
+    // TODO: Buscar atividades reais do Firebase
+    const mockActivities: Activity[] = [
+      {
+        id: '1',
+        type: 'post_created',
+        title: 'Post criado',
+        description: 'Tutorial sobre React Hooks',
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 horas atrás
+        icon: '📝',
+        color: 'text-blue-600'
+      },
+      {
+        id: '2',
+        type: 'template_used',
+        title: 'Template usado',
+        description: 'Template "Lista de Dicas" aplicado',
+        timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 horas atrás
+        icon: '🚀',
+        color: 'text-green-600'
+      },
+      {
+        id: '3',
+        type: 'post_published',
+        title: 'Post publicado',
+        description: '5 dicas para melhorar produtividade',
+        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 dia atrás
+        icon: '📤',
+        color: 'text-purple-600'
+      },
+      {
+        id: '4',
+        type: 'plan_upgraded',
+        title: 'Plano atualizado',
+        description: 'Upgrade para plano Pro realizado',
+        timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 dias atrás
+        icon: '⭐',
+        color: 'text-yellow-600'
+      }
+    ]
+    setActivities(mockActivities)
   }, [])
 
-  const getTypeColor = (type: Activity['type']) => {
-    switch (type) {
-      case 'success': return 'bg-green-500'
-      case 'warning': return 'bg-yellow-500'
-      case 'error': return 'bg-red-500'
-      default: return 'bg-blue-500'
-    }
-  }
-
-  const getTypeBg = (type: Activity['type']) => {
-    switch (type) {
-      case 'success': return 'bg-green-50 dark:bg-green-900/20'
-      case 'warning': return 'bg-yellow-50 dark:bg-yellow-900/20'
-      case 'error': return 'bg-red-50 dark:bg-red-900/20'
-      default: return 'bg-blue-50 dark:bg-blue-900/20'
-    }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          📊 Atividades Recentes
-        </h3>
-        <div className="space-y-3">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="animate-pulse">
-              <div className="flex items-start space-x-3 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                <div className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600 mt-2"></div>
-                <div className="flex-1">
-                  <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/4 mb-2"></div>
-                  <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-3/4 mb-1"></div>
-                  <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
+  const formatTimeAgo = (date: Date) => {
+    const now = new Date()
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+    
+    if (diffInSeconds < 60) return 'Agora mesmo'
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} min atrás`
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} h atrás`
+    return `${Math.floor(diffInSeconds / 86400)} dias atrás`
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          📊 Atividades Recentes
-        </h3>
-        <span className="text-sm text-gray-500 dark:text-gray-400">
-          {activities.length} atividades
-        </span>
-      </div>
-      
-      <div className="space-y-3 max-h-96 overflow-y-auto">
-        {activities.map(activity => (
-          <div 
-            key={activity.id} 
-            className={`flex items-start space-x-3 p-3 ${getTypeBg(activity.type)} rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow`}
-          >
-            <div className="flex items-center space-x-2">
-              <div className={`w-2 h-2 rounded-full ${getTypeColor(activity.type)}`} />
-              <span className="text-lg">{activity.icon}</span>
-            </div>
-            
-            <div className="flex-1 min-w-0">
-              <div className="font-medium text-sm text-gray-900 dark:text-white">
-                {activity.action}
-              </div>
-              <div className="text-gray-600 dark:text-gray-300 text-sm truncate">
-                {activity.content}
-              </div>
-              <div className="text-gray-400 dark:text-gray-500 text-xs">
-                {activity.time}
-              </div>
-            </div>
-          </div>
-        ))}
+    <div className={`bg-white rounded-lg shadow-sm border ${className}`}>
+      <div className="p-4 border-b">
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">📊 Atividades Recentes</h3>
+        <p className="text-sm text-gray-600">Acompanhe suas últimas ações</p>
       </div>
 
-      {activities.length === 0 && (
-        <div className="text-center py-8">
-          <div className="text-4xl mb-2">📭</div>
-          <p className="text-gray-500 dark:text-gray-400">
-            Nenhuma atividade recente
-          </p>
+      <div className="p-4">
+        {activities.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-4xl mb-2">📭</div>
+            <p className="text-gray-500">Nenhuma atividade recente</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {activities.map((activity, index) => (
+              <div key={activity.id} className="flex items-start space-x-3">
+                <div className={`text-xl ${activity.color}`}>
+                  {activity.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-medium text-gray-900">
+                      {activity.title}
+                    </h4>
+                    <span className="text-xs text-gray-500">
+                      {formatTimeAgo(activity.timestamp)}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {activity.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {activities.length > 0 && (
+        <div className="p-4 border-t">
+          <button className="w-full text-sm text-blue-600 hover:text-blue-700 font-medium">
+            Ver todas as atividades →
+          </button>
         </div>
       )}
-
-      <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-          💡 Suas atividades são atualizadas em tempo real
-        </p>
-      </div>
     </div>
   )
 }

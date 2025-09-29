@@ -52,15 +52,13 @@ const nextConfig = {
     ]
   },
   
-  // Configurações de desenvolvimento
-  ...(process.env.NODE_ENV === 'development' && {
-    eslint: {
-      ignoreDuringBuilds: true,
-    },
-    typescript: {
-      ignoreBuildErrors: true,
-    },
-  }),
+  // Configurações de ESLint e TypeScript
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: false,
+  },
 }
 
 module.exports = nextConfig
