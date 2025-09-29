@@ -7,10 +7,10 @@ import { useTheme } from '@/lib/contexts/ThemeContext'
 const navigationItems = [
   { name: 'Dashboard', href: '/dashboard', icon: '📊', current: true },
   { name: 'Criar Conteúdo', href: '/dashboard/criar', icon: '✨', current: false },
+  { name: 'Meu Conteúdo', href: '/meu-conteudo', icon: '📚', current: false },
   { name: 'Calendário', href: '/dashboard/calendario', icon: '📅', current: false },
   { name: 'Analytics', href: '/dashboard/analytics', icon: '📈', current: false },
   { name: 'Templates', href: '/dashboard/templates', icon: '🎨', current: false },
-  { name: 'Histórico', href: '/dashboard/historico', icon: '📝', current: false },
   { name: 'Configurações', href: '/dashboard/configuracoes', icon: '⚙️', current: false },
 ]
 

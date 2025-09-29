@@ -3,6 +3,12 @@
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { PostsCounter } from '@/components/ui/PostsCounter'
+import { ContentIdeas } from '@/components/ui/ContentIdeas'
+import { QuickStats } from '@/components/ui/QuickStats'
+import { QuickTemplates } from '@/components/ui/QuickTemplates'
+import { ActivityFeed } from '@/components/ui/ActivityFeed'
+import { PostCalendar } from '@/components/ui/PostCalendar'
 
 export default function DashboardPage() {
   const { user, loading, logout } = useAuth()
@@ -465,28 +471,25 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Radar de Tendências */}
-            <div className={`${currentColors.cardBackground} rounded-2xl shadow-xl p-6`}>
-              <h2 className={`text-xl font-bold ${currentColors.textPrimary} mb-4 flex items-center`}>
-                📡 Radar de Tendências
-                <span className={`ml-2 ${isDarkMode ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-600'} px-2 py-1 rounded-full text-sm font-semibold`}>
-                  Em alta
-                </span>
-              </h2>
-              <div className="space-y-3">
-                <div className={`p-3 ${isDarkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-green-50 to-blue-50'} rounded-xl border ${isDarkMode ? 'border-gray-600' : 'border-green-200'}`}>
-                  <p className={`font-semibold ${currentColors.textPrimary}`}>#ReformaTrabalhista</p>
-                  <p className={`text-sm ${currentColors.textMuted}`}>+45% esta semana</p>
-                </div>
-                <div className={`p-3 ${isDarkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-purple-50 to-pink-50'} rounded-xl border ${isDarkMode ? 'border-gray-600' : 'border-purple-200'}`}>
-                  <p className={`font-semibold ${currentColors.textPrimary}`}>#ContrataçãoRemota</p>
-                  <p className={`text-sm ${currentColors.textMuted}`}>+32% esta semana</p>
-                </div>
-                <div className={`p-3 ${isDarkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-orange-50 to-red-50'} rounded-xl border ${isDarkMode ? 'border-gray-600' : 'border-orange-200'}`}>
-                  <p className={`font-semibold ${currentColors.textPrimary}`}>#DireitoDigital</p>
-                  <p className={`text-sm ${currentColors.textMuted}`}>+28% esta semana</p>
-                </div>
-              </div>
+            {/* Novos Widgets */}
+            <div className="space-y-6">
+              {/* Estatísticas Rápidas */}
+              <QuickStats userId={user?.uid} />
+              
+              {/* Contador de Posts */}
+              <PostsCounter currentPlan="basic" postsUsed={postsCreated} />
+              
+              {/* Ideias de Conteúdo */}
+              <ContentIdeas niche="direito" />
+              
+              {/* Templates Rápidos */}
+              <QuickTemplates platform="instagram" />
+              
+              {/* Feed de Atividades */}
+              <ActivityFeed />
+              
+              {/* Calendário de Posts */}
+              <PostCalendar />
             </div>
           </div>
         </div>
