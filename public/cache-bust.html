@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NichoFy - Cache Busting</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+        }
+        .logo {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+        .status {
+            color: #28a745;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+        .info {
+            color: #666;
+            margin: 1rem 0;
+        }
+        .button {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.5rem;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">NichoFy</div>
+        <div class="status">✅ Site Atualizado com Sucesso!</div>
+        <div class="info">
+            <p><strong>Deploy:</strong> Concluído</p>
+            <p><strong>Cache:</strong> Limpo</p>
+            <p><strong>Status:</strong> Online</p>
+            <p><strong>Última Atualização:</strong> <span id="timestamp"></span></p>
+        </div>
+        <div>
+            <a href="/" class="button">🏠 Ir para o Site</a>
+            <a href="/dashboard" class="button">📊 Dashboard</a>
+        </div>
+        <div class="info" style="margin-top: 2rem; font-size: 0.9rem;">
+            <p>Se você ainda vê a versão antiga:</p>
+            <p>1. Pressione <strong>Ctrl+F5</strong> (Windows) ou <strong>Cmd+Shift+R</strong> (Mac)</p>
+            <p>2. Ou limpe o cache do navegador</p>
+        </div>
+    </div>
+
+    <script>
+        // Atualizar timestamp
+        document.getElementById('timestamp').textContent = new Date().toLocaleString('pt-BR');
+        
+        // Forçar reload da página principal após 3 segundos
+        setTimeout(() => {
+            if (window.location.pathname === '/cache-bust.html') {
+                window.location.href = '/';
+            }
+        }, 3000);
+        
+        // Log para debug
+        console.log('🚀 NichoFy Cache Busting - Site atualizado:', new Date().toISOString());
+    </script>
+</body>
+</html>
