@@ -179,21 +179,21 @@ function LoginForm() {
         {/* Right Side - Login Form */}
         <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
           <div className="w-full max-w-md">
-            {/* Header */}
-            <div className="text-center mb-8">
+        {/* Header */}
+        <div className="text-center mb-8">
               <Link href="/" className="inline-block group mb-6">
                 <h1 className="text-3xl font-bold text-blue-600 group-hover:text-blue-700 transition-colors duration-200">
-                  NichoFy
-                </h1>
-              </Link>
+              NichoFy
+            </h1>
+          </Link>
 
               <h2 className="text-2xl font-semibold text-gray-900 mb-2">
                 {isSignUp ? 'Criar conta' : 'Bem-vindo(a) de volta!'}
               </h2>
-              <p className="text-gray-600">
+          <p className="text-gray-600">
                 {isSignUp ? 'Comece sua jornada criativa hoje' : 'Entre na sua conta para continuar criando'}
-              </p>
-            </div>
+          </p>
+        </div>
 
             {/* Mode Toggle */}
             <div className="flex bg-gray-100 rounded-lg p-1 mb-6 max-w-xs mx-auto">
@@ -247,49 +247,49 @@ function LoginForm() {
               </div>
 
               {/* Form Fields */}
-              {isSignUp && (
-                <div>
+          {isSignUp && (
+            <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nome completo
-                  </label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={handleNameChange}
+                Nome completo
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={handleNameChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                    placeholder="Seu nome completo"
-                    autoComplete="name"
-                  />
-                </div>
-              )}
+                placeholder="Seu nome completo"
+                autoComplete="name"
+              />
+            </div>
+          )}
 
-              <div>
+          <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Seu e-mail
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={handleEmailChange}
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={handleEmailChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                  placeholder="seu@email.com"
-                  autoComplete="email"
-                />
-              </div>
+              placeholder="seu@email.com"
+              autoComplete="email"
+            />
+          </div>
 
-              <div>
+          <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Sua senha
-                </label>
+            </label>
                 <div className="relative">
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={handlePasswordChange}
+            <input
+              type="password"
+              value={password}
+              onChange={handlePasswordChange}
                     className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                    placeholder="Sua senha"
-                    autoComplete={isSignUp ? "new-password" : "current-password"}
-                  />
+              placeholder="Sua senha"
+              autoComplete={isSignUp ? "new-password" : "current-password"}
+            />
                   <button
                     type="button"
                     className="absolute inset-y-0 right-0 pr-3 flex items-center"
@@ -300,7 +300,7 @@ function LoginForm() {
                     </svg>
                   </button>
                 </div>
-              </div>
+          </div>
 
               {/* Forgot Password */}
               {!isSignUp && (
@@ -311,31 +311,31 @@ function LoginForm() {
                 </div>
               )}
 
-              {error && (
+          {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                  {error}
-                </div>
-              )}
+              {error}
+            </div>
+          )}
 
-              <button
-                type="submit"
+          <button
+            type="submit"
                 disabled={!isFormValid || isLoading}
                 className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
                   isFormValid && !isLoading
                     ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
-              >
-                {isLoading ? (
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    {isSignUp ? 'Criando conta...' : 'Entrando...'}
-                  </div>
-                ) : (
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                {isSignUp ? 'Criando conta...' : 'Entrando...'}
+              </div>
+            ) : (
                   isSignUp ? 'Criar conta' : 'Entrar'
-                )}
-              </button>
-            </form>
+            )}
+          </button>
+        </form>
 
             {/* Footer */}
             <div className="mt-8 text-center">
