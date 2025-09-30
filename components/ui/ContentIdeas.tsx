@@ -120,7 +120,7 @@ export default function ContentIdeas({ userId }: ContentIdeasProps) {
     loadIdeas()
   }, [generateIdeas])
 
-  const useIdea = useCallback((idea: ContentIdea) => {
+  const handleUseIdea = useCallback((idea: ContentIdea) => {
     // addToast({
     //   type: 'success',
     //   title: 'Ideia Selecionada!',
@@ -218,7 +218,7 @@ export default function ContentIdeas({ userId }: ContentIdeasProps) {
               </div>
               
               <button
-                onClick={() => useIdea(idea)}
+                onClick={() => handleUseIdea(idea)}
                 className="ml-4 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Usar

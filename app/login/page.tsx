@@ -4,7 +4,7 @@ import { useState, useCallback, useMemo, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { auth, db } from '@/lib/firebase'
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth'
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { PublicNavbar } from '@/components/layout/PublicNavbar'
 import { useToast } from '@/components/ui/Toast'
@@ -30,6 +30,67 @@ function LoginForm() {
     return email.length > 0 && password.length > 0
   }, [email, password, name, isSignUp])
 
+  const handleGoogleLogin = useCallback(async () => {
+    setError(null)
+    setIsLoading(true)
+
+    console.log('🔐 Tentativa de login com Google...')
+
+    try {
+      const provider = new GoogleAuthProvider()
+      provider.addScope('email')
+      provider.addScope('profile')
+      
+      const result = await signInWithPopup(auth, provider)
+      console.log('✅ Login com Google bem-sucedido:', result.user.uid)
+      
+      // Verificar se é um usuário novo
+      const userDoc = await doc(db, 'users', result.user.uid)
+      const userData = {
+        uid: result.user.uid,
+        email: result.user.email,
+        displayName: result.user.displayName,
+        photoURL: result.user.photoURL,
+        createdAt: serverTimestamp(),
+        role: 'user',
+        provider: 'google'
+      }
+      
+      await setDoc(userDoc, userData, { merge: true })
+      console.log('💾 Dados do Google salvos no Firestore')
+      
+      addToast({
+        type: 'success',
+        title: 'Login com Google bem-sucedido!',
+        message: 'Você foi redirecionado para o dashboard.',
+      })
+      
+      router.push('/dashboard')
+    } catch (error: any) {
+      console.error('❌ Erro no login com Google:', error)
+      
+      const errorMessages: { [key: string]: string } = {
+        'auth/popup-closed-by-user': 'Login cancelado pelo usuário.',
+        'auth/popup-blocked': 'Popup bloqueado. Permita popups para este site.',
+        'auth/cancelled-popup-request': 'Login cancelado.',
+        'auth/network-request-failed': 'Erro de conexão. Verifique sua internet.',
+        'auth/too-many-requests': 'Muitas tentativas. Tente novamente mais tarde.',
+      }
+
+      const errorCode = error.code as string
+      const errorMessage = errorMessages[errorCode] || 'Erro ao fazer login com Google. Tente novamente.'
+      
+      setError(errorMessage)
+      addToast({
+        type: 'error',
+        title: 'Erro no login com Google',
+        message: errorMessage,
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }, [router, addToast])
+
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -52,6 +113,7 @@ function LoginForm() {
           displayName: name,
           createdAt: serverTimestamp(),
           role: 'user',
+          provider: 'email'
         })
         console.log('💾 Dados salvos no Firestore')
         
@@ -224,8 +286,9 @@ function LoginForm() {
               {/* Google Login Button */}
               <button
                 type="button"
-                onClick={() => addToast({ type: 'info', title: 'Em desenvolvimento', message: 'Login com Google em breve!' })}
-                className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-all duration-200 shadow-sm"
+                onClick={handleGoogleLogin}
+                disabled={isLoading}
+                className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -233,7 +296,7 @@ function LoginForm() {
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                 </svg>
-                Entrar com Google
+                {isLoading ? 'Entrando...' : 'Entrar com Google'}
               </button>
 
               {/* Divider */}
