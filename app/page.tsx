@@ -6,7 +6,7 @@ import { PublicNavbar } from '@/components/layout/PublicNavbar'
 import Footer from '@/components/Footer'
 import { ImageCarousel } from '@/components/ui/ImageCarousel'
 import { Testimonials } from '@/components/ui/Testimonials'
-import { InteractiveDemo } from '@/components/ui/InteractiveDemo'
+import { ImageGenerator } from '@/components/ui/ImageGenerator'
 
 export default function HomePage() {
   // Dados das imagens para o carrossel
@@ -148,9 +148,9 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Interactive Demo */}
+          {/* Image Generator */}
           <div className="mb-20">
-            <InteractiveDemo />
+            <ImageGenerator />
           </div>
 
           {/* Features Section */}

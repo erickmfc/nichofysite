@@ -1,206 +1,89 @@
 'use client'
 
-import React, { useState, useCallback, useMemo, Suspense } from 'react'
+import { useState, useCallback, useMemo, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { auth, db } from '@/lib/firebase'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { PublicNavbar } from '@/components/layout/PublicNavbar'
+import { useToastNotifications } from '@/components/ui/Toast'
 
 function LoginForm() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const mode = searchParams.get('mode')
+  const { addToast } = useToastNotifications()
   
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  
+  const [error, setError] = useState<string | null>(null)
+
   const isSignUp = mode === 'signup'
 
-  // Adicionar estilos CSS para as animações
-  React.useEffect(() => {
-    const style = document.createElement('style')
-    style.textContent = `
-      @keyframes briefing-appear {
-        0% { opacity: 0; transform: translateY(20px) scale(0.9); }
-        100% { opacity: 1; transform: translateY(0) scale(1); }
-      }
-      
-      @keyframes sketch-lines {
-        0% { opacity: 0; }
-        50% { opacity: 1; }
-        100% { opacity: 0.7; }
-      }
-      
-      @keyframes draw-line {
-        0% { stroke-dashoffset: 100; }
-        100% { stroke-dashoffset: 0; }
-      }
-      
-      @keyframes draw-line-delayed {
-        0% { stroke-dashoffset: 100; }
-        50% { stroke-dashoffset: 100; }
-        100% { stroke-dashoffset: 0; }
-      }
-      
-      @keyframes pulse-idea {
-        0%, 100% { opacity: 0.4; transform: scale(1); }
-        50% { opacity: 0.8; transform: scale(1.2); }
-      }
-      
-      @keyframes float-keyword-1 {
-        0%, 100% { opacity: 0; transform: translateY(10px); }
-        20%, 80% { opacity: 0.6; transform: translateY(0); }
-      }
-      
-      @keyframes float-keyword-2 {
-        0%, 100% { opacity: 0; transform: translateY(10px); }
-        30%, 70% { opacity: 0.6; transform: translateY(0); }
-      }
-      
-      @keyframes float-keyword-3 {
-        0%, 100% { opacity: 0; transform: translateY(10px); }
-        40%, 60% { opacity: 0.6; transform: translateY(0); }
-      }
-      
-      @keyframes post-assemble {
-        0% { opacity: 0; transform: translateX(20px) scale(0.9); }
-        100% { opacity: 1; transform: translateX(0) scale(1); }
-      }
-      
-      @keyframes pulse-delayed {
-        0%, 100% { opacity: 0.4; }
-        50% { opacity: 0.8; }
-      }
-      
-      @keyframes pulse-delayed-2 {
-        0%, 100% { opacity: 0.6; }
-        50% { opacity: 1; }
-      }
-      
-      .animate-briefing-appear {
-        animation: briefing-appear 2s ease-out infinite;
-        animation-delay: 0s;
-      }
-      
-      .animate-sketch-lines {
-        animation: sketch-lines 8s ease-in-out infinite;
-      }
-      
-      .animate-draw-line {
-        animation: draw-line 3s ease-out infinite;
-        stroke-dasharray: 20, 5;
-      }
-      
-      .animate-draw-line-delayed {
-        animation: draw-line-delayed 4s ease-out infinite;
-        stroke-dasharray: 15, 3;
-      }
-      
-      .animate-pulse-idea {
-        animation: pulse-idea 2s ease-in-out infinite;
-        animation-delay: 1s;
-      }
-      
-      .animate-float-keyword-1 {
-        animation: float-keyword-1 6s ease-in-out infinite;
-        animation-delay: 1s;
-      }
-      
-      .animate-float-keyword-2 {
-        animation: float-keyword-2 6s ease-in-out infinite;
-        animation-delay: 2s;
-      }
-      
-      .animate-float-keyword-3 {
-        animation: float-keyword-3 6s ease-in-out infinite;
-        animation-delay: 3s;
-      }
-      
-      .animate-post-assemble {
-        animation: post-assemble 2s ease-out infinite;
-        animation-delay: 4s;
-      }
-      
-      .animate-pulse-delayed {
-        animation: pulse-delayed 2s ease-in-out infinite;
-        animation-delay: 0.5s;
-      }
-      
-      .animate-pulse-delayed-2 {
-        animation: pulse-delayed-2 2s ease-in-out infinite;
-        animation-delay: 1s;
-      }
-    `
-    document.head.appendChild(style)
-    
-    return () => {
-      document.head.removeChild(style)
-    }
-  }, [])
-  
-  // Validação do formulário
   const isFormValid = useMemo(() => {
     if (isSignUp) {
-      return email && password && name && password.length >= 6
+      return email.length > 0 && password.length > 0 && name.length > 0
     }
-    return email && password
+    return email.length > 0 && password.length > 0
   }, [email, password, name, isSignUp])
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!isFormValid) return
-    
+    setError(null)
     setIsLoading(true)
-    setError('')
-    
+
     try {
       if (isSignUp) {
-        // Criar usuário
         const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-        const user = userCredential.user
-        
-        // Atualizar perfil
-        await updateProfile(user, { displayName: name })
-        
-        // Salvar dados no Firestore
-        await setDoc(doc(db, 'users', user.uid), {
-          uid: user.uid,
-          email: user.email,
+        await updateProfile(userCredential.user, { displayName: name })
+        await setDoc(doc(db, 'users', userCredential.user.uid), {
+          uid: userCredential.user.uid,
+          email: email,
           displayName: name,
           createdAt: serverTimestamp(),
-          plan: 'free',
-          postsCount: 0
+          role: 'user',
         })
-        
-        router.replace('/dashboard')
+        addToast({
+          type: 'success',
+          title: 'Conta criada!',
+          message: 'Sua conta foi criada com sucesso. Faça login para continuar.',
+        })
+        router.push('/login')
       } else {
-        // Login
         await signInWithEmailAndPassword(auth, email, password)
-        router.replace('/dashboard')
+        addToast({
+          type: 'success',
+          title: 'Login bem-sucedido!',
+          message: 'Você foi redirecionado para o dashboard.',
+        })
+        router.push('/dashboard')
       }
     } catch (error: any) {
+      console.error('Erro de autenticação:', error)
       const errorMessages: { [key: string]: string } = {
-        'auth/user-not-found': 'Usuário não encontrado.',
-        'auth/wrong-password': 'Senha incorreta.',
-        'auth/email-already-in-use': 'Este email já está em uso.',
+        'auth/email-already-in-use': 'Este e-mail já está em uso.',
+        'auth/invalid-email': 'Formato de e-mail inválido.',
         'auth/weak-password': 'A senha deve ter pelo menos 6 caracteres.',
-        'auth/invalid-email': 'Email inválido.',
+        'auth/user-not-found': 'Usuário não encontrado. Verifique seu e-mail.',
+        'auth/wrong-password': 'Senha incorreta. Tente novamente.',
         'auth/invalid-credential': 'Credenciais inválidas. Verifique email e senha.'
       }
-      
+
       const errorCode = error.code as string
       setError(errorMessages[errorCode] || 'Erro ao fazer login. Tente novamente.')
+      addToast({
+        type: 'error',
+        title: 'Erro de autenticação',
+        message: errorMessages[errorCode] || 'Ocorreu um erro inesperado. Tente novamente.',
+      })
     } finally {
       setIsLoading(false)
     }
-  }, [email, password, name, isSignUp, isFormValid, router])
+  }, [email, password, name, isSignUp, isFormValid, addToast, router])
 
-  // Otimizar handlers com useCallback
   const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value)
   }, [])
@@ -226,84 +109,52 @@ function LoginForm() {
             <div className="absolute bottom-32 left-40 w-40 h-40 bg-blue-300/20 rounded-full blur-2xl"></div>
             <div className="absolute bottom-20 right-20 w-28 h-28 bg-teal-300/20 rounded-full blur-xl"></div>
           </div>
-          
-                 {/* Content */}
-                 <div className="relative z-10 flex flex-col justify-center px-16 text-white">
-                   <h2 className="text-5xl font-bold mb-4 leading-tight">
-                     Sua marca, sua voz.
-                   </h2>
-                   <p className="text-xl text-blue-100 mb-8">
-                     Conteúdo criado por especialistas, para você.
-                   </p>
 
-                   {/* Animação: Do Briefing ao Post Perfeito */}
-                   <div className="relative w-full h-80 overflow-hidden">
-                     {/* Briefing Card */}
-                     <div className="absolute bottom-4 left-4 bg-white/15 backdrop-blur-md rounded-xl p-4 max-w-xs border border-white/20 animate-briefing-appear">
-                       <div className="flex items-center mb-2">
-                         <div className="w-6 h-6 bg-blue-400 rounded-full mr-2"></div>
-                         <span className="text-sm font-medium text-white">Cliente</span>
-                       </div>
-                       <p className="text-white/90 text-sm">"Preciso de um post para o Dia dos Pais na minha barbearia"</p>
-                     </div>
+          {/* Content */}
+          <div className="relative z-10 flex flex-col justify-center px-16 text-white">
+            <h2 className="text-5xl font-bold mb-4 leading-tight">
+              Sua marca, sua voz.
+            </h2>
+            <p className="text-xl text-blue-100 mb-8">
+              Conteúdo criado por especialistas, para você.
+            </p>
 
-                     {/* Linhas de Esboço */}
-                     <svg className="absolute inset-0 w-full h-full animate-sketch-lines" viewBox="0 0 400 300">
-                       <path 
-                         d="M80,280 Q200,200 320,120" 
-                         stroke="rgba(255,255,255,0.3)" 
-                         strokeWidth="2" 
-                         fill="none"
-                         strokeDasharray="5,5"
-                         className="animate-draw-line"
-                       />
-                       <path 
-                         d="M100,260 Q250,180 350,100" 
-                         stroke="rgba(255,255,255,0.2)" 
-                         strokeWidth="1.5" 
-                         fill="none"
-                         strokeDasharray="3,3"
-                         className="animate-draw-line-delayed"
-                       />
-                       <circle 
-                         cx="200" 
-                         cy="150" 
-                         r="3" 
-                         fill="rgba(255,255,255,0.4)"
-                         className="animate-pulse-idea"
-                       />
-                     </svg>
+            {/* Simple Animation */}
+            <div className="relative w-full h-64 overflow-hidden">
+              {/* Briefing Card */}
+              <div className="absolute bottom-4 left-4 bg-white/15 backdrop-blur-md rounded-xl p-4 max-w-xs border border-white/20 animate-pulse">
+                <div className="flex items-center mb-2">
+                  <div className="w-6 h-6 bg-blue-400 rounded-full mr-2"></div>
+                  <span className="text-sm font-medium text-white">Cliente</span>
+                </div>
+                <p className="text-white/90 text-sm">"Preciso de um post para o Dia dos Pais na minha barbearia"</p>
+              </div>
 
-                     {/* Palavras-chave flutuantes */}
-                     <div className="absolute top-20 left-20 text-white/60 text-sm animate-float-keyword-1">#DiaDosPais</div>
-                     <div className="absolute top-32 right-24 text-white/60 text-sm animate-float-keyword-2">Estilo</div>
-                     <div className="absolute top-48 left-32 text-white/60 text-sm animate-float-keyword-3">Presente</div>
+              {/* Post Final */}
+              <div className="absolute top-8 right-8 bg-white/20 backdrop-blur-md rounded-xl p-4 max-w-xs border border-white/30 animate-bounce">
+                <div className="flex items-center mb-2">
+                  <div className="w-6 h-6 bg-orange-500 rounded-full mr-2"></div>
+                  <span className="text-sm font-medium text-white">Barbearia Estilo</span>
+                </div>
+                <p className="text-white/90 text-sm mb-2">🎁 Dia dos Pais chegando!</p>
+                <p className="text-white/80 text-xs">Presenteie seu pai com um corte especial. Agende já!</p>
+                <div className="flex items-center mt-2 space-x-2 text-xs text-white/70">
+                  <span>❤️</span>
+                  <span>💬</span>
+                  <span>📤</span>
+                </div>
+              </div>
 
-                     {/* Post Final */}
-                     <div className="absolute top-8 right-8 bg-white/20 backdrop-blur-md rounded-xl p-4 max-w-xs border border-white/30 animate-post-assemble">
-                       <div className="flex items-center mb-2">
-                         <div className="w-6 h-6 bg-orange-500 rounded-full mr-2"></div>
-                         <span className="text-sm font-medium text-white">Barbearia Estilo</span>
-                       </div>
-                       <p className="text-white/90 text-sm mb-2">🎁 Dia dos Pais chegando!</p>
-                       <p className="text-white/80 text-xs">Presenteie seu pai com um corte especial. Agende já!</p>
-                       <div className="flex items-center mt-2 space-x-2 text-xs text-white/70">
-                         <span>❤️</span>
-                         <span>💬</span>
-                         <span>📤</span>
-                       </div>
-                     </div>
-
-                     {/* Indicador de Processo */}
-                     <div className="absolute bottom-8 right-8 flex space-x-1">
-                       <div className="w-2 h-2 bg-white/40 rounded-full animate-pulse"></div>
-                       <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse-delayed"></div>
-                       <div className="w-2 h-2 bg-white/80 rounded-full animate-pulse-delayed-2"></div>
-                     </div>
-                   </div>
-                 </div>
+              {/* Process Indicator */}
+              <div className="absolute bottom-8 right-8 flex space-x-1">
+                <div className="w-2 h-2 bg-white/40 rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
+                <div className="w-2 h-2 bg-white/80 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+              </div>
+            </div>
+          </div>
         </div>
-        
+
         {/* Right Side - Login Form */}
         <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
           <div className="w-full max-w-md">
@@ -314,7 +165,7 @@ function LoginForm() {
                   NichoFy
                 </h1>
               </Link>
-              
+
               <h2 className="text-2xl font-semibold text-gray-900 mb-2">
                 {isSignUp ? 'Criar conta' : 'Bem-vindo(a) de volta!'}
               </h2>
@@ -328,8 +179,8 @@ function LoginForm() {
               <button
                 onClick={() => router.push('/login')}
                 className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
-                  !isSignUp 
-                    ? 'bg-white text-blue-600 shadow-sm' 
+                  !isSignUp
+                    ? 'bg-white text-blue-600 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
@@ -338,8 +189,8 @@ function LoginForm() {
               <button
                 onClick={() => router.push('/login?mode=signup')}
                 className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
-                  isSignUp 
-                    ? 'bg-white text-blue-600 shadow-sm' 
+                  isSignUp
+                    ? 'bg-white text-blue-600 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
@@ -352,6 +203,7 @@ function LoginForm() {
               {/* Google Login Button */}
               <button
                 type="button"
+                onClick={() => addToast({ type: 'info', title: 'Em desenvolvimento', message: 'Login com Google em breve!' })}
                 className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-all duration-200 shadow-sm"
               >
                 <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
@@ -362,7 +214,7 @@ function LoginForm() {
                 </svg>
                 Entrar com Google
               </button>
-              
+
               {/* Divider */}
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
@@ -389,7 +241,7 @@ function LoginForm() {
                   />
                 </div>
               )}
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Seu e-mail
@@ -403,7 +255,7 @@ function LoginForm() {
                   autoComplete="email"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Sua senha
@@ -437,13 +289,13 @@ function LoginForm() {
                   </a>
                 </div>
               )}
-              
+
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                   {error}
                 </div>
               )}
-              
+
               <button
                 type="submit"
                 disabled={!isFormValid || isLoading}
@@ -463,7 +315,7 @@ function LoginForm() {
                 )}
               </button>
             </form>
-            
+
             {/* Footer */}
             <div className="mt-8 text-center">
               <p className="text-sm text-gray-600">
@@ -475,7 +327,7 @@ function LoginForm() {
                   {isSignUp ? 'Entrar' : 'Começar Agora'}
                 </button>
               </p>
-              
+
               <p className="text-xs text-gray-500 mt-4">
                 Ao continuar, você concorda com nossos{' '}
                 <a href="#" className="text-blue-600 hover:text-blue-700">Termos de Uso</a>
