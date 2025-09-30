@@ -150,13 +150,18 @@ export class PostService {
   
   async getDashboardStats(): Promise<DashboardStats> {
     try {
+      // Verificar se estamos no cliente
+      if (typeof window === 'undefined') {
+        return this.getDefaultStats()
+      }
+
       const [userDoc, allPosts, postsThisMonth] = await Promise.all([
-        getDoc(doc(db, 'users', this.userId)),
-        this.getUserPosts(),
-        this.getPostsThisMonth()
+        getDoc(doc(db, 'users', this.userId)).catch(() => ({ data: () => null })),
+        this.getUserPosts().catch(() => []),
+        this.getPostsThisMonth().catch(() => [])
       ])
 
-      const userData = userDoc.data()
+      const userData = userDoc.data?.() || null
       const subscription = userData?.subscription as UserSubscription || {
         planName: 'Básico',
         postsPerMonth: 50,
@@ -168,9 +173,13 @@ export class PostService {
       // Calcular dias com posts
       const daysWithPosts: number[] = []
       postsThisMonth.forEach(post => {
-        const day = post.createdAt.toDate().getDate()
-        if (!daysWithPosts.includes(day)) {
-          daysWithPosts.push(day)
+        try {
+          const day = post.createdAt?.toDate?.()?.getDate?.()
+          if (day && !daysWithPosts.includes(day)) {
+            daysWithPosts.push(day)
+          }
+        } catch (e) {
+          console.warn('Erro ao processar data do post:', e)
         }
       })
 
@@ -181,22 +190,26 @@ export class PostService {
         currentPlan: subscription.planName,
         planLimit: subscription.postsPerMonth,
         daysWithPosts,
-        recentPosts: await this.getRecentPosts(3),
+        recentPosts: await this.getRecentPosts(3).catch(() => []),
         loading: false
       }
     } catch (error) {
       console.error('Erro ao calcular estatísticas:', error)
-      return {
-        postsCreated: 0,
-        postsThisMonth: 0,
-        postsRemaining: 50,
-        currentPlan: 'Básico',
-        planLimit: 50,
-        daysWithPosts: [],
-        recentPosts: [],
-        loading: false,
-        error: 'Erro ao carregar estatísticas'
-      }
+      return this.getDefaultStats()
+    }
+  }
+
+  private getDefaultStats(): DashboardStats {
+    return {
+      postsCreated: 0,
+      postsThisMonth: 0,
+      postsRemaining: 50,
+      currentPlan: 'Básico',
+      planLimit: 50,
+      daysWithPosts: [],
+      recentPosts: [],
+      loading: false,
+      error: 'Erro ao carregar estatísticas'
     }
   }
 
@@ -248,7 +261,7 @@ export class PostService {
   async canCreatePost(): Promise<{ canCreate: boolean; reason?: string }> {
     try {
       // Importar SubscriptionService
-      const SubscriptionService = (await import('./SubscriptionService')).SubscriptionService
+      const { SubscriptionService } = await import('./SubscriptionService')
       const subscriptionService = new SubscriptionService(this.userId)
       
       const limits = await subscriptionService.checkPlanLimits()

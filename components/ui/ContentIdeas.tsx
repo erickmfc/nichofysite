@@ -1,92 +1,136 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useToast } from '@/components/ui/Toast'
+
+interface ContentIdeasProps {
+  userId: string
+}
 
 interface ContentIdea {
   id: string
   title: string
   description: string
+  niche: string
   category: string
+  platform: string
   difficulty: 'easy' | 'medium' | 'hard'
-  estimatedTime: string
 }
 
-interface ContentIdeasProps {
-  niche?: string
-  className?: string
-}
+export default function ContentIdeas({ userId }: ContentIdeasProps) {
+  const { addToast } = useToast()
+  const [ideas, setIdeas] = useState<ContentIdea[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedNiche, setSelectedNiche] = useState('')
 
-export const ContentIdeas: React.FC<ContentIdeasProps> = ({ 
-  niche = 'geral',
-  className = ''
-}) => {
-  const [selectedCategory, setSelectedCategory] = useState('all')
-  const [selectedIdea, setSelectedIdea] = useState<ContentIdea | null>(null)
+  // Memoizar ideias baseadas no nicho selecionado
+  const filteredIdeas = useMemo(() => {
+    if (!selectedNiche) return ideas
+    return ideas.filter(idea => idea.niche === selectedNiche)
+  }, [ideas, selectedNiche])
 
-  const ideas: ContentIdea[] = [
-    {
-      id: '1',
-      title: 'Tutorial Passo a Passo',
-      description: 'Crie um guia detalhado sobre um tópico específico do seu nicho',
-      category: 'educativo',
-      difficulty: 'medium',
-      estimatedTime: '15-20 min'
-    },
-    {
-      id: '2',
-      title: 'Lista de Dicas',
-      description: 'Compile 5-10 dicas práticas e úteis para sua audiência',
-      category: 'dicas',
-      difficulty: 'easy',
-      estimatedTime: '10-15 min'
-    },
-    {
-      id: '3',
-      title: 'Case de Sucesso',
-      description: 'Conte a história de um cliente ou projeto bem-sucedido',
-      category: 'cases',
-      difficulty: 'medium',
-      estimatedTime: '20-25 min'
-    },
-    {
-      id: '4',
-      title: 'Perguntas Frequentes',
-      description: 'Responda às dúvidas mais comuns do seu nicho',
-      category: 'faq',
-      difficulty: 'easy',
-      estimatedTime: '10-15 min'
-    },
-    {
-      id: '5',
-      title: 'Comparação de Produtos',
-      description: 'Compare diferentes opções disponíveis no mercado',
-      category: 'comparacao',
-      difficulty: 'hard',
-      estimatedTime: '25-30 min'
-    },
-    {
-      id: '6',
-      title: 'Tendências do Mercado',
-      description: 'Analise as principais tendências e novidades do setor',
-      category: 'tendencias',
-      difficulty: 'hard',
-      estimatedTime: '30-35 min'
+  // Memoizar nichos únicos
+  const availableNiches = useMemo(() => {
+    return [...new Set(ideas.map(idea => idea.niche))].sort()
+  }, [ideas])
+
+  // Gerar ideias de conteúdo
+  const generateIdeas = useCallback(() => {
+    const niches = [
+      'Direito', 'Saúde & Bem-Estar', 'Tecnologia', 'Gastronomia', 'Beleza & Estética',
+      'Varejo & E-commerce', 'Fitness & Esportes', 'Mercado Imobiliário', 'Contabilidade & Finanças',
+      'Psicologia & Saúde Mental', 'Odontologia', 'Farmácia & Medicamentos', 'Marketing & Publicidade'
+    ]
+
+    const categories = [
+      'Dicas', 'Promoção', 'Educativo', 'Entretenimento', 'Inspiracional', 'Notícias'
+    ]
+
+    const platforms = [
+      'Instagram', 'LinkedIn', 'Facebook', 'Twitter', 'TikTok', 'YouTube'
+    ]
+
+    const ideaTemplates = [
+      {
+        title: 'Dicas de {category} para {niche}',
+        description: 'Compartilhe conhecimento prático e útil para seu público.',
+        difficulty: 'easy' as const
+      },
+      {
+        title: 'Tendências em {niche} para 2024',
+        description: 'Mantenha seu público atualizado com as últimas tendências.',
+        difficulty: 'medium' as const
+      },
+      {
+        title: 'Case de sucesso: {niche}',
+        description: 'Compartilhe histórias inspiradoras e resultados reais.',
+        difficulty: 'hard' as const
+      },
+      {
+        title: 'FAQ: Perguntas frequentes sobre {niche}',
+        description: 'Responda dúvidas comuns do seu público.',
+        difficulty: 'easy' as const
+      },
+      {
+        title: 'Guia completo de {niche}',
+        description: 'Crie um conteúdo educativo e detalhado.',
+        difficulty: 'hard' as const
+      }
+    ]
+
+    const generatedIdeas: ContentIdea[] = []
+
+    for (let i = 0; i < 12; i++) {
+      const niche = niches[Math.floor(Math.random() * niches.length)]
+      const category = categories[Math.floor(Math.random() * categories.length)]
+      const platform = platforms[Math.floor(Math.random() * platforms.length)]
+      const template = ideaTemplates[Math.floor(Math.random() * ideaTemplates.length)]
+
+      generatedIdeas.push({
+        id: `idea-${i}`,
+        title: template.title.replace('{category}', category).replace('{niche}', niche),
+        description: template.description,
+        niche,
+        category,
+        platform,
+        difficulty: template.difficulty
+      })
     }
-  ]
 
-  const categories = [
-    { id: 'all', name: 'Todas', icon: '📋' },
-    { id: 'educativo', name: 'Educativo', icon: '📚' },
-    { id: 'dicas', name: 'Dicas', icon: '💡' },
-    { id: 'cases', name: 'Cases', icon: '🏆' },
-    { id: 'faq', name: 'FAQ', icon: '❓' },
-    { id: 'comparacao', name: 'Comparação', icon: '⚖️' },
-    { id: 'tendencias', name: 'Tendências', icon: '📈' }
-  ]
+    return generatedIdeas
+  }, [])
 
-  const filteredIdeas = selectedCategory === 'all' 
-    ? ideas 
-    : ideas.filter(idea => idea.category === selectedCategory)
+  useEffect(() => {
+    const loadIdeas = async () => {
+      try {
+        setLoading(true)
+        
+        // Simular carregamento
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        const generatedIdeas = generateIdeas()
+        setIdeas(generatedIdeas)
+      } catch (error) {
+        console.error('Erro ao carregar ideias:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadIdeas()
+  }, [generateIdeas])
+
+  const useIdea = useCallback((idea: ContentIdea) => {
+    addToast({
+      type: 'success',
+      title: 'Ideia Selecionada!',
+      message: `"${idea.title}" foi adicionada ao seu criador de conteúdo.`,
+      action: {
+        label: 'Criar Post',
+        onClick: () => window.location.href = '/criar-conteudo'
+      }
+    })
+  }, [addToast])
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -106,104 +150,98 @@ export const ContentIdeas: React.FC<ContentIdeasProps> = ({
     }
   }
 
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="animate-pulse">
+          <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-20 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className={`bg-white rounded-lg shadow-sm border ${className}`}>
-      <div className="p-4 border-b">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">💡 Ideias de Conteúdo</h3>
-        <p className="text-sm text-gray-600">Encontre inspiração para seus próximos posts</p>
-      </div>
-
-      {/* Filtros */}
-      <div className="p-4 border-b">
-        <div className="flex flex-wrap gap-2">
-          {categories.map(category => (
-            <button
-              key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                selectedCategory === category.id
-                  ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {category.icon} {category.name}
-            </button>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-semibold text-gray-900">
+          Ideias de Conteúdo
+        </h3>
+        
+        <select
+          value={selectedNiche}
+          onChange={(e) => setSelectedNiche(e.target.value)}
+          className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="">Todos os nichos</option>
+          {availableNiches.map(niche => (
+            <option key={niche} value={niche}>{niche}</option>
           ))}
-        </div>
+        </select>
       </div>
 
-      {/* Lista de Ideias */}
-      <div className="p-4">
-        <div className="space-y-3">
-          {filteredIdeas.map(idea => (
-            <div
-              key={idea.id}
-              className="p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
-              onClick={() => setSelectedIdea(idea)}
-            >
-              <div className="flex justify-between items-start mb-2">
-                <h4 className="font-medium text-gray-900">{idea.title}</h4>
-                <span className={`px-2 py-1 rounded-full text-xs ${getDifficultyColor(idea.difficulty)}`}>
-                  {getDifficultyText(idea.difficulty)}
-                </span>
+      <div className="space-y-4">
+        {filteredIdeas.slice(0, 6).map((idea) => (
+          <div
+            key={idea.id}
+            className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-sm transition-all duration-200"
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h4 className="font-medium text-gray-900 mb-2">
+                  {idea.title}
+                </h4>
+                <p className="text-sm text-gray-600 mb-3">
+                  {idea.description}
+                </p>
+                
+                <div className="flex items-center gap-3 text-xs">
+                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                    {idea.niche}
+                  </span>
+                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                    {idea.category}
+                  </span>
+                  <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                    {idea.platform}
+                  </span>
+                  <span className={`px-2 py-1 rounded-full ${getDifficultyColor(idea.difficulty)}`}>
+                    {getDifficultyText(idea.difficulty)}
+                  </span>
+                </div>
               </div>
-              <p className="text-sm text-gray-600 mb-2">{idea.description}</p>
-              <div className="flex justify-between items-center text-xs text-gray-500">
-                <span>⏱️ {idea.estimatedTime}</span>
-                <span className="capitalize">{idea.category}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Modal de Detalhes */}
-      {selectedIdea && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="text-xl font-semibold text-gray-900">{selectedIdea.title}</h3>
+              
               <button
-                onClick={() => setSelectedIdea(null)}
-                className="text-gray-400 hover:text-gray-600"
+                onClick={() => useIdea(idea)}
+                className="ml-4 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
               >
-                ✕
-              </button>
-            </div>
-            
-            <p className="text-gray-600 mb-4">{selectedIdea.description}</p>
-            
-            <div className="space-y-2 mb-6">
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">Dificuldade:</span>
-                <span className={`px-2 py-1 rounded-full text-xs ${getDifficultyColor(selectedIdea.difficulty)}`}>
-                  {getDifficultyText(selectedIdea.difficulty)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">Tempo estimado:</span>
-                <span className="text-sm text-gray-900">⏱️ {selectedIdea.estimatedTime}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">Categoria:</span>
-                <span className="text-sm text-gray-900 capitalize">{selectedIdea.category}</span>
-              </div>
-            </div>
-            
-            <div className="flex space-x-3">
-              <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm">
-                Usar Esta Ideia
-              </button>
-              <button 
-                onClick={() => setSelectedIdea(null)}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg text-sm"
-              >
-                Fechar
+                Usar
               </button>
             </div>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
+
+      <div className="mt-6 text-center">
+        <button
+          onClick={() => {
+            const newIdeas = generateIdeas()
+            setIdeas(newIdeas)
+            addToast({
+              type: 'info',
+              title: 'Ideias Atualizadas!',
+              message: 'Novas ideias foram geradas para você.'
+            })
+          }}
+          className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+        >
+          🔄 Gerar Novas Ideias
+        </button>
+      </div>
     </div>
   )
 }

@@ -11,7 +11,9 @@ import {
   addDoc,
   serverTimestamp,
   getDocs,
-  limit
+  limit,
+  startAfter,
+  getDoc
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 
@@ -47,6 +49,8 @@ export interface PostSortOptions {
 export class PostManagementService {
   private static instance: PostManagementService
   private postsCollection = collection(db, 'posts')
+  private cache = new Map<string, { data: Post[], timestamp: number }>()
+  private readonly CACHE_DURATION = 5 * 60 * 1000 // 5 minutos
 
   static getInstance(): PostManagementService {
     if (!PostManagementService.instance) {
@@ -55,14 +59,34 @@ export class PostManagementService {
     return PostManagementService.instance
   }
 
-  // Buscar posts do usuário com filtros
+  // Cache key generator
+  private getCacheKey(userId: string, filters: PostFilters, sortOptions: PostSortOptions, limitCount?: number): string {
+    return `${userId}-${JSON.stringify(filters)}-${JSON.stringify(sortOptions)}-${limitCount || 'all'}`
+  }
+
+  // Verificar se cache é válido
+  private isCacheValid(timestamp: number): boolean {
+    return Date.now() - timestamp < this.CACHE_DURATION
+  }
+
+  // Buscar posts do usuário com cache e paginação
   async getUserPosts(
     userId: string, 
     filters: PostFilters = {}, 
     sortOptions: PostSortOptions = { field: 'createdAt', direction: 'desc' },
-    limitCount?: number
+    limitCount?: number,
+    lastDoc?: any
   ): Promise<Post[]> {
     try {
+      const cacheKey = this.getCacheKey(userId, filters, sortOptions, limitCount)
+      const cached = this.cache.get(cacheKey)
+      
+      // Verificar cache apenas para primeira página
+      if (!lastDoc && cached && this.isCacheValid(cached.timestamp)) {
+        console.log('📦 Usando cache para posts do usuário')
+        return cached.data
+      }
+
       let q = query(
         this.postsCollection,
         where('userId', '==', userId),
@@ -86,6 +110,10 @@ export class PostManagementService {
         q = query(q, limit(limitCount))
       }
 
+      if (lastDoc) {
+        q = query(q, startAfter(lastDoc))
+      }
+
       const snapshot = await getDocs(q)
       let posts = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -102,39 +130,39 @@ export class PostManagementService {
         )
       }
 
-      // Aplicar filtros de data
-      if (filters.dateFrom || filters.dateTo) {
-        posts = posts.filter(post => {
-          const postDate = post.createdAt?.toDate ? post.createdAt.toDate() : new Date(post.createdAt)
-          
-          if (filters.dateFrom && postDate < filters.dateFrom) return false
-          if (filters.dateTo && postDate > filters.dateTo) return false
-          
-          return true
+      // Cache apenas para primeira página
+      if (!lastDoc) {
+        this.cache.set(cacheKey, {
+          data: posts,
+          timestamp: Date.now()
         })
       }
 
       return posts
     } catch (error) {
-      console.error('Erro ao buscar posts:', error)
+      console.error('Erro ao buscar posts do usuário:', error)
       throw error
     }
   }
 
-  // Escutar mudanças nos posts do usuário
-  subscribeToUserPosts(
+  // Subscribe com otimizações
+  static subscribeToUserPosts(
     userId: string,
     callback: (posts: Post[]) => void,
     filters: PostFilters = {},
-    sortOptions: PostSortOptions = { field: 'createdAt', direction: 'desc' }
+    sortOptions: PostSortOptions = { field: 'createdAt', direction: 'desc' },
+    limitCount: number = 50
   ): () => void {
+    const instance = PostManagementService.getInstance()
+    
     let q = query(
-      this.postsCollection,
+      instance.postsCollection,
       where('userId', '==', userId),
-      orderBy(sortOptions.field, sortOptions.direction)
+      orderBy(sortOptions.field, sortOptions.direction),
+      limit(limitCount)
     )
 
-    // Aplicar filtros básicos
+    // Aplicar filtros
     if (filters.niche) {
       q = query(q, where('niche', '==', filters.niche))
     }
@@ -163,31 +191,26 @@ export class PostManagementService {
         )
       }
 
-      // Aplicar filtros de data
-      if (filters.dateFrom || filters.dateTo) {
-        posts = posts.filter(post => {
-          const postDate = post.createdAt?.toDate ? post.createdAt.toDate() : new Date(post.createdAt)
-          
-          if (filters.dateFrom && postDate < filters.dateFrom) return false
-          if (filters.dateTo && postDate > filters.dateTo) return false
-          
-          return true
-        })
-      }
-
       callback(posts)
+    }, (error) => {
+      console.error('Erro no listener de posts:', error)
     })
   }
 
-  // Criar novo post
+  // Criar post com cache invalidation
   async createPost(postData: Omit<Post, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
     try {
-      const docRef = await addDoc(this.postsCollection, {
+      const newPost = {
         ...postData,
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        isFavorite: false
-      })
+        updatedAt: serverTimestamp()
+      }
+
+      const docRef = await addDoc(this.postsCollection, newPost)
+      
+      // Invalidar cache
+      this.invalidateUserCache(postData.userId)
+      
       return docRef.id
     } catch (error) {
       console.error('Erro ao criar post:', error)
@@ -195,7 +218,7 @@ export class PostManagementService {
     }
   }
 
-  // Atualizar post
+  // Atualizar post com cache invalidation
   async updatePost(postId: string, updates: Partial<Post>): Promise<void> {
     try {
       const postRef = doc(this.postsCollection, postId)
@@ -203,93 +226,57 @@ export class PostManagementService {
         ...updates,
         updatedAt: serverTimestamp()
       })
+      
+      // Invalidar cache
+      const postDoc = await getDoc(postRef)
+      if (postDoc.exists()) {
+        const postData = postDoc.data() as Post
+        this.invalidateUserCache(postData.userId)
+      }
     } catch (error) {
       console.error('Erro ao atualizar post:', error)
       throw error
     }
   }
 
-  // Marcar/desmarcar como favorito
-  async toggleFavorite(postId: string, isFavorite: boolean): Promise<void> {
-    try {
-      const postRef = doc(this.postsCollection, postId)
-      await updateDoc(postRef, {
-        isFavorite: !isFavorite,
-        updatedAt: serverTimestamp()
-      })
-    } catch (error) {
-      console.error('Erro ao atualizar favorito:', error)
-      throw error
-    }
-  }
-
-  // Excluir post
+  // Deletar post com cache invalidation
   async deletePost(postId: string): Promise<void> {
     try {
       const postRef = doc(this.postsCollection, postId)
-      await deleteDoc(postRef)
-    } catch (error) {
-      console.error('Erro ao excluir post:', error)
-      throw error
-    }
-  }
-
-  // Obter estatísticas do usuário
-  async getUserStats(userId: string): Promise<{
-    totalPosts: number
-    favoritePosts: number
-    postsThisMonth: number
-    uniqueNiches: number
-    uniqueCategories: number
-  }> {
-    try {
-      const posts = await this.getUserPosts(userId)
       
-      const now = new Date()
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-      
-      const postsThisMonth = posts.filter(post => {
-        const postDate = post.createdAt?.toDate ? post.createdAt.toDate() : new Date(post.createdAt)
-        return postDate >= startOfMonth
-      }).length
-
-      const uniqueNiches = new Set(posts.map(post => post.niche)).size
-      const uniqueCategories = new Set(posts.map(post => post.category)).size
-
-      return {
-        totalPosts: posts.length,
-        favoritePosts: posts.filter(post => post.isFavorite).length,
-        postsThisMonth,
-        uniqueNiches,
-        uniqueCategories
+      // Obter dados do post antes de deletar para invalidar cache
+      const postDoc = await getDoc(postRef)
+      if (postDoc.exists()) {
+        const postData = postDoc.data() as Post
+        await deleteDoc(postRef)
+        this.invalidateUserCache(postData.userId)
       }
     } catch (error) {
-      console.error('Erro ao obter estatísticas:', error)
+      console.error('Erro ao deletar post:', error)
       throw error
     }
   }
 
-  // Obter nichos únicos do usuário
-  async getUserNiches(userId: string): Promise<string[]> {
-    try {
-      const posts = await this.getUserPosts(userId)
-      return [...new Set(posts.map(post => post.niche))].sort()
-    } catch (error) {
-      console.error('Erro ao obter nichos:', error)
-      throw error
+  // Invalidar cache do usuário
+  private invalidateUserCache(userId: string): void {
+    const keysToDelete: string[] = []
+    for (const key of this.cache.keys()) {
+      if (key.startsWith(userId)) {
+        keysToDelete.push(key)
+      }
     }
+    keysToDelete.forEach(key => this.cache.delete(key))
   }
 
-  // Obter categorias únicas do usuário
-  async getUserCategories(userId: string): Promise<string[]> {
-    try {
-      const posts = await this.getUserPosts(userId)
-      return [...new Set(posts.map(post => post.category))].sort()
-    } catch (error) {
-      console.error('Erro ao obter categorias:', error)
-      throw error
+  // Limpar cache expirado
+  clearExpiredCache(): void {
+    for (const [key, value] of this.cache.entries()) {
+      if (!this.isCacheValid(value.timestamp)) {
+        this.cache.delete(key)
+      }
     }
   }
 }
 
+// Exportar instância singleton
 export default PostManagementService.getInstance()

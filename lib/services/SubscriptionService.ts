@@ -193,6 +193,15 @@ export class SubscriptionService {
   
   async checkPlanLimits(): Promise<PlanLimits> {
     try {
+      // Verificar se estamos no cliente
+      if (typeof window === 'undefined') {
+        return {
+          postsRemaining: 0,
+          canCreatePost: false,
+          reason: 'Executando no servidor'
+        }
+      }
+
       const subscription = await this.getCurrentSubscription()
       
       if (!subscription || !subscription.isActive) {
@@ -205,7 +214,14 @@ export class SubscriptionService {
 
       // Verificar se a assinatura não expirou
       const now = new Date()
-      const endDate = subscription.endDate.toDate()
+      let endDate: Date
+      
+      try {
+        endDate = subscription.endDate?.toDate?.() || new Date()
+      } catch (e) {
+        console.warn('Erro ao converter data de fim:', e)
+        endDate = new Date()
+      }
       
       if (now > endDate) {
         return {
