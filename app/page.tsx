@@ -54,7 +54,7 @@ export default function HomePage() {
           
           <p className="text-xl md:text-2xl text-gray-600 leading-relaxed mb-12 max-w-4xl mx-auto animate-fade-in-delay">
             Crie conteúdo profissional em segundos com nossa IA especializada. 
-            Mais de 10 nichos, resultados comprovados e suporte 24/7.
+            Mais de 100 nichos, resultados comprovados e suporte 24/7.
           </p>
 
           {/* Features Grid */}
@@ -63,7 +63,7 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-300">
                 <span className="text-green-600 text-2xl">✓</span>
               </div>
-              <span className="text-gray-700 font-semibold text-lg">10+ Nichos</span>
+              <span className="text-gray-700 font-semibold text-lg">100+ Nichos</span>
             </div>
             <div className="flex flex-col items-center space-y-3 animate-bounce-in" style={{animationDelay: '0.2s'}}>
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-300">
@@ -138,7 +138,7 @@ export default function HomePage() {
                 <div className="text-gray-600 font-medium">Clientes Ativos</div>
               </div>
               <div className="text-center animate-bounce-in" style={{animationDelay: '0.3s'}}>
-                <div className="text-4xl font-bold text-green-500 mb-2">15+</div>
+                <div className="text-4xl font-bold text-green-500 mb-2">100+</div>
                 <div className="text-gray-600 font-medium">Nichos Especializados</div>
               </div>
               <div className="text-center animate-bounce-in" style={{animationDelay: '0.4s'}}>
@@ -171,7 +171,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">Especialização</h3>
               <p className="text-gray-600 text-center">
-                Mais de 15 nichos diferentes com IA treinada especificamente para cada área.
+                Mais de 100 nichos diferentes com IA treinada especificamente para cada área.
               </p>
             </div>
 

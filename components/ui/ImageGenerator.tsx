@@ -22,6 +22,8 @@ export const ImageGenerator = ({ className = '' }: ImageGeneratorProps) => {
 
   // Carregar dados do localStorage
   useEffect(() => {
+    if (typeof window === 'undefined') return
+    
     const savedImages = localStorage.getItem('nichofy-generated-images')
     const savedCount = localStorage.getItem('nichofy-image-count')
     
@@ -37,6 +39,7 @@ export const ImageGenerator = ({ className = '' }: ImageGeneratorProps) => {
 
   // Salvar dados no localStorage
   const saveToLocalStorage = (images: GeneratedImage[], count: number) => {
+    if (typeof window === 'undefined') return
     localStorage.setItem('nichofy-generated-images', JSON.stringify(images))
     localStorage.setItem('nichofy-image-count', count.toString())
   }
@@ -99,8 +102,10 @@ export const ImageGenerator = ({ className = '' }: ImageGeneratorProps) => {
   const clearImages = () => {
     setGeneratedImages([])
     setRemainingImages(2)
-    localStorage.removeItem('nichofy-generated-images')
-    localStorage.removeItem('nichofy-image-count')
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('nichofy-generated-images')
+      localStorage.removeItem('nichofy-image-count')
+    }
   }
 
   return (

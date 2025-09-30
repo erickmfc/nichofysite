@@ -131,21 +131,130 @@ export default function DashboardPage() {
     setCurrentDate(newDate)
   }
 
-  // Simular posts criados (em produção viria do banco)
-  const postsCreated = 12
-  const postsThisMonth = 8
-  const postsRemaining = 42
+  // Dados reais do Firebase
+  const [dashboardData, setDashboardData] = useState({
+    postsCreated: 0,
+    postsThisMonth: 0,
+    postsRemaining: 0,
+    currentPlan: 'Básico',
+    planLimit: 50,
+    daysWithPosts: [] as number[],
+    recentPosts: [] as any[],
+    loading: true
+  })
 
-  // Simular dias com posts (em produção viria do banco)
-  const daysWithPosts = [3, 7, 12, 15, 18, 22, 25, 28]
+  // Carregar dados reais do Firebase usando PostService
+  useEffect(() => {
+    if (!user) return
+
+    const loadRealData = async () => {
+      try {
+        setDashboardData(prev => ({ ...prev, loading: true }))
+        
+        // Importar serviços diretamente
+        const PostService = (await import('@/lib/services/PostService')).PostService
+        const SubscriptionService = (await import('@/lib/services/SubscriptionService')).SubscriptionService
+        
+        const postService = new PostService(user.uid)
+        const subscriptionService = new SubscriptionService(user.uid)
+        
+        // Buscar estatísticas do dashboard
+        const stats = await postService.getDashboardStats()
+        
+        // Verificar se usuário tem plano ativo, se não, inicializar com plano gratuito
+        const subscription = await subscriptionService.getCurrentSubscription()
+        if (!subscription) {
+          await subscriptionService.initializeWithFreePlan()
+        }
+        
+        setDashboardData({
+          postsCreated: stats.postsCreated,
+          postsThisMonth: stats.postsThisMonth,
+          postsRemaining: stats.postsRemaining,
+          currentPlan: stats.currentPlan,
+          planLimit: stats.planLimit,
+          daysWithPosts: stats.daysWithPosts,
+          recentPosts: stats.recentPosts,
+          loading: false
+        })
+
+      } catch (error) {
+        console.error('Erro ao carregar dados reais:', error)
+        // Fallback para dados simulados em caso de erro
+        setDashboardData({
+          postsCreated: 0,
+          postsThisMonth: 0,
+          postsRemaining: 50,
+          currentPlan: 'Básico',
+          planLimit: 50,
+          daysWithPosts: [],
+          recentPosts: [],
+          loading: false
+        })
+      }
+    }
+
+    loadRealData()
+  }, [user])
 
   const handleGenerateContent = async () => {
+    if (!user) return
+    
     setIsGenerating(true)
-    // Simular geração de conteúdo
-    setTimeout(() => {
+    
+    try {
+      // Verificar se pode criar post
+      const PostService = (await import('@/lib/services/PostService')).PostService
+      const postService = new PostService(user.uid)
+      
+      const canCreate = await postService.canCreatePost()
+      
+      if (!canCreate.canCreate) {
+        alert(`❌ Não é possível criar post: ${canCreate.reason}`)
+        setIsGenerating(false)
+        return
+      }
+      
+      // Criar post com dados do formulário
+      const postData = {
+        title: topic || `Post sobre ${selectedNiche}`,
+        description: `Conteúdo gerado sobre ${selectedNiche}`,
+        category: selectedNiche || 'geral',
+        status: 'draft' as const,
+        imageUrl: undefined
+      }
+      
+      const postId = await postService.createPost(postData)
+      
+      if (postId) {
+        alert('✅ Post criado com sucesso!')
+        
+        // Limpar formulário
+        setSelectedNiche('')
+        setTopic('')
+        
+        // Recarregar dados do dashboard
+        const stats = await postService.getDashboardStats()
+        setDashboardData({
+          postsCreated: stats.postsCreated,
+          postsThisMonth: stats.postsThisMonth,
+          postsRemaining: stats.postsRemaining,
+          currentPlan: stats.currentPlan,
+          planLimit: stats.planLimit,
+          daysWithPosts: stats.daysWithPosts,
+          recentPosts: stats.recentPosts,
+          loading: false
+        })
+      } else {
+        alert('❌ Erro ao criar post')
+      }
+      
+    } catch (error) {
+      console.error('Erro ao criar post:', error)
+      alert('❌ Erro ao criar post')
+    } finally {
       setIsGenerating(false)
-      alert('Conteúdo gerado com sucesso! 🎉')
-    }, 2000)
+    }
   }
 
   const quickIdeas = [
@@ -239,7 +348,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className={`text-lg font-semibold ${currentColors.textSecondary} mb-2`}>Posts Criados</h3>
-                <p className={`text-4xl font-bold ${currentColors.royalBlue}`}>{postsCreated}</p>
+                <p className={`text-4xl font-bold ${currentColors.royalBlue}`}>{dashboardData.postsCreated}</p>
                 <p className={`${currentColors.textMuted} text-sm`}>Total de conteúdo gerado</p>
               </div>
               <div className={`text-4xl ${currentColors.royalBlue}`}>📝</div>
@@ -250,7 +359,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className={`text-lg font-semibold ${currentColors.textSecondary} mb-2`}>Este Mês</h3>
-                <p className={`text-4xl font-bold ${currentColors.teal}`}>{postsThisMonth}</p>
+                <p className={`text-4xl font-bold ${currentColors.teal}`}>{dashboardData.postsThisMonth}</p>
                 <p className={`${currentColors.textMuted} text-sm`}>Posts criados em {monthNames[new Date().getMonth()]}</p>
               </div>
               <div className={`text-4xl ${currentColors.teal}`}>📅</div>
@@ -261,8 +370,8 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className={`text-lg font-semibold ${currentColors.textSecondary} mb-2`}>Plano Atual</h3>
-                <p className={`text-4xl font-bold ${currentColors.cosmicPurple}`}>Básico</p>
-                <p className={`${currentColors.textMuted} text-sm`}>50 posts/mês</p>
+                <p className={`text-4xl font-bold ${currentColors.cosmicPurple}`}>{dashboardData.currentPlan}</p>
+                <p className={`${currentColors.textMuted} text-sm`}>{dashboardData.planLimit} posts/mês</p>
               </div>
               <div className={`text-4xl ${currentColors.cosmicPurple}`}>💎</div>
             </div>
@@ -272,7 +381,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className={`text-lg font-semibold ${currentColors.textSecondary} mb-2`}>Posts Restantes</h3>
-                <p className={`text-4xl font-bold ${currentColors.coralVibrant}`}>{postsRemaining}</p>
+                <p className={`text-4xl font-bold ${currentColors.coralVibrant}`}>{dashboardData.postsRemaining}</p>
                 <p className={`${currentColors.textMuted} text-sm`}>Este mês</p>
               </div>
               <div className={`text-4xl ${currentColors.coralVibrant}`}>⚡</div>
@@ -324,12 +433,17 @@ export default function DashboardPage() {
                   />
                 </div>
                 
-                <a 
-                  href="/criar-conteudo"
-                  className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white py-4 px-6 rounded-xl font-bold text-xl transition-all transform hover:scale-105 shadow-lg text-center inline-block"
+                <button 
+                  onClick={handleGenerateContent}
+                  disabled={isGenerating || !selectedNiche}
+                  className={`w-full py-4 px-6 rounded-xl font-bold text-xl transition-all transform hover:scale-105 shadow-lg text-center ${
+                    isGenerating || !selectedNiche
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white'
+                  }`}
                 >
-                  🚀 Criar Conteúdo Agora
-                </a>
+                  {isGenerating ? '⏳ Criando...' : '🚀 Criar Conteúdo Agora'}
+                </button>
               </div>
             </div>
 
@@ -424,7 +538,7 @@ export default function DashboardPage() {
                   >
                     {day}
                     {/* Indicador de posts */}
-                    {day && daysWithPosts.includes(day) && (
+                    {day && dashboardData.daysWithPosts.includes(day) && (
                       <div className="absolute bottom-1 w-2 h-2 bg-green-500 rounded-full"></div>
                     )}
                   </div>
@@ -437,7 +551,7 @@ export default function DashboardPage() {
                   📝 Posts para {selectedDate.toLocaleDateString('pt-BR')}
                 </h3>
                 <p className={`${currentColors.textSecondary} text-sm`}>
-                  {daysWithPosts.includes(selectedDate.getDate()) 
+                  {dashboardData.daysWithPosts.includes(selectedDate.getDate()) 
                     ? 'Você tem posts criados neste dia!' 
                     : 'Nenhum post agendado para este dia.'
                   }
@@ -450,24 +564,18 @@ export default function DashboardPage() {
               <h2 className={`text-xl font-bold ${currentColors.textPrimary} mb-4 flex items-center`}>
                 📚 Posts Recentes
                 <span className={`ml-2 ${isDarkMode ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-600'} px-2 py-1 rounded-full text-sm font-semibold`}>
-                  {postsCreated} total
+                  {dashboardData.postsCreated} total
                 </span>
               </h2>
               <div className="space-y-3">
-                {postsCreated > 0 ? (
+                {dashboardData.postsCreated > 0 ? (
                   <>
-                    <div className={`p-3 ${isDarkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-blue-50 to-purple-50'} rounded-xl border ${isDarkMode ? 'border-gray-600' : 'border-blue-200'}`}>
-                      <p className={`font-semibold ${currentColors.textPrimary}`}>Nova lei trabalhista: o que mudou</p>
-                      <p className={`text-sm ${currentColors.textMuted}`}>Direito • 2 dias atrás</p>
-                    </div>
-                    <div className={`p-3 ${isDarkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-green-50 to-blue-50'} rounded-xl border ${isDarkMode ? 'border-gray-600' : 'border-green-200'}`}>
-                      <p className={`font-semibold ${currentColors.textPrimary}`}>5 dicas para contratar funcionários</p>
-                      <p className={`text-sm ${currentColors.textMuted}`}>Direito • 5 dias atrás</p>
-                    </div>
-                    <div className={`p-3 ${isDarkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-purple-50 to-pink-50'} rounded-xl border ${isDarkMode ? 'border-gray-600' : 'border-purple-200'}`}>
-                      <p className={`font-semibold ${currentColors.textPrimary}`}>Como calcular férias proporcionais</p>
-                      <p className={`text-sm ${currentColors.textMuted}`}>Direito • 1 semana atrás</p>
-                    </div>
+                    {dashboardData.recentPosts.map((post, index) => (
+                      <div key={post.id} className={`p-3 ${isDarkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-blue-50 to-purple-50'} rounded-xl border ${isDarkMode ? 'border-gray-600' : 'border-blue-200'}`}>
+                        <p className={`font-semibold ${currentColors.textPrimary}`}>{post.title || 'Post sem título'}</p>
+                        <p className={`text-sm ${currentColors.textMuted}`}>{post.category || 'Geral'} • {post.createdAt ? new Date(post.createdAt.seconds * 1000).toLocaleDateString('pt-BR') : 'Data não disponível'}</p>
+                      </div>
+                    ))}
                   </>
                 ) : (
                   <div className={`p-4 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-xl text-center`}>

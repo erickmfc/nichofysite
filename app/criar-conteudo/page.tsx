@@ -3,12 +3,12 @@
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useAuth } from '@/hooks/useAuth'
 import { ContentApprovalService } from '@/lib/services/ContentApprovalService'
-import { useToastNotifications } from '@/components/ui/Toast'
+import { useToast } from '@/components/ui/Toast'
 import { useState } from 'react'
 
 export default function CriarConteudoPage() {
   const { user } = useAuth()
-  const { success, error } = useToastNotifications()
+  const { addToast } = useToast()
   const [isGenerating, setIsGenerating] = useState(false)
   const [formData, setFormData] = useState({
     tipo: 'Post para Instagram',
@@ -17,6 +17,32 @@ export default function CriarConteudoPage() {
     descricao: '',
     conteudo: ''
   })
+
+  const nichosDisponiveis = [
+    'Direito', 'Saúde & Bem-Estar', 'Tecnologia', 'Gastronomia', 'Beleza & Estética',
+    'Varejo & E-commerce', 'Fitness & Esportes', 'Mercado Imobiliário', 'Contabilidade & Finanças',
+    'Pet Shops & Veterinária', 'Educação & Cursos', 'Turismo & Hotelaria', 'Psicologia & Saúde Mental',
+    'Odontologia', 'Farmácia & Medicamentos', 'Drogarias & Perfumarias', 'Fisioterapia & Reabilitação',
+    'Nutrição & Dietética', 'Veterinária & Clínicas', 'Arquitetura & Engenharia', 'Design & Comunicação Visual',
+    'Marketing & Publicidade', 'Consultoria Empresarial', 'Coaching & Desenvolvimento', 'Automotivo & Oficinas',
+    'Construção Civil', 'Segurança & Vigilância', 'Limpeza & Conservação', 'Jardinagem & Paisagismo',
+    'Eventos & Festas', 'Fotografia & Vídeo', 'Música & Entretenimento', 'Moda & Vestuário',
+    'Esportes & Lazer', 'Livrarias & Editoras', 'Brinquedos & Infantil', 'Casa & Decoração',
+    'Eletrônicos & Tecnologia', 'Móveis & Mobiliário', 'Ferramentas & Equipamentos', 'Agricultura & Agropecuária',
+    'Transporte & Logística', 'Comunicação & Mídia', 'Seguros & Previdência', 'Investimentos & Bolsa',
+    'Imobiliárias & Incorporadoras', 'Escritórios de Advocacia', 'Clínicas Médicas', 'Laboratórios & Análises',
+    'Radiologia & Diagnóstico', 'Psiquiatria & Saúde Mental', 'Cardiologia', 'Dermatologia',
+    'Ginecologia & Obstetrícia', 'Pediatria', 'Ortopedia & Traumatologia', 'Neurologia',
+    'Oftalmologia', 'Otorrinolaringologia', 'Urologia', 'Endocrinologia',
+    'Gastroenterologia', 'Pneumologia', 'Reumatologia', 'Oncologia',
+    'Geriatria', 'Anestesiologia', 'Cirurgia Geral', 'Cirurgia Plástica',
+    'Cirurgia Vascular', 'Cirurgia Cardiovascular', 'Neurocirurgia', 'Cirurgia Ortopédica',
+    'Cirurgia Pediátrica', 'Cirurgia Torácica', 'Cirurgia Digestiva', 'Cirurgia Urológica',
+    'Cirurgia Ginecológica', 'Cirurgia Oftalmológica', 'Cirurgia Otorrinolaringológica', 'Cirurgia Maxilofacial',
+    'Cirurgia Traumatológica', 'Cirurgia Oncológica', 'Cirurgia de Transplantes', 'Cirurgia Robótica',
+    'Cirurgia Laparoscópica', 'Cirurgia Endoscópica', 'Microcirurgia', 'Cirurgia de Emergência',
+    'Cirurgia Ambulatorial', 'Cirurgia Hospitalar', 'Cirurgia Privada', 'Cirurgia Pública'
+  ]
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
@@ -27,12 +53,20 @@ export default function CriarConteudoPage() {
 
   const handleGenerate = async () => {
     if (!user) {
-      error('Erro de Autenticação', 'Usuário não autenticado')
+      addToast({
+        type: 'error',
+        title: 'Erro de Autenticação',
+        message: 'Usuário não autenticado'
+      })
       return
     }
 
     if (!formData.topico.trim() || !formData.descricao.trim()) {
-      error('Campos Obrigatórios', 'Por favor, preencha o tópico e a descrição')
+      addToast({
+        type: 'error',
+        title: 'Campos Obrigatórios',
+        message: 'Por favor, preencha o tópico e a descrição'
+      })
       return
     }
 
@@ -64,17 +98,22 @@ ${formData.descricao}
         platform: formData.tipo
       })
       
-      success(
-        'Conteúdo Enviado para Aprovação! 🎉',
-        'O administrador irá revisar e aprovar em breve.',
-        {
+      addToast({
+        type: 'success',
+        title: 'Conteúdo Enviado para Aprovação! 🎉',
+        message: 'O administrador irá revisar e aprovar em breve.',
+        action: {
           label: 'Ver Meus Pedidos',
           onClick: () => window.location.href = '/meus-pedidos'
         }
-      )
+      })
     } catch (err) {
       console.error('Erro ao gerar conteúdo:', err)
-      error('Erro ao Gerar Conteúdo', 'Tente novamente em alguns instantes.')
+      addToast({
+        type: 'error',
+        title: 'Erro ao Gerar Conteúdo',
+        message: 'Tente novamente em alguns instantes.'
+      })
     } finally {
       setIsGenerating(false)
     }
@@ -111,12 +150,9 @@ ${formData.descricao}
                   onChange={handleChange}
                   className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option>Direito</option>
-                  <option>Saúde</option>
-                  <option>Tecnologia</option>
-                  <option>Educação</option>
-                  <option>Negócios</option>
-                  <option>Marketing</option>
+                  {nichosDisponiveis.map((nicho) => (
+                    <option key={nicho} value={nicho}>{nicho}</option>
+                  ))}
                 </select>
               </div>
               
