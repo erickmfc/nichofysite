@@ -211,6 +211,12 @@ export default function DashboardPage() {
                       <p className={`text-sm font-medium ${currentColors.textPrimary}`}>{user.displayName || 'Usuário'}</p>
                       <p className={`text-xs ${currentColors.textMuted}`}>{user.email}</p>
                     </div>
+                    <a
+                      href="/meu-conteudo"
+                      className="w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors block"
+                    >
+                      📚 Meu Conteúdo
+                    </a>
                     <button
                       onClick={logout}
                       className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"

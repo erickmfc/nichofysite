@@ -43,14 +43,14 @@ export default function HomePage() {
       {/* Hero Section */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center">
-          <h1 className="text-6xl font-bold text-gray-900 leading-tight mb-8 animate-fade-in">
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 leading-tight mb-8 animate-fade-in">
             Sua marca merece ser{' '}
             <span className="bg-gradient-to-r from-orange-500 to-pink-600 bg-clip-text text-transparent animate-gradient">
               vista
             </span>
           </h1>
           
-          <p className="text-2xl text-gray-600 leading-relaxed mb-12 max-w-4xl mx-auto animate-fade-in-delay">
+          <p className="text-xl md:text-2xl text-gray-600 leading-relaxed mb-12 max-w-4xl mx-auto animate-fade-in-delay">
             Crie conteúdo profissional em segundos com nossa IA especializada. 
             Mais de 10 nichos, resultados comprovados e suporte 24/7.
           </p>
@@ -101,19 +101,43 @@ export default function HomePage() {
 
           {/* Examples Section com Carrossel */}
           <div className="mb-20">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4 animate-fade-in">
-              Veja o que nossa IA pode criar
-            </h2>
-            <p className="text-xl text-gray-600 mb-12 animate-fade-in-delay">
-              Exemplos reais de conteúdo profissional gerado pela NichoFy
-            </p>
-            
             <div className="animate-slide-up" style={{animationDelay: '0.3s'}}>
               <ImageCarousel 
                 images={exampleImages}
                 autoPlay={true}
                 interval={4000}
               />
+            </div>
+          </div>
+
+          {/* Stats Section */}
+          <div className="bg-white rounded-3xl shadow-2xl p-8 mb-20 max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4 animate-fade-in">
+                Números que impressionam
+              </h2>
+              <p className="text-lg text-gray-600 animate-fade-in-delay">
+                Resultados reais de quem já usa a NichoFy
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              <div className="text-center animate-bounce-in" style={{animationDelay: '0.1s'}}>
+                <div className="text-4xl font-bold text-orange-500 mb-2">10K+</div>
+                <div className="text-gray-600 font-medium">Posts Criados</div>
+              </div>
+              <div className="text-center animate-bounce-in" style={{animationDelay: '0.2s'}}>
+                <div className="text-4xl font-bold text-blue-500 mb-2">500+</div>
+                <div className="text-gray-600 font-medium">Clientes Ativos</div>
+              </div>
+              <div className="text-center animate-bounce-in" style={{animationDelay: '0.3s'}}>
+                <div className="text-4xl font-bold text-green-500 mb-2">15+</div>
+                <div className="text-gray-600 font-medium">Nichos Especializados</div>
+              </div>
+              <div className="text-center animate-bounce-in" style={{animationDelay: '0.4s'}}>
+                <div className="text-4xl font-bold text-purple-500 mb-2">24/7</div>
+                <div className="text-gray-600 font-medium">Suporte Disponível</div>
+              </div>
             </div>
           </div>
 
@@ -135,7 +159,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">Especialização</h3>
               <p className="text-gray-600 text-center">
-                Mais de 10 nichos diferentes com IA treinada especificamente para cada área.
+                Mais de 15 nichos diferentes com IA treinada especificamente para cada área.
               </p>
             </div>
 
@@ -152,19 +176,30 @@ export default function HomePage() {
 
           {/* Final CTA */}
           <div className="mt-20 text-center">
-            <h2 className="text-4xl font-bold text-gray-900 mb-6 animate-fade-in">
-              Pronto para transformar seu conteúdo?
-            </h2>
-            <p className="text-xl text-gray-600 mb-8 animate-fade-in-delay">
-              Junte-se a milhares de empresas que já usam a NichoFy
-            </p>
-            <Link 
-              href="/login?mode=signup" 
-              className="inline-block bg-gradient-to-r from-orange-500 to-pink-500 text-white px-12 py-4 rounded-xl font-bold text-xl hover:from-orange-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl animate-bounce-in"
-              style={{animationDelay: '0.5s'}}
-            >
-              Começar Gratuitamente
-            </Link>
+            <div className="bg-gradient-to-r from-orange-500 to-pink-500 rounded-3xl p-12 text-white shadow-2xl">
+              <h2 className="text-4xl font-bold mb-6 animate-fade-in">
+                Pronto para transformar seu conteúdo?
+              </h2>
+              <p className="text-xl mb-8 opacity-90 animate-fade-in-delay">
+                Junte-se a mais de 500 empresas que já usam a NichoFy
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Link 
+                  href="/login?mode=signup" 
+                  className="bg-white text-orange-500 px-12 py-4 rounded-xl font-bold text-xl hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl animate-bounce-in"
+                  style={{animationDelay: '0.5s'}}
+                >
+                  Começar Gratuitamente
+                </Link>
+                <Link 
+                  href="/exemplos" 
+                  className="border-2 border-white text-white px-12 py-4 rounded-xl font-bold text-xl hover:bg-white hover:text-orange-500 transition-all duration-300 animate-bounce-in"
+                  style={{animationDelay: '0.6s'}}
+                >
+                  Ver Mais Exemplos
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </main>
