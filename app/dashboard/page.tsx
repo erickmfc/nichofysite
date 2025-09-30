@@ -24,9 +24,7 @@ export default function DashboardPage() {
   useEffect(() => {
     console.log('📊 Dashboard: Verificando autenticação', { 
       user: !!user, 
-      loading, 
-      emailVerified: user?.emailVerified,
-      isProduction: process.env.NODE_ENV === 'production'
+      loading
     })
     
     if (!loading && !user) {

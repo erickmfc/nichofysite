@@ -8,7 +8,6 @@ const nextConfig = {
   
   // Configurações de imagens
   images: {
-    unoptimized: true,
     domains: ['images.unsplash.com', 'via.placeholder.com'],
   },
   

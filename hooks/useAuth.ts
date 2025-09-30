@@ -11,19 +11,15 @@ export const useAuth = () => {
   const router = useRouter()
 
   useEffect(() => {
-    // Otimizar listener do Firebase Auth
+    // Listener do Firebase Auth
     const unsubscribe = onAuthStateChanged(auth, (user: User | null) => {
       console.log('🔐 useAuth: Estado mudou', { 
-        user: !!user, 
-        emailVerified: user?.emailVerified,
-        isProduction: process.env.NODE_ENV === 'production'
+        user: !!user,
+        email: user?.email
       })
       
       setUser(user)
       setLoading(false)
-      
-      // Remover redirecionamento automático para evitar conflitos
-      // O redirecionamento deve ser controlado apenas pelas páginas específicas
     })
 
     return () => unsubscribe()

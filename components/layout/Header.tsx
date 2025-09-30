@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useTheme } from '@/lib/contexts/ThemeContext'
 import { Button } from '@/components/ui/Button'
 import { SearchBar } from './SearchBar'
@@ -31,8 +32,8 @@ export const Header = ({ userName, userEmail, onCreateContent, onLogout }: Heade
       <div className="flex items-center justify-between h-full px-6">
         {/* Left - Logo */}
         <div className="flex items-center">
-          <button
-            onClick={() => window.location.href = '/dashboard'}
+          <Link
+            href="/"
             className="flex items-center space-x-2 group"
           >
             <div className={`text-2xl font-bold transition-all duration-200 group-hover:scale-105 ${
@@ -43,7 +44,7 @@ export const Header = ({ userName, userEmail, onCreateContent, onLogout }: Heade
             <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
               theme === 'dark' ? 'bg-blue-400' : 'bg-blue-500'
             }`}></div>
-          </button>
+          </Link>
         </div>
 
         {/* Center - Search */}

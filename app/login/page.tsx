@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { auth, db } from '@/lib/firebase'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { PublicNavbar } from '@/components/layout/PublicNavbar'
 
 function LoginForm() {
   const searchParams = useSearchParams()
@@ -72,6 +73,7 @@ function LoginForm() {
         await new Promise(resolve => setTimeout(resolve, 100))
         
         // Redirecionamento com router.push para melhor controle
+        console.log('🔐 Login: Redirecionando para dashboard após CADASTRO')
         router.push('/dashboard')
       } else {
         // LOGIN OTIMIZADO
@@ -81,6 +83,7 @@ function LoginForm() {
         await new Promise(resolve => setTimeout(resolve, 100))
         
         // Redirecionamento com router.push para melhor controle
+        console.log('🔐 Login: Redirecionando para dashboard após LOGIN')
         router.push('/dashboard')
       }
     } catch (error: any) {
@@ -118,8 +121,13 @@ function LoginForm() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700">
+      {/* Navbar */}
+      <PublicNavbar />
+      
+      {/* Main Content */}
+      <div className="flex items-center justify-center p-4 pt-20">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block group">
@@ -127,8 +135,33 @@ function LoginForm() {
               NichoFy
             </h1>
           </Link>
+          
+          {/* Mode Toggle */}
+          <div className="flex bg-gray-100 rounded-lg p-1 mb-6 max-w-xs mx-auto">
+            <button
+              onClick={() => router.push('/login')}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
+                !isSignUp 
+                  ? 'bg-white text-blue-600 shadow-sm' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Entrar
+            </button>
+            <button
+              onClick={() => router.push('/login?mode=signup')}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
+                isSignUp 
+                  ? 'bg-white text-blue-600 shadow-sm' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Cadastrar
+            </button>
+          </div>
+          
           <p className="text-gray-600">
-            {isSignUp ? 'Crie sua conta' : 'Entre na sua conta'}
+            {isSignUp ? 'Crie sua conta gratuita' : 'Entre na sua conta'}
           </p>
         </div>
 
@@ -211,22 +244,14 @@ function LoginForm() {
         </form>
 
         {/* Links */}
-        <div className="mt-6 text-center space-y-2">
+        <div className="mt-6 text-center">
           <a
-            href={isSignUp ? '/login' : '/login?mode=signup'}
-            className="text-blue-600 hover:text-blue-700 text-sm transition-colors"
+            href="/"
+            className="text-gray-500 hover:text-gray-700 text-sm transition-colors"
           >
-            {isSignUp ? 'Já tem uma conta? Entre aqui' : 'Não tem uma conta? Cadastre-se'}
+            ← Voltar para o início
           </a>
-          
-          <div>
-            <a
-              href="/"
-              className="text-gray-500 hover:text-gray-700 text-sm transition-colors"
-            >
-              ← Voltar para o início
-            </a>
-          </div>
+        </div>
         </div>
       </div>
     </div>

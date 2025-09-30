@@ -15,9 +15,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   useEffect(() => {
     console.log('🛡️ ProtectedRoute: Verificando autenticação', { 
       user: !!user, 
-      loading, 
-      emailVerified: user?.emailVerified,
-      isProduction: process.env.NODE_ENV === 'production'
+      loading
     })
     
     if (!loading && !user) {
@@ -41,17 +39,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   if (!user) {
     console.log('🛡️ ProtectedRoute: Usuário não encontrado, não renderizando')
     return null // Será redirecionado pelo useEffect
-  }
-
-  // BYPASS TEMPORÁRIO: Em produção, permitir acesso mesmo sem email verificado
-  // TODO: Remover este bypass quando a verificação de email estiver funcionando corretamente
-  const isProduction = process.env.NODE_ENV === 'production'
-  const shouldAllowAccess = isProduction || user.emailVerified
-
-  if (!shouldAllowAccess) {
-    console.log('🛡️ ProtectedRoute: Email não verificado, redirecionando para verificação')
-    router.push('/email-verification')
-    return null
   }
 
   console.log('🛡️ ProtectedRoute: Usuário autenticado, renderizando conteúdo')
