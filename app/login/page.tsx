@@ -7,13 +7,13 @@ import { auth, db } from '@/lib/firebase'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { PublicNavbar } from '@/components/layout/PublicNavbar'
-import { useToastNotifications } from '@/components/ui/Toast'
+import { useToast } from '@/components/ui/Toast'
 
 function LoginForm() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const mode = searchParams.get('mode')
-  const { addToast } = useToastNotifications()
+  const { addToast } = useToast()
   
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
