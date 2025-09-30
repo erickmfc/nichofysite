@@ -35,10 +35,17 @@ function LoginForm() {
     setError(null)
     setIsLoading(true)
 
+    console.log('🔐 Tentativa de login:', { email, isSignUp })
+
     try {
       if (isSignUp) {
+        console.log('📝 Criando nova conta...')
         const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+        console.log('✅ Usuário criado:', userCredential.user.uid)
+        
         await updateProfile(userCredential.user, { displayName: name })
+        console.log('👤 Perfil atualizado')
+        
         await setDoc(doc(db, 'users', userCredential.user.uid), {
           uid: userCredential.user.uid,
           email: email,
@@ -46,6 +53,8 @@ function LoginForm() {
           createdAt: serverTimestamp(),
           role: 'user',
         })
+        console.log('💾 Dados salvos no Firestore')
+        
         addToast({
           type: 'success',
           title: 'Conta criada!',
@@ -53,7 +62,10 @@ function LoginForm() {
         })
         router.push('/login')
       } else {
-        await signInWithEmailAndPassword(auth, email, password)
+        console.log('🔑 Fazendo login...')
+        const userCredential = await signInWithEmailAndPassword(auth, email, password)
+        console.log('✅ Login bem-sucedido:', userCredential.user.uid)
+        
         addToast({
           type: 'success',
           title: 'Login bem-sucedido!',
@@ -62,22 +74,31 @@ function LoginForm() {
         router.push('/dashboard')
       }
     } catch (error: any) {
-      console.error('Erro de autenticação:', error)
+      console.error('❌ Erro de autenticação:', error)
+      console.error('❌ Código do erro:', error.code)
+      console.error('❌ Mensagem do erro:', error.message)
+      
       const errorMessages: { [key: string]: string } = {
         'auth/email-already-in-use': 'Este e-mail já está em uso.',
         'auth/invalid-email': 'Formato de e-mail inválido.',
         'auth/weak-password': 'A senha deve ter pelo menos 6 caracteres.',
         'auth/user-not-found': 'Usuário não encontrado. Verifique seu e-mail.',
         'auth/wrong-password': 'Senha incorreta. Tente novamente.',
-        'auth/invalid-credential': 'Credenciais inválidas. Verifique email e senha.'
+        'auth/invalid-credential': 'Credenciais inválidas. Verifique email e senha.',
+        'auth/too-many-requests': 'Muitas tentativas. Tente novamente mais tarde.',
+        'auth/network-request-failed': 'Erro de conexão. Verifique sua internet.',
+        'auth/user-disabled': 'Esta conta foi desabilitada.',
+        'auth/operation-not-allowed': 'Operação não permitida.',
       }
 
       const errorCode = error.code as string
-      setError(errorMessages[errorCode] || 'Erro ao fazer login. Tente novamente.')
+      const errorMessage = errorMessages[errorCode] || 'Erro ao fazer login. Tente novamente.'
+      
+      setError(errorMessage)
       addToast({
         type: 'error',
         title: 'Erro de autenticação',
-        message: errorMessages[errorCode] || 'Ocorreu um erro inesperado. Tente novamente.',
+        message: errorMessage,
       })
     } finally {
       setIsLoading(false)
