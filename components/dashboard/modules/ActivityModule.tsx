@@ -2,78 +2,107 @@
 
 import { useTheme } from '@/lib/contexts/ThemeContext'
 
-interface ActivityModuleProps {
-  postsData: { day: string; count: number }[]
+interface Activity {
+  id: string
+  type: string
+  title: string
+  description: string
+  timestamp: Date
+  icon: string
 }
 
-export const ActivityModule = ({ postsData }: ActivityModuleProps) => {
+interface ActivityModuleProps {
+  activities: Activity[]
+}
+
+export const ActivityModule = ({ activities }: ActivityModuleProps) => {
   const { theme } = useTheme()
-  
-  const maxCount = Math.max(...postsData.map(d => d.count))
-  
+
+  const formatTimeAgo = (timestamp: Date) => {
+    const now = new Date()
+    const diff = now.getTime() - timestamp.getTime()
+    const minutes = Math.floor(diff / 60000)
+    const hours = Math.floor(diff / 3600000)
+    const days = Math.floor(diff / 86400000)
+
+    if (minutes < 60) {
+      return `${minutes}min atrás`
+    } else if (hours < 24) {
+      return `${hours}h atrás`
+    } else {
+      return `${days}d atrás`
+    }
+  }
+
+  if (activities.length === 0) {
+    return (
+      <div className={`rounded-2xl p-6 shadow-lg transition-all duration-300 hover:shadow-xl ${
+        theme === 'dark'
+          ? 'bg-gray-800 border border-gray-700'
+          : 'bg-white border border-gray-200'
+      }`}>
+        <h3 className={`text-lg font-semibold mb-4 ${
+          theme === 'dark' ? 'text-white' : 'text-gray-900'
+        }`}>
+          📈 Atividades Recentes
+        </h3>
+        
+        <div className="text-center py-8">
+          <div className="text-4xl mb-4">🚀</div>
+          <p className={`text-sm ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+          }`}>
+            Suas atividades aparecerão aqui conforme você criar conteúdo.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={`rounded-2xl p-6 shadow-lg transition-all duration-300 hover:shadow-xl ${
       theme === 'dark'
         ? 'bg-gray-800 border border-gray-700'
         : 'bg-white border border-gray-200'
     }`}>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className={`text-lg font-semibold ${
-          theme === 'dark' ? 'text-white' : 'text-gray-900'
-        }`}>
-          📈 Atividade dos Últimos 7 Dias
-        </h3>
-        <span className={`text-sm ${
-          theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-        }`}>
-          Posts criados
-        </span>
-      </div>
+      <h3 className={`text-lg font-semibold mb-4 ${
+        theme === 'dark' ? 'text-white' : 'text-gray-900'
+      }`}>
+        📈 Atividades Recentes
+      </h3>
       
-      <div className="h-32 flex items-end justify-between space-x-2">
-        {postsData.map((data, index) => {
-          const height = maxCount > 0 ? (data.count / maxCount) * 100 : 0
-          
-          return (
-            <div key={index} className="flex flex-col items-center flex-1">
-              <div className="relative w-full h-24 flex items-end justify-center">
-                <div
-                  className={`w-full rounded-t-lg transition-all duration-300 hover:opacity-80 ${
-                    theme === 'dark'
-                      ? 'bg-gradient-to-t from-blue-600 to-blue-400'
-                      : 'bg-gradient-to-t from-blue-500 to-blue-300'
-                  }`}
-                  style={{ height: `${height}%` }}
-                ></div>
-                <div className={`absolute -top-6 text-xs font-medium ${
-                  theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+      <div className="space-y-3">
+        {activities.slice(0, 5).map((activity) => (
+          <div
+            key={activity.id}
+            className={`p-3 rounded-xl transition-all duration-200 hover:shadow-md ${
+              theme === 'dark'
+                ? 'bg-gray-700 border border-gray-600 hover:bg-gray-600'
+                : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
+            }`}
+          >
+            <div className="flex items-start space-x-3">
+              <span className="text-lg">{activity.icon}</span>
+              <div className="flex-1">
+                <h4 className={`font-semibold text-sm ${
+                  theme === 'dark' ? 'text-white' : 'text-gray-900'
                 }`}>
-                  {data.count}
-                </div>
-              </div>
-              <div className={`text-xs mt-2 ${
-                theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-              }`}>
-                {data.day}
+                  {activity.title}
+                </h4>
+                <p className={`text-xs mt-1 ${
+                  theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                }`}>
+                  {activity.description}
+                </p>
+                <p className={`text-xs mt-1 ${
+                  theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+                }`}>
+                  {formatTimeAgo(activity.timestamp)}
+                </p>
               </div>
             </div>
-          )
-        })}
-      </div>
-      
-      <div className="mt-4 flex items-center justify-between">
-        <div className={`text-sm ${
-          theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
-        }`}>
-          Total: <span className="font-semibold text-blue-500">
-            {postsData.reduce((sum, d) => sum + d.count, 0)} posts
-          </span>
-        </div>
-        <div className={`text-xs ${
-          theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-        }`}>
-          Média: {Math.round(postsData.reduce((sum, d) => sum + d.count, 0) / postsData.length)} por dia
-        </div>
+          </div>
+        ))}
       </div>
     </div>
   )

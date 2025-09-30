@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { useToast } from '@/components/ui/Toast'
+// import { useToast } from '@/components/ui/Toast'
 
 interface ContentIdeasProps {
   userId: string
@@ -18,7 +18,7 @@ interface ContentIdea {
 }
 
 export default function ContentIdeas({ userId }: ContentIdeasProps) {
-  const { addToast } = useToast()
+  // const { addToast } = useToast()
   const [ideas, setIdeas] = useState<ContentIdea[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedNiche, setSelectedNiche] = useState('')
@@ -121,16 +121,18 @@ export default function ContentIdeas({ userId }: ContentIdeasProps) {
   }, [generateIdeas])
 
   const useIdea = useCallback((idea: ContentIdea) => {
-    addToast({
-      type: 'success',
-      title: 'Ideia Selecionada!',
-      message: `"${idea.title}" foi adicionada ao seu criador de conteúdo.`,
-      action: {
-        label: 'Criar Post',
-        onClick: () => window.location.href = '/criar-conteudo'
-      }
-    })
-  }, [addToast])
+    // addToast({
+    //   type: 'success',
+    //   title: 'Ideia Selecionada!',
+    //   message: `"${idea.title}" foi adicionada ao seu criador de conteúdo.`,
+    //   action: {
+    //     label: 'Criar Post',
+    //     onClick: () => window.location.href = '/criar-conteudo'
+    //   }
+    // })
+    console.log(`Ideia selecionada: ${idea.title}`)
+    window.location.href = '/criar-conteudo'
+  }, [])
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -231,11 +233,12 @@ export default function ContentIdeas({ userId }: ContentIdeasProps) {
           onClick={() => {
             const newIdeas = generateIdeas()
             setIdeas(newIdeas)
-            addToast({
-              type: 'info',
-              title: 'Ideias Atualizadas!',
-              message: 'Novas ideias foram geradas para você.'
-            })
+            // addToast({
+            //   type: 'info',
+            //   title: 'Ideias Atualizadas!',
+            //   message: 'Novas ideias foram geradas para você.'
+            // })
+            console.log('Novas ideias foram geradas')
           }}
           className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
         >
