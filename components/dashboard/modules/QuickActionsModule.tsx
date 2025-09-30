@@ -2,43 +2,79 @@
 
 import { useTheme } from '@/lib/contexts/ThemeContext'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 export const QuickActionsModule = () => {
   const { theme } = useTheme()
   const router = useRouter()
+  const [hoveredAction, setHoveredAction] = useState<string | null>(null)
 
   const actions = [
     {
-      title: 'Criar Post',
-      description: 'Gerar novo conteúdo',
+      id: 'create',
+      title: 'Criar Conteúdo',
+      description: 'Gerar novo post',
       icon: '✨',
       color: 'from-orange-500 to-pink-500',
       hoverColor: 'from-orange-600 to-pink-600',
-      onClick: () => router.push('/criar-conteudo')
+      onClick: () => router.push('/criar-conteudo'),
+      badge: 'Novo',
+      badgeColor: 'bg-green-500'
     },
     {
+      id: 'posts',
       title: 'Meus Posts',
       description: 'Ver todos os posts',
-      icon: '📝',
+      icon: '📚',
       color: 'from-blue-500 to-cyan-500',
       hoverColor: 'from-blue-600 to-cyan-600',
-      onClick: () => router.push('/meu-conteudo')
+      onClick: () => router.push('/meu-conteudo'),
+      badge: null,
+      badgeColor: ''
     },
     {
-      title: 'Templates',
-      description: 'Usar templates prontos',
-      icon: '📋',
+      id: 'nichos',
+      title: 'Nichos',
+      description: 'Explorar categorias',
+      icon: '🎯',
       color: 'from-purple-500 to-indigo-500',
       hoverColor: 'from-purple-600 to-indigo-600',
-      onClick: () => router.push('/templates')
+      onClick: () => router.push('/nichos'),
+      badge: '12+',
+      badgeColor: 'bg-purple-500'
     },
     {
+      id: 'templates',
+      title: 'Templates',
+      description: 'Modelos prontos',
+      icon: '📋',
+      color: 'from-green-500 to-emerald-500',
+      hoverColor: 'from-green-600 to-emerald-600',
+      onClick: () => router.push('/templates'),
+      badge: '50+',
+      badgeColor: 'bg-green-500'
+    },
+    {
+      id: 'analytics',
+      title: 'Analytics',
+      description: 'Ver métricas',
+      icon: '📊',
+      color: 'from-red-500 to-rose-500',
+      hoverColor: 'from-red-600 to-rose-600',
+      onClick: () => router.push('/analytics'),
+      badge: 'Pro',
+      badgeColor: 'bg-red-500'
+    },
+    {
+      id: 'settings',
       title: 'Configurações',
       description: 'Ajustar perfil',
       icon: '⚙️',
       color: 'from-gray-500 to-slate-500',
       hoverColor: 'from-gray-600 to-slate-600',
-      onClick: () => router.push('/configuracoes')
+      onClick: () => router.push('/configuracoes'),
+      badge: null,
+      badgeColor: ''
     }
   ]
 
@@ -48,26 +84,65 @@ export const QuickActionsModule = () => {
         ? 'bg-gray-800 border border-gray-700'
         : 'bg-white border border-gray-200'
     }`}>
-      <h3 className={`text-lg font-semibold mb-4 ${
-        theme === 'dark' ? 'text-white' : 'text-gray-900'
-      }`}>
-        ⚡ Ações Rápidas
-      </h3>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className={`text-lg font-semibold ${
+          theme === 'dark' ? 'text-white' : 'text-gray-900'
+        }`}>
+          ⚡ Ações Rápidas
+        </h3>
+        <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+          theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'
+        }`}>
+          {actions.length} opções
+        </div>
+      </div>
       
-      <div className="grid grid-cols-2 gap-3">
-        {actions.map((action, index) => (
+      <div className="grid grid-cols-2 gap-4">
+        {actions.map((action) => (
           <button
-            key={index}
+            key={action.id}
             onClick={action.onClick}
-            className={`p-4 rounded-xl bg-gradient-to-r ${action.color} hover:${action.hoverColor} text-white transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5`}
+            onMouseEnter={() => setHoveredAction(action.id)}
+            onMouseLeave={() => setHoveredAction(null)}
+            className={`relative p-4 rounded-xl bg-gradient-to-r ${action.color} hover:${action.hoverColor} text-white transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 group overflow-hidden`}
           >
-            <div className="text-center">
-              <div className="text-2xl mb-2">{action.icon}</div>
-              <h4 className="font-semibold text-sm">{action.title}</h4>
+            {/* Efeito de brilho no hover */}
+            <div className={`absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300 ${
+              hoveredAction === action.id ? 'opacity-10' : ''
+            }`}></div>
+            
+            {/* Badge */}
+            {action.badge && (
+              <div className={`absolute -top-2 -right-2 ${action.badgeColor} text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg`}>
+                {action.badge}
+              </div>
+            )}
+            
+            <div className="relative z-10 text-center">
+              <div className="text-3xl mb-2 group-hover:scale-110 transition-transform duration-300">
+                {action.icon}
+              </div>
+              <h4 className="font-semibold text-sm mb-1">{action.title}</h4>
               <p className="text-xs opacity-90">{action.description}</p>
             </div>
+            
+            {/* Indicador de hover */}
+            <div className={`absolute bottom-0 left-0 right-0 h-1 bg-white opacity-0 group-hover:opacity-30 transition-opacity duration-300 ${
+              hoveredAction === action.id ? 'opacity-30' : ''
+            }`}></div>
           </button>
         ))}
+      </div>
+      
+      {/* Dica */}
+      <div className={`mt-4 p-3 rounded-lg ${
+        theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'
+      }`}>
+        <p className={`text-xs text-center ${
+          theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+        }`}>
+          💡 <strong>Dica:</strong> Use os templates para criar posts mais rapidamente
+        </p>
       </div>
     </div>
   )
