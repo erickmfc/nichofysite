@@ -18,10 +18,10 @@ function LoginForm() {
   const [name, setName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-
+  
   const isSignUp = mode === 'signup'
-
-  // Memoizar validação para evitar re-renders
+  
+  // Validação do formulário
   const isFormValid = useMemo(() => {
     if (isSignUp) {
       return email && password && name && password.length >= 6
@@ -29,7 +29,6 @@ function LoginForm() {
     return email && password
   }, [email, password, name, isSignUp])
 
-  // Otimizar handleSubmit com useCallback
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -37,66 +36,39 @@ function LoginForm() {
     
     setIsLoading(true)
     setError('')
-
+    
     try {
       if (isSignUp) {
-        // CADASTRO OTIMIZADO - Operações paralelas
+        // Criar usuário
         const userCredential = await createUserWithEmailAndPassword(auth, email, password)
         const user = userCredential.user
-
-        // Executar operações em paralelo para máxima velocidade
-        const promises = []
         
-        // Atualizar perfil (se necessário)
-        if (name) {
-          promises.push(updateProfile(user, { displayName: name }))
-        }
+        // Atualizar perfil
+        await updateProfile(user, { displayName: name })
         
-        // Salvar no Firestore
-        promises.push(setDoc(doc(db, 'users', user.uid), {
-          name: name || user.displayName || 'Usuário',
+        // Salvar dados no Firestore
+        await setDoc(doc(db, 'users', user.uid), {
+          uid: user.uid,
           email: user.email,
-          role: 'client',
-          plan: 'basic',
-          status: 'active',
+          displayName: name,
           createdAt: serverTimestamp(),
-          preferences: {
-            language: 'pt',
-            theme: 'light'
-          }
-        }))
-
-        // Executar todas as operações em paralelo
-        await Promise.all(promises)
-
-        // Aguardar um momento para garantir que o estado seja atualizado
-        await new Promise(resolve => setTimeout(resolve, 100))
+          plan: 'free',
+          postsCount: 0
+        })
         
-        // Redirecionamento com router.push para melhor controle
-        console.log('🔐 Login: Redirecionando para dashboard após CADASTRO')
-        router.push('/dashboard')
+        router.replace('/dashboard')
       } else {
-        // LOGIN OTIMIZADO
+        // Login
         await signInWithEmailAndPassword(auth, email, password)
-        
-        // Aguardar um momento para garantir que o estado seja atualizado
-        await new Promise(resolve => setTimeout(resolve, 100))
-        
-        // Redirecionamento com router.push para melhor controle
-        console.log('🔐 Login: Redirecionando para dashboard após LOGIN')
-        router.push('/dashboard')
+        router.replace('/dashboard')
       }
     } catch (error: any) {
-      console.error('Erro de autenticação:', error)
-      
-      // Tratamento de erro otimizado
-      const errorMessages: Record<string, string> = {
-        'auth/user-not-found': 'Usuário não encontrado',
-        'auth/wrong-password': 'Senha incorreta',
-        'auth/invalid-email': 'Email inválido',
-        'auth/email-already-in-use': 'Email já está em uso',
-        'auth/weak-password': 'Senha deve ter pelo menos 6 caracteres',
-        'auth/too-many-requests': 'Muitas tentativas. Aguarde alguns minutos.',
+      const errorMessages: { [key: string]: string } = {
+        'auth/user-not-found': 'Usuário não encontrado.',
+        'auth/wrong-password': 'Senha incorreta.',
+        'auth/email-already-in-use': 'Este email já está em uso.',
+        'auth/weak-password': 'A senha deve ter pelo menos 6 caracteres.',
+        'auth/invalid-email': 'Email inválido.',
         'auth/invalid-credential': 'Credenciais inválidas. Verifique email e senha.'
       }
       
@@ -105,7 +77,7 @@ function LoginForm() {
     } finally {
       setIsLoading(false)
     }
-  }, [email, password, name, isSignUp, isFormValid])
+  }, [email, password, name, isSignUp, isFormValid, router])
 
   // Otimizar handlers com useCallback
   const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,130 +100,124 @@ function LoginForm() {
       {/* Main Content */}
       <div className="flex items-center justify-center p-4 pt-20">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block group">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-200">
-              NichoFy
-            </h1>
-          </Link>
-          
-          {/* Mode Toggle */}
-          <div className="flex bg-gray-100 rounded-lg p-1 mb-6 max-w-xs mx-auto">
-            <button
-              onClick={() => router.push('/login')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
-                !isSignUp 
-                  ? 'bg-white text-blue-600 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Entrar
-            </button>
-            <button
-              onClick={() => router.push('/login?mode=signup')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
-                isSignUp 
-                  ? 'bg-white text-blue-600 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Cadastrar
-            </button>
+          {/* Header */}
+          <div className="text-center mb-8">
+            <Link href="/" className="inline-block group">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+                NichoFy
+              </h1>
+            </Link>
+            
+            {/* Mode Toggle */}
+            <div className="flex bg-gray-100 rounded-lg p-1 mb-6 max-w-xs mx-auto">
+              <button
+                onClick={() => router.push('/login')}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
+                  !isSignUp 
+                    ? 'bg-white text-blue-600 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Entrar
+              </button>
+              <button
+                onClick={() => router.push('/login?mode=signup')}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
+                  isSignUp 
+                    ? 'bg-white text-blue-600 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Cadastrar
+              </button>
+            </div>
+            
+            <p className="text-gray-600">
+              {isSignUp ? 'Crie sua conta e comece a gerar conteúdo' : 'Entre na sua conta'}
+            </p>
           </div>
-          
-          <p className="text-gray-600">
-            {isSignUp ? 'Crie sua conta gratuita' : 'Entre na sua conta'}
-          </p>
-        </div>
 
-        {/* Formulário */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {isSignUp && (
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {isSignUp && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nome completo
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={handleNameChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Seu nome completo"
+                  autoComplete="name"
+                />
+              </div>
+            )}
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nome completo
+                Email
               </label>
               <input
-                type="text"
-                value={name}
-                onChange={handleNameChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                placeholder="Seu nome completo"
-                required={isSignUp}
-                autoComplete="name"
+                type="email"
+                value={email}
+                onChange={handleEmailChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                placeholder="seu@email.com"
+                autoComplete="email"
               />
             </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={handleEmailChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              placeholder="seu@email.com"
-              required
-              autoComplete="email"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Senha
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={handlePasswordChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              placeholder="Sua senha"
-              required
-              minLength={6}
-              autoComplete={isSignUp ? "new-password" : "current-password"}
-            />
-          </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm animate-fade-in">
-              {error}
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Senha
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={handlePasswordChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                placeholder="Sua senha"
+                autoComplete={isSignUp ? "new-password" : "current-password"}
+              />
             </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={isLoading || !isFormValid}
-            className={`
-              w-full font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform
-              ${isLoading || !isFormValid
-                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700 text-white hover:scale-105 active:scale-95'
-              }
-            `}
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                {isSignUp ? 'Criando conta...' : 'Entrando...'}
+            
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm animate-fade-in">
+                {error}
               </div>
-            ) : (
-              isSignUp ? 'Criar Conta' : 'Entrar'
             )}
-          </button>
-        </form>
-
-        {/* Links */}
-        <div className="mt-6 text-center">
-          <a
-            href="/"
-            className="text-gray-500 hover:text-gray-700 text-sm transition-colors"
-          >
-            ← Voltar para o início
-          </a>
-        </div>
+            
+            <button
+              type="submit"
+              disabled={!isFormValid || isLoading}
+              className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
+                isFormValid && !isLoading
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  {isSignUp ? 'Criando conta...' : 'Entrando...'}
+                </div>
+              ) : (
+                isSignUp ? 'Criar conta' : 'Entrar'
+              )}
+            </button>
+          </form>
+          
+          {/* Footer */}
+          <div className="mt-6 text-center">
+            <a
+              href="/"
+              className="text-gray-500 hover:text-gray-700 text-sm transition-colors"
+            >
+              ← Voltar para o início
+            </a>
+          </div>
         </div>
       </div>
     </div>
