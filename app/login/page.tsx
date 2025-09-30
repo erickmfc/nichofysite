@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo, Suspense } from 'react'
+import React, { useState, useCallback, useMemo, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { auth, db } from '@/lib/firebase'
@@ -19,6 +19,128 @@ function LoginForm() {
   const [error, setError] = useState('')
   
   const isSignUp = mode === 'signup'
+
+  // Adicionar estilos CSS para as animações
+  React.useEffect(() => {
+    const style = document.createElement('style')
+    style.textContent = `
+      @keyframes briefing-appear {
+        0% { opacity: 0; transform: translateY(20px) scale(0.9); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      
+      @keyframes sketch-lines {
+        0% { opacity: 0; }
+        50% { opacity: 1; }
+        100% { opacity: 0.7; }
+      }
+      
+      @keyframes draw-line {
+        0% { stroke-dashoffset: 100; }
+        100% { stroke-dashoffset: 0; }
+      }
+      
+      @keyframes draw-line-delayed {
+        0% { stroke-dashoffset: 100; }
+        50% { stroke-dashoffset: 100; }
+        100% { stroke-dashoffset: 0; }
+      }
+      
+      @keyframes pulse-idea {
+        0%, 100% { opacity: 0.4; transform: scale(1); }
+        50% { opacity: 0.8; transform: scale(1.2); }
+      }
+      
+      @keyframes float-keyword-1 {
+        0%, 100% { opacity: 0; transform: translateY(10px); }
+        20%, 80% { opacity: 0.6; transform: translateY(0); }
+      }
+      
+      @keyframes float-keyword-2 {
+        0%, 100% { opacity: 0; transform: translateY(10px); }
+        30%, 70% { opacity: 0.6; transform: translateY(0); }
+      }
+      
+      @keyframes float-keyword-3 {
+        0%, 100% { opacity: 0; transform: translateY(10px); }
+        40%, 60% { opacity: 0.6; transform: translateY(0); }
+      }
+      
+      @keyframes post-assemble {
+        0% { opacity: 0; transform: translateX(20px) scale(0.9); }
+        100% { opacity: 1; transform: translateX(0) scale(1); }
+      }
+      
+      @keyframes pulse-delayed {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 0.8; }
+      }
+      
+      @keyframes pulse-delayed-2 {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
+      }
+      
+      .animate-briefing-appear {
+        animation: briefing-appear 2s ease-out infinite;
+        animation-delay: 0s;
+      }
+      
+      .animate-sketch-lines {
+        animation: sketch-lines 8s ease-in-out infinite;
+      }
+      
+      .animate-draw-line {
+        animation: draw-line 3s ease-out infinite;
+        stroke-dasharray: 20, 5;
+      }
+      
+      .animate-draw-line-delayed {
+        animation: draw-line-delayed 4s ease-out infinite;
+        stroke-dasharray: 15, 3;
+      }
+      
+      .animate-pulse-idea {
+        animation: pulse-idea 2s ease-in-out infinite;
+        animation-delay: 1s;
+      }
+      
+      .animate-float-keyword-1 {
+        animation: float-keyword-1 6s ease-in-out infinite;
+        animation-delay: 1s;
+      }
+      
+      .animate-float-keyword-2 {
+        animation: float-keyword-2 6s ease-in-out infinite;
+        animation-delay: 2s;
+      }
+      
+      .animate-float-keyword-3 {
+        animation: float-keyword-3 6s ease-in-out infinite;
+        animation-delay: 3s;
+      }
+      
+      .animate-post-assemble {
+        animation: post-assemble 2s ease-out infinite;
+        animation-delay: 4s;
+      }
+      
+      .animate-pulse-delayed {
+        animation: pulse-delayed 2s ease-in-out infinite;
+        animation-delay: 0.5s;
+      }
+      
+      .animate-pulse-delayed-2 {
+        animation: pulse-delayed-2 2s ease-in-out infinite;
+        animation-delay: 1s;
+      }
+    `
+    document.head.appendChild(style)
+    
+    return () => {
+      document.head.removeChild(style)
+    }
+  }, [])
   
   // Validação do formulário
   const isFormValid = useMemo(() => {
@@ -105,34 +227,81 @@ function LoginForm() {
             <div className="absolute bottom-20 right-20 w-28 h-28 bg-teal-300/20 rounded-full blur-xl"></div>
           </div>
           
-          {/* Content */}
-          <div className="relative z-10 flex flex-col justify-center px-16 text-white">
-            <h2 className="text-5xl font-bold mb-4 leading-tight">
-              Sua marca, sua voz.
-            </h2>
-            <p className="text-xl text-blue-100 mb-8">
-              Veja a mágica acontecer em tempo real
-            </p>
-            
-            {/* Floating Card */}
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 max-w-sm border border-white/20">
-              <div className="flex items-center mb-3">
-                <div className="w-8 h-8 bg-orange-500 rounded-full mr-3"></div>
-                <span className="font-semibold text-white">Restaurante Sabor</span>
-              </div>
-              <p className="text-white/90 mb-4">Prato do dia: Risotto de Camarão</p>
-              <div className="flex items-center space-x-4 text-sm">
-                <div className="flex items-center">
-                  <span className="text-red-400 mr-1">❤️</span>
-                  <span className="text-white/80">245</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="text-blue-400 mr-1">💬</span>
-                  <span className="text-white/80">18</span>
-                </div>
-              </div>
-            </div>
-          </div>
+                 {/* Content */}
+                 <div className="relative z-10 flex flex-col justify-center px-16 text-white">
+                   <h2 className="text-5xl font-bold mb-4 leading-tight">
+                     Sua marca, sua voz.
+                   </h2>
+                   <p className="text-xl text-blue-100 mb-8">
+                     Conteúdo criado por especialistas, para você.
+                   </p>
+
+                   {/* Animação: Do Briefing ao Post Perfeito */}
+                   <div className="relative w-full h-80 overflow-hidden">
+                     {/* Briefing Card */}
+                     <div className="absolute bottom-4 left-4 bg-white/15 backdrop-blur-md rounded-xl p-4 max-w-xs border border-white/20 animate-briefing-appear">
+                       <div className="flex items-center mb-2">
+                         <div className="w-6 h-6 bg-blue-400 rounded-full mr-2"></div>
+                         <span className="text-sm font-medium text-white">Cliente</span>
+                       </div>
+                       <p className="text-white/90 text-sm">"Preciso de um post para o Dia dos Pais na minha barbearia"</p>
+                     </div>
+
+                     {/* Linhas de Esboço */}
+                     <svg className="absolute inset-0 w-full h-full animate-sketch-lines" viewBox="0 0 400 300">
+                       <path 
+                         d="M80,280 Q200,200 320,120" 
+                         stroke="rgba(255,255,255,0.3)" 
+                         strokeWidth="2" 
+                         fill="none"
+                         strokeDasharray="5,5"
+                         className="animate-draw-line"
+                       />
+                       <path 
+                         d="M100,260 Q250,180 350,100" 
+                         stroke="rgba(255,255,255,0.2)" 
+                         strokeWidth="1.5" 
+                         fill="none"
+                         strokeDasharray="3,3"
+                         className="animate-draw-line-delayed"
+                       />
+                       <circle 
+                         cx="200" 
+                         cy="150" 
+                         r="3" 
+                         fill="rgba(255,255,255,0.4)"
+                         className="animate-pulse-idea"
+                       />
+                     </svg>
+
+                     {/* Palavras-chave flutuantes */}
+                     <div className="absolute top-20 left-20 text-white/60 text-sm animate-float-keyword-1">#DiaDosPais</div>
+                     <div className="absolute top-32 right-24 text-white/60 text-sm animate-float-keyword-2">Estilo</div>
+                     <div className="absolute top-48 left-32 text-white/60 text-sm animate-float-keyword-3">Presente</div>
+
+                     {/* Post Final */}
+                     <div className="absolute top-8 right-8 bg-white/20 backdrop-blur-md rounded-xl p-4 max-w-xs border border-white/30 animate-post-assemble">
+                       <div className="flex items-center mb-2">
+                         <div className="w-6 h-6 bg-orange-500 rounded-full mr-2"></div>
+                         <span className="text-sm font-medium text-white">Barbearia Estilo</span>
+                       </div>
+                       <p className="text-white/90 text-sm mb-2">🎁 Dia dos Pais chegando!</p>
+                       <p className="text-white/80 text-xs">Presenteie seu pai com um corte especial. Agende já!</p>
+                       <div className="flex items-center mt-2 space-x-2 text-xs text-white/70">
+                         <span>❤️</span>
+                         <span>💬</span>
+                         <span>📤</span>
+                       </div>
+                     </div>
+
+                     {/* Indicador de Processo */}
+                     <div className="absolute bottom-8 right-8 flex space-x-1">
+                       <div className="w-2 h-2 bg-white/40 rounded-full animate-pulse"></div>
+                       <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse-delayed"></div>
+                       <div className="w-2 h-2 bg-white/80 rounded-full animate-pulse-delayed-2"></div>
+                     </div>
+                   </div>
+                 </div>
         </div>
         
         {/* Right Side - Login Form */}

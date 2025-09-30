@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { BottomNavigation } from '@/components/ui/BottomNavigation'
+import { HeroCard, StatsCard, ModernCard } from '@/components/ui/ModernCard'
 
 export default function MobileDashboard() {
   const [currentDate] = useState(new Date())
@@ -69,40 +71,14 @@ export default function MobileDashboard() {
       {/* Main Content */}
       <div className="px-6 py-6 space-y-6">
         {/* Hero Card - Sugestões para Hoje */}
-        <div className="bg-gradient-to-r from-orange-500 to-pink-500 rounded-3xl p-6 text-white shadow-2xl">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
-                <span className="text-2xl">✨</span>
-              </div>
-              <div>
-                <h2 className="text-xl font-bold">Sugestões para Hoje</h2>
-                <p className="text-white/90">Você tem {userData.suggestions} novas sugestões!</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold">{userData.suggestions}</div>
-              <div className="text-sm text-white/80">novas</div>
-            </div>
-          </div>
-          
-          {/* Floating Icons */}
-          <div className="flex justify-center space-x-4 mb-4">
-            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center animate-bounce" style={{animationDelay: '0.1s'}}>
-              <span className="text-sm">📱</span>
-            </div>
-            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center animate-bounce" style={{animationDelay: '0.2s'}}>
-              <span className="text-sm">📝</span>
-            </div>
-            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center animate-bounce" style={{animationDelay: '0.3s'}}>
-              <span className="text-sm">🎯</span>
-            </div>
-          </div>
-          
-          <button className="w-full bg-white text-orange-500 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
-            Ver Sugestões
-          </button>
-        </div>
+        <HeroCard
+          title="Sugestões para Hoje"
+          subtitle={`Você tem ${userData.suggestions} novas sugestões!`}
+          value={userData.suggestions}
+          icon="✨"
+          buttonText="Ver Sugestões"
+          floatingIcons={['📱', '📝', '🎯']}
+        />
 
         {/* Calendário Compacto */}
         <div className="bg-white rounded-2xl p-4 shadow-lg">
@@ -187,36 +163,7 @@ export default function MobileDashboard() {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-3">
-        <div className="flex items-center justify-around">
-          <Link href="/mobile-dashboard" className="flex flex-col items-center space-y-1 text-orange-500">
-            <div className="w-6 h-6">🏠</div>
-            <span className="text-xs font-medium">Home</span>
-          </Link>
-          
-          <Link href="/meu-conteudo" className="flex flex-col items-center space-y-1 text-gray-400">
-            <div className="w-6 h-6">📝</div>
-            <span className="text-xs font-medium">Histórico</span>
-          </Link>
-          
-          <Link href="/criar-conteudo" className="flex flex-col items-center space-y-1">
-            <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
-              <span className="text-white text-xl">✨</span>
-            </div>
-            <span className="text-xs font-medium text-orange-500">Criar</span>
-          </Link>
-          
-          <Link href="/analytics" className="flex flex-col items-center space-y-1 text-gray-400">
-            <div className="w-6 h-6">📈</div>
-            <span className="text-xs font-medium">Analytics</span>
-          </Link>
-          
-          <Link href="/mobile-profile" className="flex flex-col items-center space-y-1 text-gray-400">
-            <div className="w-6 h-6">👤</div>
-            <span className="text-xs font-medium">Perfil</span>
-          </Link>
-        </div>
-      </div>
+      <BottomNavigation />
 
       {/* Spacer for bottom navigation */}
       <div className="h-20"></div>

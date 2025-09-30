@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { BottomNavigation } from '@/components/ui/BottomNavigation'
+import { StatsCard, ModernCard } from '@/components/ui/ModernCard'
 
 export default function MobileProfile() {
   const [userData] = useState({
@@ -86,18 +88,21 @@ export default function MobileProfile() {
 
         {/* Metrics Cards */}
         <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white rounded-2xl p-4 shadow-lg text-center">
-            <div className="text-2xl font-bold text-orange-500 mb-1">{userData.monthlyStats.postsCreated}</div>
-            <div className="text-xs text-gray-600 font-medium">Posts Criados</div>
-          </div>
-          <div className="bg-white rounded-2xl p-4 shadow-lg text-center">
-            <div className="text-2xl font-bold text-blue-500 mb-1">{userData.monthlyStats.plan}</div>
-            <div className="text-xs text-gray-600 font-medium">Plano Atual</div>
-          </div>
-          <div className="bg-white rounded-2xl p-4 shadow-lg text-center">
-            <div className="text-2xl font-bold text-green-500 mb-1">{userData.monthlyStats.postsRemaining}</div>
-            <div className="text-xs text-gray-600 font-medium">Posts Restantes</div>
-          </div>
+          <StatsCard 
+            value={userData.monthlyStats.postsCreated} 
+            label="Posts Criados" 
+            color="orange" 
+          />
+          <StatsCard 
+            value={userData.monthlyStats.plan} 
+            label="Plano Atual" 
+            color="blue" 
+          />
+          <StatsCard 
+            value={userData.monthlyStats.postsRemaining} 
+            label="Posts Restantes" 
+            color="green" 
+          />
         </div>
 
         {/* Profile Options */}
@@ -145,36 +150,7 @@ export default function MobileProfile() {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-3">
-        <div className="flex items-center justify-around">
-          <Link href="/mobile-dashboard" className="flex flex-col items-center space-y-1 text-gray-400">
-            <div className="w-6 h-6">🏠</div>
-            <span className="text-xs font-medium">Home</span>
-          </Link>
-          
-          <Link href="/meu-conteudo" className="flex flex-col items-center space-y-1 text-gray-400">
-            <div className="w-6 h-6">📝</div>
-            <span className="text-xs font-medium">Histórico</span>
-          </Link>
-          
-          <Link href="/criar-conteudo" className="flex flex-col items-center space-y-1 text-gray-400">
-            <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-              <span className="text-gray-500 text-xl">✨</span>
-            </div>
-            <span className="text-xs font-medium">Criar</span>
-          </Link>
-          
-          <Link href="/analytics" className="flex flex-col items-center space-y-1 text-gray-400">
-            <div className="w-6 h-6">📈</div>
-            <span className="text-xs font-medium">Analytics</span>
-          </Link>
-          
-          <Link href="/mobile-profile" className="flex flex-col items-center space-y-1 text-orange-500">
-            <div className="w-6 h-6">👤</div>
-            <span className="text-xs font-medium">Perfil</span>
-          </Link>
-        </div>
-      </div>
+      <BottomNavigation />
 
       {/* Spacer for bottom navigation */}
       <div className="h-20"></div>

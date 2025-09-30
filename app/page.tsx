@@ -5,6 +5,8 @@ import Image from 'next/image'
 import { PublicNavbar } from '@/components/layout/PublicNavbar'
 import Footer from '@/components/Footer'
 import { ImageCarousel } from '@/components/ui/ImageCarousel'
+import { Testimonials } from '@/components/ui/Testimonials'
+import { InteractiveDemo } from '@/components/ui/InteractiveDemo'
 
 export default function HomePage() {
   // Dados das imagens para o carrossel
@@ -110,6 +112,11 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Testimonials */}
+          <div className="mb-20">
+            <Testimonials />
+          </div>
+
           {/* Stats Section */}
           <div className="bg-white rounded-3xl shadow-2xl p-8 mb-20 max-w-6xl mx-auto">
             <div className="text-center mb-12">
@@ -139,6 +146,11 @@ export default function HomePage() {
                 <div className="text-gray-600 font-medium">Suporte Disponível</div>
               </div>
             </div>
+          </div>
+
+          {/* Interactive Demo */}
+          <div className="mb-20">
+            <InteractiveDemo />
           </div>
 
           {/* Features Section */}
