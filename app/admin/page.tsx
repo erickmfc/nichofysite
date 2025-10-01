@@ -3,12 +3,23 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { AdminAuthService } from '@/lib/services/AdminAuthService'
+import { useAdminRealData } from '@/hooks/useAdminRealData'
 
 export default function AdminPage() {
   const router = useRouter()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
   const [adminData, setAdminData] = useState(null)
+  
+  // Hook para dados reais do admin
+  const { 
+    stats, 
+    recentActivities, 
+    systemStatus, 
+    loading: dataLoading, 
+    error: dataError,
+    refreshData 
+  } = useAdminRealData()
 
   useEffect(() => {
     checkAdminAuth()
@@ -34,6 +45,21 @@ export default function AdminPage() {
   const handleLogout = async () => {
     await AdminAuthService.logout()
     router.push('/admin/login')
+  }
+
+  // Função helper para calcular tempo decorrido
+  const getTimeAgo = (date: Date) => {
+    const now = new Date()
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
+    
+    if (diffInMinutes < 1) return 'agora'
+    if (diffInMinutes < 60) return `há ${diffInMinutes} min`
+    
+    const diffInHours = Math.floor(diffInMinutes / 60)
+    if (diffInHours < 24) return `há ${diffInHours}h`
+    
+    const diffInDays = Math.floor(diffInHours / 24)
+    return `há ${diffInDays} dias`
   }
 
   if (loading) {
@@ -109,14 +135,38 @@ export default function AdminPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Error Alert */}
+        {dataError && (
+          <div className="mb-6 bg-red-900 border border-red-700 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <span className="text-red-400 text-xl mr-3">⚠️</span>
+                <div>
+                  <h4 className="text-red-300 font-semibold">Erro ao carregar dados</h4>
+                  <p className="text-red-400 text-sm">{dataError}</p>
+                </div>
+              </div>
+              <button
+                onClick={refreshData}
+                className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
+              >
+                Tentar Novamente
+              </button>
+            </div>
+          </div>
+        )}
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-gray-300 mb-2">Total de Usuários</h3>
-                <p className="text-4xl font-bold text-white">1,234</p>
-                <p className="text-gray-400 text-sm">+12% este mês</p>
+                <p className="text-4xl font-bold text-white">
+                  {dataLoading ? '...' : stats.totalUsers.toLocaleString()}
+                </p>
+                <p className="text-gray-400 text-sm">
+                  {stats.usersThisMonth > 0 ? `+${stats.usersThisMonth} este mês` : 'Sem novos usuários'}
+                </p>
               </div>
               <div className="text-4xl text-blue-500">👥</div>
             </div>
@@ -126,8 +176,12 @@ export default function AdminPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-gray-300 mb-2">Posts Criados</h3>
-                <p className="text-4xl font-bold text-white">5,678</p>
-                <p className="text-gray-400 text-sm">+8% este mês</p>
+                <p className="text-4xl font-bold text-white">
+                  {dataLoading ? '...' : stats.totalPosts.toLocaleString()}
+                </p>
+                <p className="text-gray-400 text-sm">
+                  {stats.postsThisMonth > 0 ? `+${stats.postsThisMonth} este mês` : 'Sem novos posts'}
+                </p>
               </div>
               <div className="text-4xl text-green-500">📝</div>
             </div>
@@ -137,7 +191,9 @@ export default function AdminPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-gray-300 mb-2">Pendentes</h3>
-                <p className="text-4xl font-bold text-yellow-500">23</p>
+                <p className="text-4xl font-bold text-yellow-500">
+                  {dataLoading ? '...' : stats.pendingApprovals}
+                </p>
                 <p className="text-gray-400 text-sm">Aguardando aprovação</p>
               </div>
               <div className="text-4xl text-yellow-500">⏳</div>
@@ -148,8 +204,10 @@ export default function AdminPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-gray-300 mb-2">Aprovados</h3>
-                <p className="text-4xl font-bold text-green-500">4,521</p>
-                <p className="text-gray-400 text-sm">Este mês</p>
+                <p className="text-4xl font-bold text-green-500">
+                  {dataLoading ? '...' : stats.approvedPosts.toLocaleString()}
+                </p>
+                <p className="text-gray-400 text-sm">Total aprovado</p>
               </div>
               <div className="text-4xl text-green-500">✅</div>
             </div>
@@ -179,27 +237,33 @@ export default function AdminPage() {
           <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
             <h3 className="text-xl font-bold text-white mb-4">Atividades Recentes</h3>
             <div className="space-y-3">
-              <div className="flex items-center p-3 bg-gray-700 rounded-lg">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                <div>
-                  <p className="text-white text-sm">Novo usuário registrado</p>
-                  <p className="text-gray-400 text-xs">há 5 minutos</p>
+              {dataLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                  <span className="ml-2 text-gray-400">Carregando atividades...</span>
                 </div>
-              </div>
-              <div className="flex items-center p-3 bg-gray-700 rounded-lg">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                <div>
-                  <p className="text-white text-sm">Post aprovado</p>
-                  <p className="text-gray-400 text-xs">há 12 minutos</p>
+              ) : recentActivities.length > 0 ? (
+                recentActivities.map((activity, index) => (
+                  <div key={activity.id || index} className="flex items-center p-3 bg-gray-700 rounded-lg">
+                    <div className={`w-2 h-2 rounded-full mr-3 ${
+                      activity.type === 'user_registered' ? 'bg-green-500' :
+                      activity.type === 'post_approved' ? 'bg-blue-500' :
+                      activity.type === 'post_created' ? 'bg-purple-500' :
+                      'bg-yellow-500'
+                    }`}></div>
+                    <div>
+                      <p className="text-white text-sm">{activity.message}</p>
+                      <p className="text-gray-400 text-xs">
+                        {getTimeAgo(activity.timestamp)}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-400">
+                  <p>Nenhuma atividade recente</p>
                 </div>
-              </div>
-              <div className="flex items-center p-3 bg-gray-700 rounded-lg">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
-                <div>
-                  <p className="text-white text-sm">Conteúdo pendente</p>
-                  <p className="text-gray-400 text-xs">há 18 minutos</p>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -209,25 +273,56 @@ export default function AdminPage() {
           <h3 className="text-xl font-bold text-white mb-4">Status do Sistema</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
-              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                <span className="text-white text-2xl">✓</span>
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 ${
+                systemStatus.isOnline ? 'bg-green-500' : 'bg-red-500'
+              }`}>
+                <span className="text-white text-2xl">
+                  {systemStatus.isOnline ? '✓' : '✗'}
+                </span>
               </div>
               <h4 className="text-white font-semibold">Sistema Online</h4>
-              <p className="text-gray-400 text-sm">Todos os serviços funcionando</p>
+              <p className="text-gray-400 text-sm">
+                {systemStatus.isOnline ? 'Todos os serviços funcionando' : 'Sistema offline'}
+              </p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 ${
+                systemStatus.performance >= 95 ? 'bg-blue-500' : 
+                systemStatus.performance >= 80 ? 'bg-yellow-500' : 'bg-red-500'
+              }`}>
                 <span className="text-white text-2xl">⚡</span>
               </div>
               <h4 className="text-white font-semibold">Performance</h4>
-              <p className="text-gray-400 text-sm">99.9% de uptime</p>
+              <p className="text-gray-400 text-sm">{systemStatus.uptime}% de uptime</p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 ${
+                systemStatus.security === 'protected' ? 'bg-purple-500' :
+                systemStatus.security === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
+              }`}>
                 <span className="text-white text-2xl">🔒</span>
               </div>
               <h4 className="text-white font-semibold">Segurança</h4>
-              <p className="text-gray-400 text-sm">Sistema protegido</p>
+              <p className="text-gray-400 text-sm">
+                {systemStatus.security === 'protected' ? 'Sistema protegido' :
+                 systemStatus.security === 'warning' ? 'Atenção necessária' : 'Crítico'}
+              </p>
+            </div>
+          </div>
+          
+          {/* Informações adicionais */}
+          <div className="mt-6 pt-6 border-t border-gray-700">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-400">Usuários Ativos:</span>
+                <span className="text-white font-medium">{systemStatus.activeUsers}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Último Backup:</span>
+                <span className="text-white font-medium">
+                  {systemStatus.lastBackup ? getTimeAgo(systemStatus.lastBackup) : 'N/A'}
+                </span>
+              </div>
             </div>
           </div>
         </div>

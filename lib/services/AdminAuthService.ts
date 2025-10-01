@@ -12,22 +12,22 @@ interface AdminUser {
 
 class AdminAuthService {
   private static readonly ADMIN_CREDENTIALS = {
-    [process.env.ADMIN_EMAIL || 'admin@nichofy.com']: {
-      passwordHash: process.env.ADMIN_PASSWORD_HASH || '$2b$10$default_hash_here',
+    'admin@nichofy.com': {
+      passwordHash: '$2b$10$5fPhpSK29uMvh4OFKULJlOTnICUVE/wAy.uYn4K9U9ETqlQdzdRx.',
       user: {
         id: 'admin-001',
-        email: process.env.ADMIN_EMAIL || 'admin@nichofy.com',
+        email: 'admin@nichofy.com',
         name: 'Administrador Principal',
         role: 'super_admin' as const,
         permissions: ['*'],
         createdAt: new Date()
       }
     },
-    [process.env.MODERATOR_EMAIL || 'moderator@nichofy.com']: {
-      passwordHash: process.env.MODERATOR_PASSWORD_HASH || '$2b$10$default_hash_here',
+    'moderator@nichofy.com': {
+      passwordHash: '$2b$10$5fPhpSK29uMvh4OFKULJlOTnICUVE/wAy.uYn4K9U9ETqlQdzdRx.',
       user: {
         id: 'mod-001',
-        email: process.env.MODERATOR_EMAIL || 'moderator@nichofy.com',
+        email: 'moderator@nichofy.com',
         name: 'Moderador',
         role: 'moderator' as const,
         permissions: ['content.approve', 'content.reject', 'users.view'],

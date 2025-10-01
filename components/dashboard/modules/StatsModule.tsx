@@ -2,25 +2,36 @@
 
 import { useTheme } from '@/lib/contexts/ThemeContext'
 import { useState, useEffect } from 'react'
+import { useRealStats } from '@/hooks/useRealStats'
+import { useGoals } from '@/hooks/useGoals'
+import { SimpleChart } from '@/components/ui/SimpleChart'
 
 interface StatsModuleProps {
-  totalPosts: number
-  postsThisMonth: number
-  favoritePosts: number
+  totalPosts?: number
+  postsThisMonth?: number
+  favoritePosts?: number
 }
 
 export const StatsModule = ({ totalPosts, postsThisMonth, favoritePosts }: StatsModuleProps) => {
   const { theme } = useTheme()
+  const realStats = useRealStats()
+  const { activeGoals, goalProgress, alerts, stats: goalsStats } = useGoals()
   const [animatedStats, setAnimatedStats] = useState({
     totalPosts: 0,
     postsThisMonth: 0,
-    favoritePosts: 0,
+    uniqueCategories: 0,
     engagementRate: 0,
-    followersGained: 0
+    followersGained: 0,
+    totalLikes: 0,
+    totalShares: 0,
+    totalSaved: 0,
+    averagePostLength: 0
   })
 
   // Animação dos números
   useEffect(() => {
+    if (realStats.loading) return
+
     const animateValue = (start: number, end: number, duration: number, callback: (value: number) => void) => {
       const startTime = Date.now()
       const animate = () => {
@@ -36,31 +47,53 @@ export const StatsModule = ({ totalPosts, postsThisMonth, favoritePosts }: Stats
       animate()
     }
 
-    // Animar estatísticas
-    animateValue(0, totalPosts, 1000, (value) => {
+    // Usar dados reais ou fallback para props
+    const statsToAnimate = {
+      totalPosts: realStats.totalPosts || totalPosts || 0,
+      postsThisMonth: realStats.postsThisMonth || postsThisMonth || 0,
+      uniqueCategories: realStats.uniqueCategories || 0,
+      engagementRate: realStats.engagementRate || 0,
+      followersGained: realStats.followersGained || 0,
+      totalLikes: realStats.totalLikes || 0,
+      totalShares: realStats.totalShares || 0,
+      totalSaved: realStats.totalSaved || 0,
+      averagePostLength: realStats.averagePostLength || 0
+    }
+
+    // Animar estatísticas com dados reais
+    animateValue(0, statsToAnimate.totalPosts, 1000, (value) => {
       setAnimatedStats(prev => ({ ...prev, totalPosts: value }))
     })
     
-    animateValue(0, postsThisMonth, 1200, (value) => {
-      setAnimatedStats(prev => ({ ...prev, postsThisMonth: value }))
+    animateValue(0, statsToAnimate.uniqueCategories, 1200, (value) => {
+      setAnimatedStats(prev => ({ ...prev, uniqueCategories: value }))
     })
     
-    animateValue(0, favoritePosts, 800, (value) => {
-      setAnimatedStats(prev => ({ ...prev, favoritePosts: value }))
-    })
-
-    // Simular taxa de engajamento baseada nos posts
-    const engagementRate = totalPosts > 0 ? Math.min(totalPosts * 2.5, 100) : 0
-    animateValue(0, engagementRate, 1500, (value) => {
+    animateValue(0, statsToAnimate.engagementRate, 1500, (value) => {
       setAnimatedStats(prev => ({ ...prev, engagementRate: value }))
     })
 
-    // Simular seguidores ganhos
-    const followersGained = totalPosts > 0 ? Math.floor(totalPosts * 1.8) : 0
-    animateValue(0, followersGained, 2000, (value) => {
+    animateValue(0, statsToAnimate.followersGained, 2000, (value) => {
       setAnimatedStats(prev => ({ ...prev, followersGained: value }))
     })
-  }, [totalPosts, postsThisMonth, favoritePosts])
+
+    animateValue(0, statsToAnimate.totalLikes, 800, (value) => {
+      setAnimatedStats(prev => ({ ...prev, totalLikes: value }))
+    })
+
+    animateValue(0, statsToAnimate.totalShares, 1000, (value) => {
+      setAnimatedStats(prev => ({ ...prev, totalShares: value }))
+    })
+
+    animateValue(0, statsToAnimate.totalSaved, 1200, (value) => {
+      setAnimatedStats(prev => ({ ...prev, totalSaved: value }))
+    })
+
+    animateValue(0, statsToAnimate.averagePostLength, 1400, (value) => {
+      setAnimatedStats(prev => ({ ...prev, averagePostLength: value }))
+    })
+
+  }, [realStats.loading, realStats.totalPosts, realStats.uniqueCategories, realStats.engagementRate, realStats.followersGained, realStats.totalLikes, realStats.totalShares, realStats.totalSaved, realStats.averagePostLength, totalPosts, postsThisMonth, favoritePosts])
 
   const stats = [
     {
@@ -75,13 +108,13 @@ export const StatsModule = ({ totalPosts, postsThisMonth, favoritePosts }: Stats
     },
     {
       label: 'Nichos Usados',
-      value: animatedStats.postsThisMonth,
+      value: animatedStats.uniqueCategories,
       icon: '🎯',
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
       borderColor: 'border-purple-200',
       gradient: 'from-purple-500 to-pink-500',
-      description: 'Categorias exploradas'
+      description: realStats.mostUsedCategory ? `Mais usado: ${realStats.mostUsedCategory}` : 'Categorias exploradas'
     },
     {
       label: 'Taxa de Engajamento',
@@ -91,21 +124,19 @@ export const StatsModule = ({ totalPosts, postsThisMonth, favoritePosts }: Stats
       bgColor: 'bg-green-50',
       borderColor: 'border-green-200',
       gradient: 'from-green-500 to-emerald-500',
-      description: 'Interação média',
+      description: 'Baseado em dados reais',
       suffix: '%'
     },
     {
-      label: 'Seguidores Ganhos',
-      value: animatedStats.followersGained,
-      icon: '👥',
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
-      borderColor: 'border-orange-200',
-      gradient: 'from-orange-500 to-red-500',
-      description: 'Novos seguidores',
-      prefix: '+',
-      badge: 'Em Breve',
-      badgeColor: 'bg-yellow-500'
+      label: 'Interações Totais',
+      value: animatedStats.totalLikes + animatedStats.totalShares + animatedStats.totalSaved,
+      icon: '❤️',
+      color: 'text-red-600',
+      bgColor: 'bg-red-50',
+      borderColor: 'border-red-200',
+      gradient: 'from-red-500 to-pink-500',
+      description: `${animatedStats.totalLikes} curtidas, ${animatedStats.totalShares} compartilhamentos`,
+      prefix: '+'
     }
   ]
 
@@ -124,7 +155,7 @@ export const StatsModule = ({ totalPosts, postsThisMonth, favoritePosts }: Stats
         <div className={`px-3 py-1 rounded-full text-xs font-medium ${
           theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'
         }`}>
-          Tempo real
+          {realStats.loading ? 'Carregando...' : 'Dados Reais'}
         </div>
       </div>
       
@@ -138,10 +169,10 @@ export const StatsModule = ({ totalPosts, postsThisMonth, favoritePosts }: Stats
                 : `${stat.bgColor} ${stat.borderColor} hover:shadow-xl`
             }`}
           >
-            {/* Badge para "Em Breve" */}
-            {stat.badge && (
-              <div className={`absolute -top-2 -right-2 ${stat.badgeColor} text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg animate-pulse`}>
-                {stat.badge}
+            {/* Badge para funcionalidades especiais */}
+            {stat.label === 'Interações Totais' && (
+              <div className={`absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg animate-pulse`}>
+                Novo!
               </div>
             )}
             
@@ -184,34 +215,78 @@ export const StatsModule = ({ totalPosts, postsThisMonth, favoritePosts }: Stats
         ))}
       </div>
       
-      {/* Resumo */}
-      <div className={`mt-6 p-4 rounded-lg ${
-        theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'
-      }`}>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className={`text-sm font-medium ${
-              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+      {/* Estados de carregamento e erro */}
+      {realStats.loading && (
+        <div className={`mt-6 p-4 rounded-lg ${
+          theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'
+        }`}>
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <span className={`ml-2 text-sm ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
             }`}>
-              Performance Geral
-            </p>
-            <p className={`text-xs ${
-              theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-            }`}>
-              Baseado nos seus posts
-            </p>
-          </div>
-          <div className={`px-3 py-1 rounded-full text-xs font-bold ${
-            totalPosts > 10 
-              ? 'bg-green-100 text-green-800' 
-              : totalPosts > 5 
-                ? 'bg-yellow-100 text-yellow-800'
-                : 'bg-blue-100 text-blue-800'
-          }`}>
-            {totalPosts > 10 ? 'Excelente' : totalPosts > 5 ? 'Bom' : 'Iniciante'}
+              Carregando estatísticas...
+            </span>
           </div>
         </div>
-      </div>
+      )}
+
+      {realStats.error && (
+        <div className={`mt-6 p-4 rounded-lg bg-red-50 border border-red-200`}>
+          <div className="flex items-center">
+            <span className="text-red-600 text-sm">⚠️ {realStats.error}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Resumo com dados reais */}
+      {!realStats.loading && !realStats.error && (
+        <div className={`mt-6 p-4 rounded-lg ${
+          theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className={`text-sm font-medium ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>
+                Performance Geral
+              </p>
+              <p className={`text-xs ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+              }`}>
+                Baseado em dados reais • {animatedStats.averagePostLength} caracteres/posto
+              </p>
+            </div>
+            <div className={`px-3 py-1 rounded-full text-xs font-bold ${
+              animatedStats.totalPosts > 20 
+                ? 'bg-green-100 text-green-800' 
+                : animatedStats.totalPosts > 10 
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : animatedStats.totalPosts > 5
+                    ? 'bg-blue-100 text-blue-800'
+                    : 'bg-gray-100 text-gray-800'
+            }`}>
+              {animatedStats.totalPosts > 20 
+                ? 'Excelente' 
+                : animatedStats.totalPosts > 10 
+                  ? 'Bom' 
+                  : animatedStats.totalPosts > 5
+                    ? 'Regular'
+                    : 'Iniciante'}
+            </div>
+          </div>
+          
+          {/* Estatísticas adicionais */}
+          <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+            <div className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+              📊 {animatedStats.totalPosts} posts • {animatedStats.uniqueCategories} nichos
+            </div>
+            <div className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+              📈 {animatedStats.engagementRate}% engajamento • {animatedStats.followersGained} seguidores
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

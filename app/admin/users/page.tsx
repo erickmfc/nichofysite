@@ -1,157 +1,124 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { AdminAuthService } from '@/lib/services/AdminAuthService'
+import { db } from '@/lib/firebase'
+import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore'
 
 interface User {
   id: string
+  name: string
   email: string
-  displayName: string
   createdAt: Date
   lastLogin?: Date
+  status: 'active' | 'inactive' | 'banned'
   postsCount: number
-  status: 'active' | 'suspended' | 'pending'
-  plan: string
 }
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<User[]>([])
+  const router = useRouter()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [users, setUsers] = useState<User[]>([])
+  const [usersLoading, setUsersLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [filterStatus, setFilterStatus] = useState<string>('all')
 
   useEffect(() => {
-    loadUsers()
+    checkAdminAuth()
   }, [])
 
-  const loadUsers = async () => {
+  const checkAdminAuth = async () => {
     try {
-      setLoading(true)
-      // Simular carregamento de usuários
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      const mockUsers: User[] = [
-        {
-          id: 'user-001',
-          email: 'joao@email.com',
-          displayName: 'João Silva',
-          createdAt: new Date('2024-01-15'),
-          lastLogin: new Date('2024-01-20'),
-          postsCount: 15,
-          status: 'active',
-          plan: 'Premium'
-        },
-        {
-          id: 'user-002',
-          email: 'maria@email.com',
-          displayName: 'Maria Santos',
-          createdAt: new Date('2024-01-10'),
-          lastLogin: new Date('2024-01-19'),
-          postsCount: 8,
-          status: 'active',
-          plan: 'Básico'
-        },
-        {
-          id: 'user-003',
-          email: 'pedro@email.com',
-          displayName: 'Pedro Costa',
-          createdAt: new Date('2024-01-05'),
-          lastLogin: new Date('2024-01-18'),
-          postsCount: 0,
-          status: 'pending',
-          plan: 'Gratuito'
-        },
-        {
-          id: 'user-004',
-          email: 'ana@email.com',
-          displayName: 'Ana Oliveira',
-          createdAt: new Date('2024-01-01'),
-          lastLogin: new Date('2024-01-17'),
-          postsCount: 25,
-          status: 'suspended',
-          plan: 'Premium'
-        }
-      ]
-      
-      setUsers(mockUsers)
+      const admin = await AdminAuthService.getCurrentAdmin()
+      if (admin) {
+        setIsAuthenticated(true)
+        loadUsers()
+      } else {
+        router.push('/admin/login')
+      }
     } catch (error) {
-      console.error('Erro ao carregar usuários:', error)
+      console.error('Erro ao verificar autenticação admin:', error)
+      router.push('/admin/login')
     } finally {
       setLoading(false)
     }
   }
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = filterStatus === 'all' || user.status === filterStatus
-    return matchesSearch && matchesStatus
-  })
-
-  const handleUserAction = async (userId: string, action: 'suspend' | 'activate' | 'delete') => {
+  const loadUsers = async () => {
     try {
-      // Simular ação
-      await new Promise(resolve => setTimeout(resolve, 500))
+      setUsersLoading(true)
       
-      setUsers(prev => prev.map(user => {
-        if (user.id === userId) {
-          switch (action) {
-            case 'suspend':
-              return { ...user, status: 'suspended' as const }
-            case 'activate':
-              return { ...user, status: 'active' as const }
-            case 'delete':
-              return user // Em um sistema real, seria removido da lista
-            default:
-              return user
-          }
+      // Buscar usuários do Firestore
+      const usersQuery = query(
+        collection(db, 'users'),
+        orderBy('createdAt', 'desc'),
+        limit(50)
+      )
+      
+      const usersSnapshot = await getDocs(usersQuery)
+      const usersData = usersSnapshot.docs.map(doc => {
+        const data = doc.data()
+        return {
+          id: doc.id,
+          name: data.name || data.displayName || 'Usuário',
+          email: data.email || 'email@exemplo.com',
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+          lastLogin: data.lastLogin?.toDate ? data.lastLogin.toDate() : undefined,
+          status: data.status || 'active',
+          postsCount: 0 // Seria calculado com uma query adicional
         }
-        return user
-      }))
-      
-      // Mostrar notificação de sucesso
-      showNotification(`Ação ${action} executada com sucesso!`)
+      })
+
+      // Buscar contagem de posts para cada usuário
+      const usersWithPosts = await Promise.all(
+        usersData.map(async (user) => {
+          try {
+            const postsQuery = query(
+              collection(db, 'posts'),
+              where('userId', '==', user.id)
+            )
+            const postsSnapshot = await getDocs(postsQuery)
+            return {
+              ...user,
+              postsCount: postsSnapshot.size
+            }
+          } catch (error) {
+            return user
+          }
+        })
+      )
+
+      setUsers(usersWithPosts)
     } catch (error) {
-      console.error('Erro ao executar ação:', error)
-      showNotification('Erro ao executar ação', 'error')
+      console.error('Erro ao carregar usuários:', error)
+    } finally {
+      setUsersLoading(false)
     }
   }
 
-  const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
-    const notification = document.createElement('div')
-    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transform transition-all duration-300 ${
-      type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-    }`
-    notification.innerHTML = `
-      <div class="flex items-center">
-        <span class="text-xl mr-2">${type === 'success' ? '✅' : '❌'}</span>
-        <div class="font-semibold">${message}</div>
-      </div>
-    `
-    document.body.appendChild(notification)
+  const handleLogout = async () => {
+    await AdminAuthService.logout()
+    router.push('/admin/login')
+  }
+
+  const filteredUsers = users.filter(user =>
+    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const getTimeAgo = (date: Date) => {
+    const now = new Date()
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
     
-    setTimeout(() => {
-      notification.style.transform = 'translateX(100%)'
-      setTimeout(() => document.body.removeChild(notification), 300)
-    }, 3000)
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-500'
-      case 'suspended': return 'bg-red-500'
-      case 'pending': return 'bg-yellow-500'
-      default: return 'bg-gray-500'
-    }
-  }
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'active': return 'Ativo'
-      case 'suspended': return 'Suspenso'
-      case 'pending': return 'Pendente'
-      default: return 'Desconhecido'
-    }
+    if (diffInMinutes < 1) return 'agora'
+    if (diffInMinutes < 60) return `há ${diffInMinutes} min`
+    
+    const diffInHours = Math.floor(diffInMinutes / 60)
+    if (diffInHours < 24) return `há ${diffInHours}h`
+    
+    const diffInDays = Math.floor(diffInHours / 24)
+    return `há ${diffInDays} dias`
   }
 
   if (loading) {
@@ -159,11 +126,15 @@ export default function AdminUsersPage() {
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto mb-6"></div>
-          <h2 className="text-2xl font-bold text-white mb-2">Carregando Usuários</h2>
-          <p className="text-gray-400">Aguarde enquanto buscamos os dados...</p>
+          <h2 className="text-2xl font-bold text-white mb-2">NichoFy Admin</h2>
+          <p className="text-gray-400">Carregando usuários...</p>
         </div>
       </div>
     )
+  }
+
+  if (!isAuthenticated) {
+    return null
   }
 
   return (
@@ -172,216 +143,175 @@ export default function AdminUsersPage() {
       <header className="bg-gray-800 shadow-lg border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-white">Gestão de Usuários</h1>
-              <p className="text-gray-400 mt-1">Gerencie todos os usuários da plataforma</p>
+            <div className="flex items-center">
+              <div className="bg-gradient-to-r from-red-500 to-pink-500 w-12 h-12 rounded-xl flex items-center justify-center">
+                <span className="text-white text-xl font-bold">A</span>
+              </div>
+              <div className="ml-4">
+                <h1 className="text-3xl font-bold text-white">NichoFy Admin</h1>
+                <p className="text-gray-400">Gerenciamento de Usuários</p>
+              </div>
             </div>
+            
             <div className="flex items-center space-x-4">
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-                + Novo Usuário
-              </button>
-              <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
-                📊 Relatório
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                Sair
               </button>
             </div>
           </div>
         </div>
       </header>
 
+      {/* Navigation */}
+      <nav className="bg-gray-800 border-b border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex space-x-8">
+            <a href="/admin" className="text-gray-400 hover:text-white py-4 px-1">
+              Dashboard
+            </a>
+            <a href="/admin/users" className="text-white border-b-2 border-blue-500 py-4 px-1">
+              Usuários
+            </a>
+            <a href="/admin/content" className="text-gray-400 hover:text-white py-4 px-1">
+              Conteúdo
+            </a>
+            <a href="/admin/approvals" className="text-gray-400 hover:text-white py-4 px-1">
+              Aprovações
+            </a>
+            <a href="/admin/settings" className="text-gray-400 hover:text-white py-4 px-1">
+              Configurações
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Filters */}
-        <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
-                🔍 Buscar Usuário
-              </label>
+        {/* Header com busca */}
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-white">Usuários Registrados</h2>
+            <p className="text-gray-400">Total: {users.length} usuários</p>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <div className="relative">
               <input
                 type="text"
+                placeholder="Buscar usuários..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Nome ou email..."
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-400"
+                className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
-                📊 Status
-              </label>
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-400"
-              >
-                <option value="all">Todos</option>
-                <option value="active">Ativos</option>
-                <option value="suspended">Suspensos</option>
-                <option value="pending">Pendentes</option>
-              </select>
-            </div>
-            <div className="flex items-end">
-              <button
-                onClick={loadUsers}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                🔄 Atualizar
-              </button>
-            </div>
+            <button
+              onClick={loadUsers}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              Atualizar
+            </button>
           </div>
         </div>
 
-        {/* Users Table */}
+        {/* Lista de usuários */}
         <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-700">
-            <h3 className="text-lg font-semibold text-white">
-              Usuários ({filteredUsers.length})
-            </h3>
-          </div>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-700">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Usuário
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Plano
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Posts
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Último Login
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-700">
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-700/50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
-                          {user.displayName.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-white">
-                            {user.displayName}
-                          </div>
-                          <div className="text-sm text-gray-400">
-                            {user.email}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full text-white ${getStatusColor(user.status)}`}>
-                        {getStatusText(user.status)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {user.plan}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {user.postsCount}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {user.lastLogin ? user.lastLogin.toLocaleDateString('pt-BR') : 'Nunca'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
-                        {user.status === 'active' ? (
-                          <button
-                            onClick={() => handleUserAction(user.id, 'suspend')}
-                            className="text-yellow-400 hover:text-yellow-300 transition-colors"
-                            title="Suspender usuário"
-                          >
-                            ⏸️
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleUserAction(user.id, 'activate')}
-                            className="text-green-400 hover:text-green-300 transition-colors"
-                            title="Ativar usuário"
-                          >
-                            ▶️
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleUserAction(user.id, 'delete')}
-                          className="text-red-400 hover:text-red-300 transition-colors"
-                          title="Excluir usuário"
-                        >
-                          🗑️
-                        </button>
-                        <button
-                          className="text-blue-400 hover:text-blue-300 transition-colors"
-                          title="Ver detalhes"
-                        >
-                          👁️
-                        </button>
-                      </div>
-                    </td>
+          {usersLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              <span className="ml-3 text-gray-400">Carregando usuários...</span>
+            </div>
+          ) : filteredUsers.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-700">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                      Usuário
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                      Posts
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                      Registrado
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                      Último Login
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                      Ações
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
-          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-300 mb-2">Total</h3>
-                <p className="text-3xl font-bold text-white">{users.length}</p>
-              </div>
-              <div className="text-3xl text-blue-500">👥</div>
+                </thead>
+                <tbody className="divide-y divide-gray-700">
+                  {filteredUsers.map((user) => (
+                    <tr key={user.id} className="hover:bg-gray-700 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                            <span className="text-white font-semibold">
+                              {user.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-white">{user.name}</div>
+                            <div className="text-sm text-gray-400">ID: {user.id.substring(0, 8)}...</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-300">{user.email}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-300">{user.postsCount}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          user.status === 'active' ? 'bg-green-100 text-green-800' :
+                          user.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {user.status === 'active' ? 'Ativo' :
+                           user.status === 'inactive' ? 'Inativo' : 'Banido'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {getTimeAgo(user.createdAt)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {user.lastLogin ? getTimeAgo(user.lastLogin) : 'Nunca'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                          <button className="text-blue-400 hover:text-blue-300">
+                            Ver
+                          </button>
+                          <button className="text-yellow-400 hover:text-yellow-300">
+                            Editar
+                          </button>
+                          <button className="text-red-400 hover:text-red-300">
+                            Banir
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </div>
-          
-          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-300 mb-2">Ativos</h3>
-                <p className="text-3xl font-bold text-green-500">
-                  {users.filter(u => u.status === 'active').length}
-                </p>
-              </div>
-              <div className="text-3xl text-green-500">✅</div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-400">Nenhum usuário encontrado</p>
             </div>
-          </div>
-          
-          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-300 mb-2">Suspensos</h3>
-                <p className="text-3xl font-bold text-red-500">
-                  {users.filter(u => u.status === 'suspended').length}
-                </p>
-              </div>
-              <div className="text-3xl text-red-500">⏸️</div>
-            </div>
-          </div>
-          
-          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-300 mb-2">Pendentes</h3>
-                <p className="text-3xl font-bold text-yellow-500">
-                  {users.filter(u => u.status === 'pending').length}
-                </p>
-              </div>
-              <div className="text-3xl text-yellow-500">⏳</div>
-            </div>
-          </div>
+          )}
         </div>
       </main>
     </div>
