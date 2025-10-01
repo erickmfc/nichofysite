@@ -8,6 +8,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfi
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { PublicNavbar } from '@/components/layout/PublicNavbar'
 import { useToast } from '@/components/ui/Toast'
+import { validateAndSanitize, loginSchema } from '@/lib/utils/validation'
 
 function LoginForm() {
   const searchParams = useSearchParams()
@@ -20,15 +21,16 @@ function LoginForm() {
   const [name, setName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
   const isSignUp = mode === 'signup'
 
   const isFormValid = useMemo(() => {
     if (isSignUp) {
-      return email.length > 0 && password.length > 0 && name.length > 0
+      return email.length > 0 && password.length > 0 && name.length > 0 && Object.keys(validationErrors).length === 0
     }
-    return email.length > 0 && password.length > 0
-  }, [email, password, name, isSignUp])
+    return email.length > 0 && password.length > 0 && Object.keys(validationErrors).length === 0
+  }, [email, password, name, isSignUp, validationErrors])
 
   const handleGoogleLogin = useCallback(async () => {
     setError(null)
@@ -94,14 +96,25 @@ function LoginForm() {
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    setValidationErrors({})
     setIsLoading(true)
+
+    // Validar dados do formulário
+    const formData = { email, password }
+    const validation = validateAndSanitize(formData, loginSchema)
+    
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors)
+      setIsLoading(false)
+      return
+    }
 
     console.log('🔐 Tentativa de login:', { email, isSignUp })
 
     try {
       if (isSignUp) {
         console.log('📝 Criando nova conta...')
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+        const userCredential = await createUserWithEmailAndPassword(auth, validation.data.email, validation.data.password)
         console.log('✅ Usuário criado:', userCredential.user.uid)
         
         await updateProfile(userCredential.user, { displayName: name })
@@ -109,7 +122,7 @@ function LoginForm() {
         
         await setDoc(doc(db, 'users', userCredential.user.uid), {
           uid: userCredential.user.uid,
-          email: email,
+          email: validation.data.email,
           displayName: name,
           createdAt: serverTimestamp(),
           role: 'user',
@@ -125,7 +138,7 @@ function LoginForm() {
         router.push('/login')
       } else {
         console.log('🔑 Fazendo login...')
-        const userCredential = await signInWithEmailAndPassword(auth, email, password)
+        const userCredential = await signInWithEmailAndPassword(auth, validation.data.email, validation.data.password)
         console.log('✅ Login bem-sucedido:', userCredential.user.uid)
         
         addToast({
@@ -330,14 +343,19 @@ function LoginForm() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Seu e-mail
             </label>
-            <input
-              type="email"
-              value={email}
-              onChange={handleEmailChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-              placeholder="seu@email.com"
-              autoComplete="email"
-            />
+              <input
+                type="email"
+                value={email}
+                onChange={handleEmailChange}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
+                  validationErrors.email ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="seu@email.com"
+                autoComplete="email"
+              />
+              {validationErrors.email && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.email}</p>
+              )}
           </div>
 
           <div>
@@ -349,7 +367,9 @@ function LoginForm() {
               type="password"
               value={password}
               onChange={handlePasswordChange}
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+              className={`w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
+                validationErrors.password ? 'border-red-500' : 'border-gray-300'
+              }`}
               placeholder="Sua senha"
               autoComplete={isSignUp ? "new-password" : "current-password"}
             />
@@ -363,6 +383,9 @@ function LoginForm() {
                     </svg>
                   </button>
                 </div>
+                {validationErrors.password && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.password}</p>
+                )}
           </div>
 
               {/* Forgot Password */}

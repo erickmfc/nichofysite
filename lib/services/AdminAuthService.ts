@@ -1,3 +1,5 @@
+import bcrypt from 'bcryptjs'
+
 interface AdminUser {
   id: string
   email: string
@@ -10,22 +12,22 @@ interface AdminUser {
 
 class AdminAuthService {
   private static readonly ADMIN_CREDENTIALS = {
-    'admin@nichofy.com': {
-      password: 'admin123',
+    [process.env.ADMIN_EMAIL || 'admin@nichofy.com']: {
+      passwordHash: process.env.ADMIN_PASSWORD_HASH || '$2b$10$default_hash_here',
       user: {
         id: 'admin-001',
-        email: 'admin@nichofy.com',
+        email: process.env.ADMIN_EMAIL || 'admin@nichofy.com',
         name: 'Administrador Principal',
         role: 'super_admin' as const,
         permissions: ['*'],
         createdAt: new Date()
       }
     },
-    'moderator@nichofy.com': {
-      password: 'mod123',
+    [process.env.MODERATOR_EMAIL || 'moderator@nichofy.com']: {
+      passwordHash: process.env.MODERATOR_PASSWORD_HASH || '$2b$10$default_hash_here',
       user: {
         id: 'mod-001',
-        email: 'moderator@nichofy.com',
+        email: process.env.MODERATOR_EMAIL || 'moderator@nichofy.com',
         name: 'Moderador',
         role: 'moderator' as const,
         permissions: ['content.approve', 'content.reject', 'users.view'],
@@ -38,7 +40,13 @@ class AdminAuthService {
     try {
       const credentials = this.ADMIN_CREDENTIALS[email as keyof typeof this.ADMIN_CREDENTIALS]
       
-      if (!credentials || credentials.password !== password) {
+      if (!credentials) {
+        return false
+      }
+
+      // Verificar senha usando bcrypt
+      const isValidPassword = await bcrypt.compare(password, credentials.passwordHash)
+      if (!isValidPassword) {
         return false
       }
 
@@ -141,9 +149,15 @@ class AdminAuthService {
 
       // Verificar senha atual
       const credentials = this.ADMIN_CREDENTIALS[admin.email as keyof typeof this.ADMIN_CREDENTIALS]
-      if (!credentials || credentials.password !== currentPassword) {
+      if (!credentials) return false
+
+      const isValidCurrentPassword = await bcrypt.compare(currentPassword, credentials.passwordHash)
+      if (!isValidCurrentPassword) {
         return false
       }
+
+      // Hash da nova senha
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10)
 
       // Em um sistema real, aqui seria feita a atualização no banco de dados
       // Por enquanto, apenas simulamos o sucesso

@@ -1,10 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withRateLimit, apiRateLimiter } from '@/lib/utils/rateLimiter'
+import { validateAndSanitize, contentSchema } from '@/lib/utils/validation'
 
-export async function POST(request: NextRequest) {
+async function generateImageHandler(request: NextRequest) {
   try {
     const { prompt } = await request.json()
 
-    if (!prompt || prompt.trim().length === 0) {
+    // Validar e sanitizar o prompt
+    const validation = validateAndSanitize({ title: prompt }, contentSchema)
+    
+    if (!validation.isValid) {
+      return NextResponse.json(
+        { error: 'Prompt inválido', details: validation.errors },
+        { status: 400 }
+      )
+    }
+
+    const sanitizedPrompt = validation.data.title
+
+    if (!sanitizedPrompt || sanitizedPrompt.trim().length === 0) {
       return NextResponse.json(
         { error: 'Prompt é obrigatório' },
         { status: 400 }
@@ -21,7 +35,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       imageUrl,
-      prompt,
+      prompt: sanitizedPrompt,
       timestamp: new Date().toISOString()
     })
 
@@ -33,3 +47,5 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+export const POST = withRateLimit(apiRateLimiter)(generateImageHandler)
