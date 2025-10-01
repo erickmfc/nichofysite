@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react'
 import { useRealStats } from '@/hooks/useRealStats'
 import { useGoals } from '@/hooks/useGoals'
 import { SimpleChart } from '@/components/ui/SimpleChart'
+import { SkeletonStats, LoadingState } from '@/components/ui/LoadingStates'
+import { EmptyStatsState, EmptyChartState } from '@/components/ui/EmptyStates'
 
 interface StatsModuleProps {
   totalPosts?: number
@@ -217,24 +219,43 @@ export const StatsModule = ({ totalPosts, postsThisMonth, favoritePosts }: Stats
       
       {/* Estados de carregamento e erro */}
       {realStats.loading && (
-        <div className={`mt-6 p-4 rounded-lg ${
-          theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'
-        }`}>
-          <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-            <span className={`ml-2 text-sm ${
-              theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
-            }`}>
-              Carregando estatísticas...
-            </span>
-          </div>
+        <div className="mt-6">
+          <SkeletonStats />
         </div>
       )}
 
       {realStats.error && (
-        <div className={`mt-6 p-4 rounded-lg bg-red-50 border border-red-200`}>
-          <div className="flex items-center">
-            <span className="text-red-600 text-sm">⚠️ {realStats.error}</span>
+        <div className={`mt-6 p-6 rounded-lg border-l-4 border-red-500 ${
+          theme === 'dark' ? 'bg-red-900/20 border-red-400' : 'bg-red-50 border-red-200'
+        }`}>
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <div className="text-2xl">⚠️</div>
+            </div>
+            <div className="ml-3">
+              <h3 className={`text-sm font-medium ${
+                theme === 'dark' ? 'text-red-300' : 'text-red-800'
+              }`}>
+                Erro ao carregar estatísticas
+              </h3>
+              <p className={`text-sm mt-1 ${
+                theme === 'dark' ? 'text-red-400' : 'text-red-700'
+              }`}>
+                {realStats.error}
+              </p>
+              <div className="mt-3">
+                <button
+                  onClick={() => window.location.reload()}
+                  className={`text-sm px-3 py-1 rounded-md font-medium transition-colors ${
+                    theme === 'dark' 
+                      ? 'bg-red-800 hover:bg-red-700 text-red-200' 
+                      : 'bg-red-200 hover:bg-red-300 text-red-800'
+                  }`}
+                >
+                  Tentar novamente
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -285,6 +306,130 @@ export const StatsModule = ({ totalPosts, postsThisMonth, favoritePosts }: Stats
               📈 {animatedStats.engagementRate}% engajamento • {animatedStats.followersGained} seguidores
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Seção de Metas e Gráficos */}
+      {!realStats.loading && !realStats.error && (
+        <div className="mt-6 space-y-4">
+          {/* Resumo de Metas */}
+          {activeGoals.length > 0 && (
+            <div className={`p-4 rounded-lg ${
+              theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'
+            }`}>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                  🎯 Progresso das Metas
+                </h4>
+                <span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                  {goalsStats.activeGoals} ativas
+                </span>
+              </div>
+              
+              <div className="space-y-2">
+                {activeGoals.slice(0, 3).map(goal => {
+                  const progress = goalProgress.get(goal.id)
+                  return (
+                    <div key={goal.id} className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
+                          {goal.title}
+                        </span>
+                        <span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
+                          {Math.round(progress?.progress || 0)}%
+                        </span>
+                      </div>
+                      <div className={`w-full rounded-full h-1.5 ${
+                        theme === 'dark' ? 'bg-gray-600' : 'bg-gray-200'
+                      }`}>
+                        <div
+                          className={`h-1.5 rounded-full transition-all duration-500 ${
+                            progress?.needsAttention ? 'bg-red-500' : 'bg-green-500'
+                          }`}
+                          style={{ width: `${Math.min(progress?.progress || 0, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Gráfico de Categorias */}
+          {realStats.mostUsedCategory && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <SimpleChart
+                data={[
+                  {
+                    label: 'Posts Criados',
+                    value: animatedStats.totalPosts,
+                    color: '#3B82F6',
+                    percentage: 100
+                  },
+                  {
+                    label: 'Nichos Usados',
+                    value: animatedStats.uniqueCategories,
+                    color: '#8B5CF6',
+                    percentage: (animatedStats.uniqueCategories / Math.max(animatedStats.totalPosts, 1)) * 100
+                  },
+                  {
+                    label: 'Taxa de Engajamento',
+                    value: animatedStats.engagementRate,
+                    color: '#10B981',
+                    percentage: animatedStats.engagementRate
+                  }
+                ]}
+                title="Resumo de Performance"
+                type="bar"
+                height={150}
+                showValues={true}
+                showPercentages={false}
+              />
+              
+              <SimpleChart
+                data={[
+                  {
+                    label: 'Curtidas',
+                    value: animatedStats.totalLikes,
+                    color: '#EF4444',
+                    percentage: (animatedStats.totalLikes / Math.max(animatedStats.totalLikes + animatedStats.totalShares + animatedStats.totalSaved, 1)) * 100
+                  },
+                  {
+                    label: 'Compartilhamentos',
+                    value: animatedStats.totalShares,
+                    color: '#F59E0B',
+                    percentage: (animatedStats.totalShares / Math.max(animatedStats.totalLikes + animatedStats.totalShares + animatedStats.totalSaved, 1)) * 100
+                  },
+                  {
+                    label: 'Salvamentos',
+                    value: animatedStats.totalSaved,
+                    color: '#06B6D4',
+                    percentage: (animatedStats.totalSaved / Math.max(animatedStats.totalLikes + animatedStats.totalShares + animatedStats.totalSaved, 1)) * 100
+                  }
+                ]}
+                title="Interações por Tipo"
+                type="pie"
+                height={150}
+                showValues={true}
+                showPercentages={true}
+              />
+            </div>
+          )}
+
+          {/* Alertas Importantes */}
+          {alerts.filter(a => !a.isRead && a.priority === 'high').length > 0 && (
+            <div className={`p-4 rounded-lg border-l-4 border-red-500 bg-red-50`}>
+              <h4 className="font-medium text-red-900 mb-2">🚨 Alertas Importantes</h4>
+              <div className="space-y-2">
+                {alerts.filter(a => !a.isRead && a.priority === 'high').slice(0, 2).map(alert => (
+                  <div key={alert.id} className="text-sm text-red-800">
+                    • {alert.message}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
