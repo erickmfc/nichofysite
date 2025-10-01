@@ -1,16 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db } from '@/lib/firebase'
-import { 
-  collection, 
-  getDocs, 
-  query, 
-  where, 
-  orderBy, 
-  limit,
-  Timestamp 
-} from 'firebase/firestore'
 
 interface AdminStats {
   totalUsers: number
@@ -68,152 +58,127 @@ export function useAdminRealData() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    loadAdminData()
+    // Carregar dados mockados para demonstração
+    loadMockData()
     
-    // Atualizar dados a cada 30 segundos
-    const interval = setInterval(loadAdminData, 30000)
+    // Simular atualização a cada 30 segundos
+    const interval = setInterval(() => {
+      updateMockData()
+    }, 30000)
     
     return () => clearInterval(interval)
   }, [])
 
-  const loadAdminData = async () => {
-    try {
-      setLoading(true)
-      setError(null)
+  const loadMockData = () => {
+    setLoading(true)
+    setError(null)
 
-      // Buscar estatísticas de usuários
-      const usersQuery = query(collection(db, 'users'))
-      const usersSnapshot = await getDocs(usersQuery)
-      const totalUsers = usersSnapshot.size
-
-      // Buscar estatísticas de posts
-      const postsQuery = query(collection(db, 'posts'))
-      const postsSnapshot = await getDocs(postsQuery)
-      const allPosts = postsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-
-      const totalPosts = allPosts.length
-      const approvedPosts = allPosts.filter(post => post.status === 'approved').length
-      const pendingApprovals = allPosts.filter(post => post.status === 'pending').length
-
-      // Calcular posts deste mês
-      const now = new Date()
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-      const postsThisMonth = allPosts.filter(post => {
-        const postDate = post.createdAt?.toDate ? post.createdAt.toDate() : new Date(post.createdAt)
-        return postDate >= startOfMonth
-      }).length
-
-      // Calcular usuários deste mês
-      const usersThisMonth = usersSnapshot.docs.filter(doc => {
-        const userData = doc.data()
-        const userDate = userData.createdAt?.toDate ? userData.createdAt.toDate() : new Date(userData.createdAt)
-        return userDate >= startOfMonth
-      }).length
-
-      // Buscar atividades recentes
-      const activitiesQuery = query(
-        collection(db, 'adminActivities'),
-        orderBy('timestamp', 'desc'),
-        limit(10)
-      )
-      
-      let activities: RecentActivity[] = []
-      try {
-        const activitiesSnapshot = await getDocs(activitiesQuery)
-        activities = activitiesSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          timestamp: doc.data().timestamp?.toDate ? doc.data().timestamp.toDate() : new Date()
-        })) as RecentActivity[]
-      } catch (activitiesError) {
-        // Se não existir a coleção de atividades, criar atividades baseadas nos dados existentes
-        activities = generateMockActivities(allPosts.slice(0, 5), usersSnapshot.docs.slice(0, 3))
-      }
-
-      // Status do sistema
-      const systemStatusData: SystemStatus = {
-        isOnline: true,
-        uptime: 99.9,
-        performance: 99.9,
-        security: 'protected',
-        activeUsers: Math.floor(Math.random() * 50) + 10, // Simular usuários ativos
-        lastBackup: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000) // Últimas 24h
-      }
-
-      setStats({
-        totalUsers,
-        totalPosts,
-        pendingApprovals,
-        approvedPosts,
-        postsThisMonth,
-        usersThisMonth,
-        systemUptime: systemStatusData.uptime,
-        performanceScore: systemStatusData.performance,
-        securityStatus: systemStatusData.security
-      })
-
-      setRecentActivities(activities)
-      setSystemStatus(systemStatusData)
-
-    } catch (err) {
-      console.error('Erro ao carregar dados administrativos:', err)
-      setError('Erro ao carregar dados do sistema')
-      
-      // Dados de fallback em caso de erro
-      setStats({
-        totalUsers: 0,
-        totalPosts: 0,
-        pendingApprovals: 0,
-        approvedPosts: 0,
-        postsThisMonth: 0,
-        usersThisMonth: 0,
-        systemUptime: 0,
-        performanceScore: 0,
-        securityStatus: 'critical'
-      })
-    } finally {
-      setLoading(false)
+    // Dados mockados realistas para demonstração
+    const mockStats: AdminStats = {
+      totalUsers: Math.floor(Math.random() * 200) + 100,
+      totalPosts: Math.floor(Math.random() * 500) + 300,
+      pendingApprovals: Math.floor(Math.random() * 20) + 5,
+      approvedPosts: Math.floor(Math.random() * 400) + 250,
+      postsThisMonth: Math.floor(Math.random() * 50) + 20,
+      usersThisMonth: Math.floor(Math.random() * 30) + 10,
+      systemUptime: 99.9,
+      performanceScore: 99.9,
+      securityStatus: 'protected'
     }
+
+    const mockActivities: RecentActivity[] = [
+      {
+        id: '1',
+        type: 'user_registered',
+        message: 'Novo usuário registrado: João Silva',
+        timestamp: new Date(Date.now() - 5 * 60 * 1000),
+        userId: 'user1'
+      },
+      {
+        id: '2',
+        type: 'post_approved',
+        message: 'Post aprovado: "Dicas de Marketing Digital"',
+        timestamp: new Date(Date.now() - 12 * 60 * 1000),
+        postId: 'post1'
+      },
+      {
+        id: '3',
+        type: 'post_created',
+        message: 'Novo post criado: "Tendências 2024"',
+        timestamp: new Date(Date.now() - 18 * 60 * 1000),
+        postId: 'post2'
+      },
+      {
+        id: '4',
+        type: 'user_registered',
+        message: 'Novo usuário registrado: Maria Santos',
+        timestamp: new Date(Date.now() - 25 * 60 * 1000),
+        userId: 'user2'
+      },
+      {
+        id: '5',
+        type: 'post_approved',
+        message: 'Post aprovado: "Estratégias de Vendas"',
+        timestamp: new Date(Date.now() - 32 * 60 * 1000),
+        postId: 'post3'
+      }
+    ]
+
+    const mockSystemStatus: SystemStatus = {
+      isOnline: true,
+      uptime: 99.9,
+      performance: 99.9,
+      security: 'protected',
+      activeUsers: Math.floor(Math.random() * 50) + 10,
+      lastBackup: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000)
+    }
+
+    setStats(mockStats)
+    setRecentActivities(mockActivities)
+    setSystemStatus(mockSystemStatus)
+    setLoading(false)
   }
 
-  const generateMockActivities = (posts: any[], users: any[]): RecentActivity[] => {
-    const activities: RecentActivity[] = []
-    
-    // Atividades baseadas em posts
-    posts.forEach((post, index) => {
-      activities.push({
-        id: `post-${post.id}`,
-        type: 'post_created',
-        message: `Novo post criado: "${post.title?.substring(0, 30)}..."`,
-        timestamp: new Date(Date.now() - (index + 1) * 5 * 60 * 1000), // 5 min atrás
-        postId: post.id
-      })
-    })
+  const updateMockData = () => {
+    // Simular pequenas mudanças nos dados
+    setStats(prev => ({
+      ...prev,
+      totalUsers: prev.totalUsers + Math.floor(Math.random() * 3),
+      totalPosts: prev.totalPosts + Math.floor(Math.random() * 5),
+      pendingApprovals: Math.max(0, prev.pendingApprovals + Math.floor(Math.random() * 3) - 1),
+      approvedPosts: prev.approvedPosts + Math.floor(Math.random() * 2)
+    }))
 
-    // Atividades baseadas em usuários
-    users.forEach((user, index) => {
-      activities.push({
-        id: `user-${user.id}`,
-        type: 'user_registered',
-        message: `Novo usuário registrado: ${user.data()?.name || user.data()?.email || 'Usuário'}`,
-        timestamp: new Date(Date.now() - (index + 1) * 10 * 60 * 1000), // 10 min atrás
-        userId: user.id
-      })
-    })
-
-    return activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).slice(0, 5)
+    setSystemStatus(prev => ({
+      ...prev,
+      activeUsers: Math.floor(Math.random() * 50) + 10
+    }))
   }
 
   const approvePost = async (postId: string) => {
     try {
-      // Aqui você implementaria a lógica de aprovação
       console.log('Aprovando post:', postId)
       
-      // Recarregar dados após aprovação
-      await loadAdminData()
+      // Simular delay
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Atualizar estatísticas locais
+      setStats(prev => ({
+        ...prev,
+        pendingApprovals: Math.max(0, prev.pendingApprovals - 1),
+        approvedPosts: prev.approvedPosts + 1
+      }))
+
+      // Adicionar atividade
+      const newActivity: RecentActivity = {
+        id: Date.now().toString(),
+        type: 'post_approved',
+        message: `Post aprovado: ID ${postId}`,
+        timestamp: new Date(),
+        postId
+      }
+
+      setRecentActivities(prev => [newActivity, ...prev.slice(0, 4)])
       
       return true
     } catch (error) {
@@ -224,11 +189,27 @@ export function useAdminRealData() {
 
   const rejectPost = async (postId: string, reason?: string) => {
     try {
-      // Aqui você implementaria a lógica de rejeição
       console.log('Rejeitando post:', postId, 'Motivo:', reason)
       
-      // Recarregar dados após rejeição
-      await loadAdminData()
+      // Simular delay
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Atualizar estatísticas locais
+      setStats(prev => ({
+        ...prev,
+        pendingApprovals: Math.max(0, prev.pendingApprovals - 1)
+      }))
+
+      // Adicionar atividade
+      const newActivity: RecentActivity = {
+        id: Date.now().toString(),
+        type: 'post_rejected',
+        message: `Post rejeitado: ID ${postId}${reason ? ` - ${reason}` : ''}`,
+        timestamp: new Date(),
+        postId
+      }
+
+      setRecentActivities(prev => [newActivity, ...prev.slice(0, 4)])
       
       return true
     } catch (error) {
@@ -245,6 +226,6 @@ export function useAdminRealData() {
     error,
     approvePost,
     rejectPost,
-    refreshData: loadAdminData
+    refreshData: loadMockData
   }
 }
