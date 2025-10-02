@@ -46,15 +46,16 @@ export default function HomePage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center">
           <h1 className="text-6xl md:text-7xl font-bold text-gray-900 leading-tight mb-8 animate-fade-in">
-            Sua marca merece ser{' '}
+            Conteúdo profissional{' '}
             <span className="bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-600 bg-clip-text text-transparent animate-gradient">
-              vista
+              em menos de um dia
             </span>
           </h1>
           
           <p className="text-xl md:text-2xl text-gray-600 leading-relaxed mb-12 max-w-4xl mx-auto animate-fade-in-delay">
-            Crie textos publicitários persuasivos e criativos com nossa IA especializada. 
-            Mais de 100 nichos, resultados comprovados e suporte 24/7.
+            Nossos profissionais especialistas trabalham junto com IA avançada 
+            para criar textos irresistíveis que vendem, engajam e convertem. 
+            Conteúdo profissional para suas redes sociais, anúncios e campanhas.
           </p>
 
           {/* Features Grid */}
@@ -69,13 +70,13 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-300">
                 <span className="text-blue-600 text-2xl">✓</span>
               </div>
-              <span className="text-gray-700 font-semibold text-lg">IA Copywriting</span>
+              <span className="text-gray-700 font-semibold text-lg">Profissionais + IA</span>
             </div>
             <div className="flex flex-col items-center space-y-3 animate-bounce-in" style={{animationDelay: '0.3s'}}>
               <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-300">
                 <span className="text-purple-600 text-2xl">✓</span>
               </div>
-              <span className="text-gray-700 font-semibold text-lg">Suporte 24/7</span>
+              <span className="text-gray-700 font-semibold text-lg">Menos de 1 dia</span>
             </div>
             <div className="flex flex-col items-center space-y-3 animate-bounce-in" style={{animationDelay: '0.4s'}}>
               <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-300">
@@ -138,7 +139,7 @@ export default function HomePage() {
                 ✨ A Solução que Você Precisa
               </h2>
               <p className="text-lg text-gray-600 animate-fade-in-delay">
-                IA especializada em copywriting para mais de 100 nichos diferentes
+                Profissionais especialistas + IA avançada para criar conteúdo profissional em menos de um dia
               </p>
             </div>
             
@@ -231,7 +232,7 @@ export default function HomePage() {
                   3
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Receba seu Conteúdo</h3>
-                <p className="text-gray-600">Em segundos, você tem um texto profissional pronto para usar</p>
+                <p className="text-gray-600">Em menos de um dia, você tem conteúdo profissional pronto para usar</p>
               </div>
             </div>
           </div>
@@ -243,7 +244,7 @@ export default function HomePage() {
                 🎯 Nichos Especializados
               </h2>
               <p className="text-lg text-gray-600 animate-fade-in-delay">
-                IA treinada especificamente para cada área de atuação
+                Profissionais especialistas + IA treinada especificamente para cada área de atuação
               </p>
             </div>
             
@@ -281,14 +282,14 @@ export default function HomePage() {
           <div className="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-3xl p-12 mb-20 max-w-6xl mx-auto border border-emerald-100">
             <div className="text-center mb-12">
               <h2 className="text-4xl font-bold text-gray-900 mb-4 animate-fade-in">
-                💎 Planos que Cabem no Seu Bolso
+                💎 Escolha Seu Plano
               </h2>
               <p className="text-lg text-gray-600 animate-fade-in-delay">
-                Comece grátis e evolua conforme sua necessidade
+                Comece grátis ou escolha o plano ideal para você
               </p>
             </div>
             
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
                 <div className="text-center">
                   <div className="text-4xl mb-4">🆓</div>
@@ -298,7 +299,7 @@ export default function HomePage() {
                   <ul className="text-left space-y-3 mb-8">
                     <li className="flex items-center">
                       <span className="text-green-500 mr-2">✓</span>
-                      3 textos por mês
+                      3 conteúdos por mês
                     </li>
                     <li className="flex items-center">
                       <span className="text-green-500 mr-2">✓</span>
@@ -307,6 +308,10 @@ export default function HomePage() {
                     <li className="flex items-center">
                       <span className="text-green-500 mr-2">✓</span>
                       Suporte por email
+                    </li>
+                    <li className="flex items-center">
+                      <span className="text-green-500 mr-2">✓</span>
+                      Entrega em menos de 1 dia
                     </li>
                   </ul>
                   <Link 
@@ -335,7 +340,7 @@ export default function HomePage() {
                   <ul className="text-left space-y-3 mb-8">
                     <li className="flex items-center">
                       <span className="text-green-500 mr-2">✓</span>
-                      15 textos por mês
+                      15 conteúdos por mês
                     </li>
                     <li className="flex items-center">
                       <span className="text-green-500 mr-2">✓</span>
@@ -347,48 +352,21 @@ export default function HomePage() {
                     </li>
                     <li className="flex items-center">
                       <span className="text-green-500 mr-2">✓</span>
-                      Analytics básicos
+                      Entrega em menos de 1 dia
+                    </li>
+                    <li className="flex items-center">
+                      <span className="text-green-500 mr-2">✓</span>
+                      Revisões ilimitadas
                     </li>
                   </ul>
-                  <Link 
-                    href="/planos" 
+                  <a 
+                    href="https://pay.kirvano.com/e727b9f0-bf05-4862-b4ec-ba31d0f33c93" 
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="w-full bg-gradient-to-r from-emerald-500 to-blue-500 text-white py-3 rounded-xl font-semibold hover:from-emerald-600 hover:to-blue-600 transition-all duration-300 block text-center"
                   >
-                    Assinar Agora
-                  </Link>
-                </div>
-              </div>
-              
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="text-center">
-                  <div className="text-4xl mb-4">⭐</div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Profissional</h3>
-                  <div className="text-4xl font-bold text-gray-900 mb-4">R$ 29,90</div>
-                  <p className="text-gray-600 mb-6">Para profissionais</p>
-                  <ul className="text-left space-y-3 mb-8">
-                    <li className="flex items-center">
-                      <span className="text-green-500 mr-2">✓</span>
-                      50 textos por mês
-                    </li>
-                    <li className="flex items-center">
-                      <span className="text-green-500 mr-2">✓</span>
-                      Templates premium
-                    </li>
-                    <li className="flex items-center">
-                      <span className="text-green-500 mr-2">✓</span>
-                      Analytics avançados
-                    </li>
-                    <li className="flex items-center">
-                      <span className="text-green-500 mr-2">✓</span>
-                      Suporte prioritário
-                    </li>
-                  </ul>
-                  <Link 
-                    href="/planos" 
-                    className="w-full bg-gray-100 text-gray-900 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors block text-center"
-                  >
-                    Ver Detalhes
-                  </Link>
+                    Comprar Agora
+                  </a>
                 </div>
               </div>
             </div>
@@ -424,7 +402,7 @@ export default function HomePage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               <div className="text-center animate-bounce-in" style={{animationDelay: '0.1s'}}>
                 <div className="text-4xl font-bold text-orange-500 mb-2">10K+</div>
-                <div className="text-gray-600 font-medium">Textos Criados</div>
+                <div className="text-gray-600 font-medium">Conteúdos Profissionais</div>
               </div>
               <div className="text-center animate-bounce-in" style={{animationDelay: '0.2s'}}>
                 <div className="text-4xl font-bold text-blue-500 mb-2">500+</div>
@@ -435,8 +413,8 @@ export default function HomePage() {
                 <div className="text-gray-600 font-medium">Nichos Especializados</div>
               </div>
               <div className="text-center animate-bounce-in" style={{animationDelay: '0.4s'}}>
-                <div className="text-4xl font-bold text-purple-500 mb-2">24/7</div>
-                <div className="text-gray-600 font-medium">Suporte Disponível</div>
+                <div className="text-4xl font-bold text-purple-500 mb-2">&lt;1 dia</div>
+                <div className="text-gray-600 font-medium">Prazo de Entrega</div>
               </div>
             </div>
           </div>
@@ -452,9 +430,9 @@ export default function HomePage() {
               <div className="w-20 h-20 bg-blue-100 rounded-2xl flex items-center justify-center mb-6 mx-auto hover:scale-110 transition-transform duration-300">
                 <span className="text-4xl">🚀</span>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">Velocidade</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">Profissionais + IA</h3>
               <p className="text-gray-600 text-center">
-                Crie textos publicitários persuasivos em segundos. Nossa IA especializada em copywriting trabalha 24/7 para você.
+                Nossos especialistas trabalham junto com IA avançada para criar conteúdo profissional em menos de um dia.
               </p>
             </div>
 
