@@ -1,0 +1,12 @@
+{
+  "name": "nichofy-test-setup",
+  "version": "1.0.0",
+  "description": "Script para criar conta de teste do NichoFy",
+  "main": "create-test-user.js",
+  "scripts": {
+    "create-test-user": "node create-test-user.js"
+  },
+  "dependencies": {
+    "firebase": "^10.7.1"
+  }
+}

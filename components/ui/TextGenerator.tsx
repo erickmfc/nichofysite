@@ -139,14 +139,14 @@ export const TextGenerator = ({ className = '' }: TextGeneratorProps) => {
     <div className={`bg-white rounded-3xl shadow-2xl p-8 ${className}`}>
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-gray-900 mb-4">
-          Teste Grátis - Gerador de Textos Publicitários IA
+          Teste Grátis - Conteúdo Profissional
         </h2>
         <p className="text-lg text-gray-600">
-          Crie textos persuasivos e criativos com nossa IA especializada. Limite de 3 textos gratuitos por pessoa.
+          Nossos profissionais especialistas trabalham junto com IA avançada para criar conteúdo profissional. Limite de 3 conteúdos gratuitos por pessoa.
         </p>
         <div className="mt-4 bg-orange-50 border border-orange-200 rounded-xl p-3 inline-block">
           <span className="text-orange-700 font-medium">
-            🎁 {remainingTexts} textos restantes
+            🎁 {remainingTexts} conteúdos restantes
           </span>
         </div>
       </div>
@@ -301,7 +301,7 @@ export const TextGenerator = ({ className = '' }: TextGeneratorProps) => {
                   <span className="text-3xl">✍️</span>
                 </div>
                 <p>Nenhum texto gerado ainda</p>
-                <p className="text-sm">Use o formulário ao lado para criar seu primeiro texto publicitário</p>
+                <p className="text-sm">Use o formulário ao lado para criar seu primeiro conteúdo profissional</p>
               </div>
             )}
           </div>
@@ -310,7 +310,7 @@ export const TextGenerator = ({ className = '' }: TextGeneratorProps) => {
           <div className="bg-gradient-to-r from-orange-500 to-pink-500 rounded-2xl p-6 text-white text-center">
             <h3 className="text-xl font-bold mb-2">Quer mais textos?</h3>
             <p className="text-white/90 mb-4">
-              Faça upgrade para criar textos ilimitados
+              Faça upgrade para criar conteúdos profissionais ilimitados
             </p>
             <button className="bg-white text-orange-500 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
               Fazer Upgrade

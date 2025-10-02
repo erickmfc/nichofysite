@@ -16,11 +16,11 @@ export const PlanInfo = () => {
   const getPlanColor = () => {
     switch (userPlan.plan) {
       case 'free':
-        return 'from-gray-500 to-gray-600'
+        return 'from-blue-500 to-blue-600'
       case 'basic':
         return 'from-green-500 to-emerald-600'
       case 'pro':
-        return 'from-blue-500 to-purple-600'
+        return 'from-orange-500 to-orange-600'
       case 'enterprise':
         return 'from-purple-500 to-pink-600'
       default:
@@ -31,7 +31,7 @@ export const PlanInfo = () => {
   const getPlanIcon = () => {
     switch (userPlan.plan) {
       case 'free':
-        return '🆓'
+        return '🎯'
       case 'basic':
         return '🚀'
       case 'pro':

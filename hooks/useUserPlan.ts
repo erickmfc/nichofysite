@@ -107,25 +107,25 @@ export const useUserPlan = () => {
 
     const planLimits = {
       free: {
-        postsPerMonth: 3,
+        postsPerMonth: 10,
         templates: 5,
+        analytics: false,
+        customBranding: false,
+        support: 'chat'
+      },
+      basic: {
+        postsPerMonth: 20,
+        templates: 10,
         analytics: false,
         customBranding: false,
         support: 'email'
       },
-      basic: {
-        postsPerMonth: 15,
-        templates: 15,
-        analytics: true,
-        customBranding: true,
-        support: 'priority'
-      },
       pro: {
         postsPerMonth: 50,
-        templates: 25,
+        templates: -1, // Ilimitado
         analytics: true,
         customBranding: true,
-        support: 'priority'
+        support: 'whatsapp'
       },
       enterprise: {
         postsPerMonth: -1, // Ilimitado
@@ -141,14 +141,14 @@ export const useUserPlan = () => {
 
   const getPlanName = () => {
     if (!userPlan) return 'Nenhum'
-    
+
     const planNames = {
-      free: 'Gratuito',
+      free: 'Teste Grátis',
       basic: 'Básico',
       pro: 'Profissional',
       enterprise: 'Empresarial'
     }
-    
+
     return planNames[userPlan.plan as keyof typeof planNames] || 'Desconhecido'
   }
 

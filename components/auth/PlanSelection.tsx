@@ -31,105 +31,75 @@ interface Plan {
 const PLANS: Plan[] = [
   {
     id: 'free',
-    name: 'Gratuito',
+    name: 'Teste Grátis',
     price: 0,
-    period: 'Sempre grátis',
+    period: '14 dias',
     features: [
-      '3 textos por mês',
-      'Templates básicos',
-      'Suporte por email',
-      'Dashboard básico',
-      'Identidade da marca'
+      '10 posts criados por profissionais',
+      'Válido por 14 dias',
+      '1 nicho especializado à sua escolha',
+      'Sugestão de hashtags para cada post',
+      'Suporte via chat de texto'
     ],
-    color: 'from-gray-500 to-gray-600',
-    icon: '🆓',
-    description: 'Perfeito para começar e testar nossa plataforma',
+    color: 'from-blue-500 to-blue-600',
+    icon: '🎯',
+    description: 'Perfeito para experimentar',
     limitations: {
-      postsPerMonth: 3,
+      postsPerMonth: 10,
       templates: 5,
       analytics: false,
-      support: 'email',
+      support: 'chat',
       customBranding: false
     }
   },
   {
     id: 'basic',
     name: 'Básico',
-    price: 15.00,
-    originalPrice: 49.90,
+    price: 49.90,
     period: 'por mês',
     features: [
-      '15 textos por mês',
-      'Templates profissionais',
-      'Suporte prioritário',
-      'Dashboard completo',
-      'Identidade da marca',
-      'Analytics básicos',
-      'Integração com redes sociais'
+      '20 posts profissionais por mês',
+      '1 nicho especializado à sua escolha',
+      'Acesso a templates padrão',
+      'Sugestão de hashtags para cada post',
+      'Suporte via e-mail'
     ],
     color: 'from-green-500 to-emerald-600',
     icon: '🚀',
-    description: 'Ideal para começar com recursos profissionais',
-    discount: '5% OFF',
+    description: 'Ideal para autônomos e projetos iniciantes',
     paymentLink: 'https://pay.kirvano.com/e727b9f0-bf05-4862-b4ec-ba31d0f33c93',
     limitations: {
-      postsPerMonth: 15,
-      templates: 15,
-      analytics: true,
-      support: 'priority',
-      customBranding: true
+      postsPerMonth: 20,
+      templates: 10,
+      analytics: false,
+      support: 'email',
+      customBranding: false
     }
   },
   {
     id: 'pro',
     name: 'Profissional',
-    price: 29.90,
+    price: 149.90,
     period: 'por mês',
     features: [
-      '50 textos por mês',
-      'Templates premium',
-      'Analytics avançados',
-      'Suporte prioritário',
-      'Identidade da marca completa',
-      'Recursos extras',
-      'Dashboard pessoal'
+      '50 posts profissionais por mês',
+      'Até 3 nichos especializados',
+      'Suporte prioritário via WhatsApp',
+      'Acesso a todos os templates (Padrão + Premium)',
+      'Sugestão de hashtags estratégicas',
+      '"Paleta de Ideias Rápidas" no dashboard',
+      'Agendador de Posts (BETA)',
+      'Relatórios de performance simplificados'
     ],
     popular: true,
-    color: 'from-blue-500 to-purple-600',
+    color: 'from-orange-500 to-orange-600',
     icon: '⭐',
-    description: 'Ideal para profissionais e pequenos negócios',
+    description: 'Solução completa para crescer e se destacar',
     limitations: {
       postsPerMonth: 50,
-      templates: 25,
-      analytics: true,
-      support: 'priority',
-      customBranding: true
-    }
-  },
-  {
-    id: 'enterprise',
-    name: 'Empresarial',
-    price: 99.90,
-    period: 'por mês',
-    features: [
-      'Textos ilimitados',
-      'Todos os templates',
-      'Analytics completos',
-      'Suporte dedicado',
-      'Identidade da marca premium',
-      'Todos os recursos',
-      'Dashboard empresarial',
-      'API personalizada',
-      'Integrações avançadas'
-    ],
-    color: 'from-purple-500 to-pink-600',
-    icon: '🏢',
-    description: 'Para empresas que precisam de escala e personalização',
-    limitations: {
-      postsPerMonth: -1, // Ilimitado
       templates: -1, // Ilimitado
       analytics: true,
-      support: 'dedicated',
+      support: 'whatsapp',
       customBranding: true
     }
   }
@@ -145,28 +115,8 @@ export const PlanSelection = ({ onPlanSelected }: { onPlanSelected: (planId: str
 
     const selectedPlanData = PLANS.find(plan => plan.id === selectedPlan)
     
-    // Registrar evento de seleção de plano
-    await ConversionTrackingService.trackPlanSelection({
-      userId: user.uid,
-      planId: selectedPlan,
-      planName: selectedPlanData?.name || '',
-      amount: selectedPlanData?.price.toString() || '0',
-      userAgent: navigator.userAgent,
-      referrer: document.referrer
-    })
-    
     // Se o plano tem link de pagamento (Kirvano), redirecionar diretamente
     if (selectedPlanData?.paymentLink) {
-      // Registrar evento de redirecionamento para pagamento
-      await ConversionTrackingService.trackPaymentRedirect({
-        userId: user.uid,
-        planId: selectedPlan,
-        planName: selectedPlanData.name,
-        amount: selectedPlanData.price.toString(),
-        paymentLink: selectedPlanData.paymentLink,
-        userAgent: navigator.userAgent
-      })
-      
       // Abrir link de pagamento em nova aba
       window.open(selectedPlanData.paymentLink, '_blank', 'noopener,noreferrer')
       
@@ -183,7 +133,7 @@ export const PlanSelection = ({ onPlanSelected }: { onPlanSelected: (planId: str
 
     // Para planos sem pagamento (gratuito), continuar com o fluxo normal
     setIsLoading(true)
-    
+
     try {
       // Atualizar o plano do usuário no Firestore
       await updateDoc(doc(db, 'users', user.uid), {
@@ -195,7 +145,7 @@ export const PlanSelection = ({ onPlanSelected }: { onPlanSelected: (planId: str
 
       // Chamar callback para continuar o fluxo
       onPlanSelected(selectedPlan)
-      
+
     } catch (error) {
       console.error('Erro ao selecionar plano:', error)
       alert('Erro ao selecionar plano. Tente novamente.')
@@ -226,82 +176,49 @@ export const PlanSelection = ({ onPlanSelected }: { onPlanSelected: (planId: str
           {PLANS.map((plan) => (
             <div
               key={plan.id}
-              className={`relative bg-white rounded-2xl shadow-xl border-2 transition-all duration-300 cursor-pointer ${
+              className={`group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden cursor-pointer ${
                 selectedPlan === plan.id
-                  ? 'border-blue-500 scale-105 shadow-2xl'
-                  : 'border-gray-200 hover:border-gray-300 hover:shadow-2xl'
-              } ${plan.popular ? 'ring-2 ring-blue-500 ring-opacity-50' : ''}`}
+                  ? 'ring-2 ring-blue-500 scale-105'
+                  : ''
+              } ${plan.popular ? 'border-2 border-orange-500 relative' : ''}`}
               onClick={() => setSelectedPlan(plan.id)}
             >
-              
               {/* Popular Badge */}
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-full text-sm font-semibold">
-                    ⭐ Mais Popular
-                  </div>
+                  <span className="bg-orange-500 text-white px-4 py-1 rounded-full text-sm font-bold">
+                    ⭐ MAIS POPULAR ⭐
+                  </span>
                 </div>
               )}
 
-              {/* Plan Header */}
-              <div className={`p-8 rounded-t-2xl bg-gradient-to-r ${plan.color} text-white`}>
-                <div className="text-center">
-                  <div className="text-4xl mb-4">{plan.icon}</div>
-                  <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                  <p className="text-white/90 mb-4">{plan.description}</p>
-                  
-                  <div className="mb-4">
-                    <div className="flex items-center justify-center space-x-2 mb-2">
-                      <span className="text-4xl font-bold">R$ {plan.price.toFixed(2)}</span>
-                      {plan.originalPrice && (
-                        <span className="text-xl text-white/60 line-through">R$ {plan.originalPrice.toFixed(2)}</span>
-                      )}
-                    </div>
-                    <span className="text-white/80 ml-2">{plan.period}</span>
-                    {plan.discount && (
-                      <div className="mt-2">
-                        <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                          {plan.discount}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Plan Features */}
               <div className="p-8">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">O que está incluído:</h4>
-                <ul className="space-y-3">
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
+                  <div className="text-4xl font-bold text-gray-900 mb-2">
+                    R$ {plan.price.toFixed(2)}<span className="text-lg text-gray-600">/{plan.period}</span>
+                  </div>
+                  <p className="text-gray-700">{plan.description}</p>
+                </div>
+                
+                <ul className="space-y-4 mb-8">
                   {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-start">
-                      <span className="text-green-500 mr-3 mt-1">✓</span>
-                      <span className="text-gray-700">{feature}</span>
+                    <li key={index} className="flex items-center gap-3">
+                      <span className="text-green-500">✓</span>
+                      <span>{feature}</span>
                     </li>
                   ))}
                 </ul>
 
-                {/* Limitations */}
-                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                  <h5 className="font-semibold text-gray-900 mb-2">Limitações:</h5>
-                  <div className="text-sm text-gray-600 space-y-1">
-                    <div>📝 {plan.limitations.postsPerMonth === -1 ? 'Textos ilimitados' : `${plan.limitations.postsPerMonth} textos/mês`}</div>
-                    <div>📋 {plan.limitations.templates === -1 ? 'Templates ilimitados' : `${plan.limitations.templates} templates`}</div>
-                    <div>📊 {plan.limitations.analytics ? 'Analytics completos' : 'Analytics básicos'}</div>
-                    <div>🎨 {plan.limitations.customBranding ? 'Branding personalizado' : 'Branding padrão'}</div>
-                    <div>💬 Suporte: {plan.limitations.support}</div>
+                {/* Selection Indicator */}
+                {selectedPlan === plan.id && (
+                  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center justify-center">
+                      <span className="text-blue-600 font-semibold">✓ Plano Selecionado</span>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
-
-              {/* Selection Indicator */}
-              {selectedPlan === plan.id && (
-                <div className="absolute top-4 right-4">
-                  <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm">✓</span>
-                  </div>
-                </div>
-              )}
             </div>
           ))}
         </div>
@@ -346,10 +263,12 @@ export const PlanSelection = ({ onPlanSelected }: { onPlanSelected: (planId: str
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
                 Processando...
               </div>
-            ) : getSelectedPlan()?.paymentLink ? (
-              `💳 Assinar ${getSelectedPlan()?.name} - R$ ${getSelectedPlan()?.price.toFixed(2)}/mês`
+            ) : selectedPlan === 'free' ? (
+              'Começar meu teste grátis'
+            ) : selectedPlan === 'basic' ? (
+              'Assinar Plano Básico'
             ) : (
-              'Continuar com este Plano'
+              'Assinar Plano Profissional'
             )}
           </Button>
           

@@ -148,10 +148,9 @@ async function handlePaymentPending(data: KirvanoWebhookData) {
     const { customer, product, transaction_id } = data
     
     // Buscar usuário por email
-    const userQuery = await db.collection('users')
-      .where('email', '==', customer.email)
-      .limit(1)
-      .get()
+    const usersRef = collection(db, 'users')
+    const q = query(usersRef, where('email', '==', customer.email))
+    const userQuery = await getDocs(q)
     
     if (!userQuery.empty) {
       const userDoc = userQuery.docs[0]
@@ -190,10 +189,9 @@ async function handlePaymentCancelled(data: KirvanoWebhookData) {
     const { customer, transaction_id } = data
     
     // Buscar usuário por email
-    const userQuery = await db.collection('users')
-      .where('email', '==', customer.email)
-      .limit(1)
-      .get()
+    const usersRef = collection(db, 'users')
+    const q = query(usersRef, where('email', '==', customer.email))
+    const userQuery = await getDocs(q)
     
     if (!userQuery.empty) {
       const userDoc = userQuery.docs[0]

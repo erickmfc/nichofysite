@@ -166,7 +166,7 @@ export default function DashboardPage() {
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-6"></div>
             <h2 className="text-2xl font-bold mb-2 text-gray-900">NichoFy</h2>
-            <p className="text-gray-600">Carregando seu centro criativo...</p>
+            <p className="text-gray-600">Carregando seu centro de criação profissional...</p>
           </div>
         </div>
       </ProtectedRoute>

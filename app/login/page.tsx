@@ -312,6 +312,21 @@ function LoginForm() {
                 {isLoading ? 'Entrando...' : 'Entrar com Google'}
               </button>
 
+              {/* Test Login Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('avaliacao.plataforma@nichofy.shop')
+                  setPassword('avaliar12345')
+                  setError(null)
+                  setValidationErrors({})
+                }}
+                className="w-full flex items-center justify-center px-4 py-3 border border-orange-300 rounded-lg bg-orange-50 hover:bg-orange-100 transition-all duration-200 text-orange-700 font-medium"
+              >
+                <span className="mr-2">🧪</span>
+                Login de Teste (Avaliação)
+              </button>
+
               {/* Divider */}
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
@@ -434,6 +449,21 @@ function LoginForm() {
                   {isSignUp ? 'Entrar' : 'Começar Agora'}
                 </button>
               </p>
+
+              {/* Test Account Info */}
+              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h3 className="text-sm font-semibold text-blue-800 mb-2">🧪 Conta de Teste</h3>
+                <p className="text-xs text-blue-700 mb-2">
+                  Para avaliação da plataforma, use:
+                </p>
+                <div className="text-xs text-blue-600 font-mono">
+                  <div>📧 avaliacao.plataforma@nichofy.shop</div>
+                  <div>🔑 avaliar12345</div>
+                </div>
+                <p className="text-xs text-blue-600 mt-2">
+                  Plano Profissional com acesso completo
+                </p>
+              </div>
 
               <p className="text-xs text-gray-500 mt-4">
                 Ao continuar, você concorda com nossos{' '}
