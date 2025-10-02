@@ -8,6 +8,7 @@ import { db } from '@/lib/firebase'
 import { collection, addDoc, Timestamp, doc, getDoc } from 'firebase/firestore'
 import { ContentPreferencesService, ContentPreferences } from '@/lib/services/ContentPreferencesService'
 import { testFirebaseConnection, testContentRequestSubmission } from '@/lib/utils/firebaseTest'
+import { diagnoseContentRequestIssue, checkFirebaseConfiguration } from '@/lib/utils/diagnostic'
 
 export default function CriarConteudoPage() {
   const { user } = useAuth()
