@@ -1,377 +1,289 @@
 'use client'
 
-import { useTheme } from '@/lib/contexts/ThemeContext'
-import { useState, useEffect } from 'react'
-
-interface ChartData {
-  label: string
-  value: number
-  color: string
-  percentage: number
-}
+import React from 'react'
 
 interface SimpleChartProps {
-  data: ChartData[]
-  title: string
-  type: 'bar' | 'pie' | 'line' | 'progress'
+  data: number[]
+  labels?: string[]
+  title?: string
+  type?: 'bar' | 'line' | 'area'
+  color?: string
   height?: number
-  showValues?: boolean
-  showPercentages?: boolean
+  className?: string
 }
 
-export const SimpleChart = ({ 
-  data, 
-  title, 
-  type, 
-  height = 200, 
-  showValues = true, 
-  showPercentages = true 
-}: SimpleChartProps) => {
-  const { theme } = useTheme()
-  const [animatedData, setAnimatedData] = useState<ChartData[]>([])
-
-  // Animar dados
-  useEffect(() => {
-    const animateData = data.map(item => ({
-      ...item,
-      animatedValue: 0,
-      animatedPercentage: 0
-    }))
-
-    const animate = () => {
-      setAnimatedData(prev => prev.map((item, index) => {
-        const target = data[index]
-        const progress = Math.min(1, (Date.now() - startTime) / 1000)
-        
-        return {
-          ...item,
-          animatedValue: target.value * progress,
-          animatedPercentage: target.percentage * progress
-        }
-      }))
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate)
-      }
-    }
-
-    const startTime = Date.now()
-    setAnimatedData(animateData)
-    animate()
-  }, [data])
-
-  const maxValue = Math.max(...data.map(d => d.value))
-
-  const renderBarChart = () => (
-    <div className="space-y-3">
-      {animatedData.map((item, index) => (
-        <div key={index} className="space-y-1">
-          <div className="flex justify-between items-center">
-            <span className={`text-sm font-medium ${
-              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-            }`}>
-              {item.label}
-            </span>
-            <div className="flex items-center space-x-2">
-              {showValues && (
-                <span className={`text-sm font-bold ${
-                  theme === 'dark' ? 'text-white' : 'text-gray-900'
-                }`}>
-                  {Math.round(item.animatedValue)}
-                </span>
-              )}
-              {showPercentages && (
-                <span className={`text-xs ${
-                  theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-                }`}>
-                  {Math.round(item.animatedPercentage)}%
-                </span>
-              )}
-            </div>
-          </div>
-          <div className={`w-full rounded-full h-3 ${
-            theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
-          }`}>
-            <div
-              className={`h-3 rounded-full transition-all duration-1000 ease-out`}
-              style={{
-                width: `${(item.animatedValue / maxValue) * 100}%`,
-                backgroundColor: item.color
-              }}
-            />
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-
-  const renderPieChart = () => {
-    let cumulativePercentage = 0
-    
+export const SimpleChart: React.FC<SimpleChartProps> = ({
+  data,
+  labels,
+  title,
+  type = 'bar',
+  color = '#3B82F6',
+  height = 200,
+  className = ''
+}) => {
+  // Verificar se há dados válidos
+  if (!data || data.length === 0) {
     return (
-      <div className="relative" style={{ width: height, height }}>
-        <svg width={height} height={height} className="transform -rotate-90">
-          {animatedData.map((item, index) => {
-            const startAngle = cumulativePercentage * 3.6 // 360/100
-            const endAngle = (cumulativePercentage + item.animatedPercentage) * 3.6
-            cumulativePercentage += item.animatedPercentage
-            
-            const radius = height / 2 - 10
-            const x1 = height / 2 + radius * Math.cos((startAngle * Math.PI) / 180)
-            const y1 = height / 2 + radius * Math.sin((startAngle * Math.PI) / 180)
-            const x2 = height / 2 + radius * Math.cos((endAngle * Math.PI) / 180)
-            const y2 = height / 2 + radius * Math.sin((endAngle * Math.PI) / 180)
-            
-            const largeArcFlag = item.animatedPercentage > 50 ? 1 : 0
-            
-            const pathData = [
-              `M ${height / 2} ${height / 2}`,
-              `L ${x1} ${y1}`,
-              `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
-              'Z'
-            ].join(' ')
-            
-            return (
-              <path
-                key={index}
-                d={pathData}
-                fill={item.color}
-                className="transition-all duration-1000 ease-out"
-              />
-            )
-          })}
-        </svg>
-        
-        {/* Legenda */}
-        <div className="absolute bottom-0 left-0 right-0 space-y-1">
-          {animatedData.map((item, index) => (
-            <div key={index} className="flex items-center justify-between text-xs">
-              <div className="flex items-center space-x-2">
-                <div 
-                  className="w-3 h-3 rounded-full" 
-                  style={{ backgroundColor: item.color }}
-                />
-                <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}>
-                  {item.label}
-                </span>
-              </div>
-              <span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>
-                {Math.round(item.animatedPercentage)}%
-              </span>
-            </div>
-          ))}
+      <div className={`bg-white rounded-lg p-6 shadow-sm border border-gray-200 ${className}`}>
+        {title && (
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+        )}
+        <div className="flex items-center justify-center h-48 text-gray-500">
+          <div className="text-center">
+            <div className="text-4xl mb-2">📊</div>
+            <p>Nenhum dado disponível</p>
+          </div>
         </div>
       </div>
     )
   }
 
-  const renderLineChart = () => (
-    <div className="space-y-4">
-      <div className="relative" style={{ height }}>
-        <svg width="100%" height={height} className="overflow-visible">
-          {/* Grid lines */}
-          {[0, 25, 50, 75, 100].map((value, index) => (
-            <line
-              key={index}
-              x1="0"
-              y1={height - (value / 100) * height}
-              x2="100%"
-              y2={height - (value / 100) * height}
-              stroke={theme === 'dark' ? '#374151' : '#E5E7EB'}
-              strokeWidth="1"
+  const maxValue = Math.max(...data)
+  const minValue = Math.min(...data)
+  const range = maxValue - minValue
+
+  const getBarChart = () => (
+    <div className="flex items-end space-x-2 h-full">
+      {data.map((value, index) => {
+        const percentage = range > 0 ? ((value - minValue) / range) * 100 : 50
+        return (
+          <div key={index} className="flex-1 flex flex-col items-center">
+            <div
+              className="w-full rounded-t transition-all duration-500 ease-out"
+              style={{ 
+                height: `${percentage}%`,
+                backgroundColor: color,
+                minHeight: '4px'
+              }}
             />
-          ))}
-          
-          {/* Data line */}
-          <polyline
-            points={animatedData.map((item, index) => 
-              `${(index / (animatedData.length - 1)) * 100}%,${height - (item.animatedPercentage / 100) * height}`
-            ).join(' ')}
-            fill="none"
-            stroke={animatedData[0]?.color || '#3B82F6'}
-            strokeWidth="3"
-            className="transition-all duration-1000 ease-out"
-          />
-          
-          {/* Data points */}
-          {animatedData.map((item, index) => (
-            <circle
-              key={index}
-              cx={`${(index / (animatedData.length - 1)) * 100}%`}
-              cy={height - (item.animatedPercentage / 100) * height}
-              r="4"
-              fill={item.color}
-              className="transition-all duration-1000 ease-out"
-            />
-          ))}
-        </svg>
-      </div>
-      
-      {/* Labels */}
-      <div className="flex justify-between text-xs">
-        {animatedData.map((item, index) => (
-          <span key={index} className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>
-            {item.label}
-          </span>
-        ))}
-      </div>
+            {labels && labels[index] && (
+              <span className="text-xs text-gray-600 mt-2 text-center truncate w-full">
+                {labels[index]}
+              </span>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 
-  const renderProgressChart = () => (
-    <div className="space-y-4">
-      {animatedData.map((item, index) => (
-        <div key={index} className="space-y-2">
-          <div className="flex justify-between items-center">
-            <span className={`text-sm font-medium ${
-              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-            }`}>
-              {item.label}
-            </span>
-            <span className={`text-sm font-bold ${
-              theme === 'dark' ? 'text-white' : 'text-gray-900'
-            }`}>
-              {Math.round(item.animatedPercentage)}%
-            </span>
+  const getLineChart = () => {
+    const points = data.map((value, index) => {
+      const x = (index / (data.length - 1)) * 100
+      const y = range > 0 ? 100 - (((value - minValue) / range) * 100) : 50
+      return `${x},${y}`
+    }).join(' ')
+
+    return (
+      <div className="relative h-full">
+        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <polyline
+            fill="none"
+            stroke={color}
+            strokeWidth="2"
+            points={points}
+            className="transition-all duration-500 ease-out"
+          />
+          {data.map((value, index) => {
+            const x = (index / (data.length - 1)) * 100
+            const y = range > 0 ? 100 - (((value - minValue) / range) * 100) : 50
+            return (
+              <circle
+                key={index}
+                cx={x}
+                cy={y}
+                r="2"
+                fill={color}
+                className="transition-all duration-500 ease-out"
+              />
+            )
+          })}
+        </svg>
+        {labels && (
+          <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-gray-600">
+            {labels.map((label, index) => (
+              <span key={index} className="truncate">
+                {label}
+              </span>
+            ))}
           </div>
-          <div className={`w-full rounded-full h-4 ${
-            theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
-          }`}>
-            <div
-              className={`h-4 rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2`}
-              style={{
-                width: `${item.animatedPercentage}%`,
-                backgroundColor: item.color
-              }}
-            >
-              {showValues && item.animatedPercentage > 20 && (
-                <span className="text-xs font-bold text-white">
-                  {Math.round(item.animatedValue)}
-                </span>
-              )}
-            </div>
+        )}
+      </div>
+    )
+  }
+
+  const getAreaChart = () => {
+    const points = data.map((value, index) => {
+      const x = (index / (data.length - 1)) * 100
+      const y = range > 0 ? 100 - (((value - minValue) / range) * 100) : 50
+      return `${x},${y}`
+    }).join(' ')
+
+    const areaPath = `M 0,100 L ${points} L 100,100 Z`
+
+    return (
+      <div className="relative h-full">
+        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path
+            d={areaPath}
+            fill={color}
+            fillOpacity="0.3"
+            className="transition-all duration-500 ease-out"
+          />
+          <polyline
+            fill="none"
+            stroke={color}
+            strokeWidth="2"
+            points={points}
+            className="transition-all duration-500 ease-out"
+          />
+        </svg>
+        {labels && (
+          <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-gray-600">
+            {labels.map((label, index) => (
+              <span key={index} className="truncate">
+                {label}
+              </span>
+            ))}
           </div>
-        </div>
-      ))}
-    </div>
-  )
+        )}
+      </div>
+    )
+  }
 
   const renderChart = () => {
     switch (type) {
-      case 'bar':
-        return renderBarChart()
-      case 'pie':
-        return renderPieChart()
       case 'line':
-        return renderLineChart()
-      case 'progress':
-        return renderProgressChart()
+        return getLineChart()
+      case 'area':
+        return getAreaChart()
       default:
-        return renderBarChart()
+        return getBarChart()
     }
   }
 
   return (
-    <div className={`rounded-xl p-4 ${
-      theme === 'dark' 
-        ? 'bg-gray-800 border border-gray-700' 
-        : 'bg-white border border-gray-200'
-    }`}>
-      <h3 className={`text-lg font-semibold mb-4 ${
-        theme === 'dark' ? 'text-white' : 'text-gray-900'
-      }`}>
-        {title}
-      </h3>
-      {renderChart()}
+    <div className={`bg-white rounded-lg p-6 shadow-sm border border-gray-200 ${className}`}>
+      {title && (
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+      )}
+      
+      <div style={{ height: `${height}px` }}>
+        {data.length > 0 ? (
+          renderChart()
+        ) : (
+          <div className="flex items-center justify-center h-full text-gray-500">
+            <div className="text-center">
+              <div className="text-4xl mb-2">📊</div>
+              <p>Nenhum dado disponível</p>
+            </div>
+          </div>
+        )}
+      </div>
+      
+      {data.length > 0 && (
+        <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+          <span>Min: {minValue.toLocaleString()}</span>
+          <span>Max: {maxValue.toLocaleString()}</span>
+        </div>
+      )}
     </div>
   )
 }
 
-// Componente para gráfico de progresso de metas
-interface GoalProgressChartProps {
-  goals: Array<{
-    id: string
-    title: string
-    progress: number
-    color: string
-  }>
-}
+// Componente de gráfico de pizza simples
+export const SimplePieChart: React.FC<{
+  data: Array<{ label: string; value: number; color?: string }>
+  title?: string
+  size?: number
+  className?: string
+}> = ({ data, title, size = 200, className = '' }) => {
+  // Verificar se há dados válidos
+  if (!data || data.length === 0) {
+    return (
+      <div className={`bg-white rounded-lg p-6 shadow-sm border border-gray-200 ${className}`}>
+        {title && (
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+        )}
+        <div className="flex items-center justify-center h-48 text-gray-500">
+          <div className="text-center">
+            <div className="text-4xl mb-2">🥧</div>
+            <p>Nenhum dado disponível</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
-export const GoalProgressChart = ({ goals }: GoalProgressChartProps) => {
-  const chartData: ChartData[] = goals.map(goal => ({
-    label: goal.title,
-    value: goal.progress,
-    color: goal.color,
-    percentage: goal.progress
-  }))
+  const total = data.reduce((sum, item) => sum + item.value, 0)
+  const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4']
 
-  return (
-    <SimpleChart
-      data={chartData}
-      title="Progresso das Metas"
-      type="progress"
-      showValues={false}
-      showPercentages={true}
-    />
-  )
-}
-
-// Componente para gráfico de categorias
-interface CategoryChartProps {
-  categories: Array<{
-    name: string
-    count: number
-    color: string
-  }>
-}
-
-export const CategoryChart = ({ categories }: CategoryChartProps) => {
-  const total = categories.reduce((sum, cat) => sum + cat.count, 0)
-  
-  const chartData: ChartData[] = categories.map(cat => ({
-    label: cat.name,
-    value: cat.count,
-    color: cat.color,
-    percentage: total > 0 ? (cat.count / total) * 100 : 0
-  }))
+  let cumulativePercentage = 0
 
   return (
-    <SimpleChart
-      data={chartData}
-      title="Posts por Categoria"
-      type="pie"
-      height={250}
-      showValues={true}
-      showPercentages={true}
-    />
-  )
-}
+    <div className={`bg-white rounded-lg p-6 shadow-sm border border-gray-200 ${className}`}>
+      {title && (
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+      )}
+      
+      <div className="flex items-center justify-center">
+        <svg width={size} height={size} className="transform -rotate-90">
+          {data.map((item, index) => {
+            const percentage = (item.value / total) * 100
+            const startAngle = (cumulativePercentage / 100) * 360
+            const endAngle = ((cumulativePercentage + percentage) / 100) * 360
+            
+            cumulativePercentage += percentage
 
-// Componente para gráfico de tendência temporal
-interface TrendChartProps {
-  data: Array<{
-    period: string
-    value: number
-    color: string
-  }>
-}
+            const radius = size / 2 - 10
+            const centerX = size / 2
+            const centerY = size / 2
 
-export const TrendChart = ({ data }: TrendChartProps) => {
-  const chartData: ChartData[] = data.map(item => ({
-    label: item.period,
-    value: item.value,
-    color: item.color,
-    percentage: item.value // Para gráfico de linha, usar valor direto
-  }))
+            const startAngleRad = (startAngle * Math.PI) / 180
+            const endAngleRad = (endAngle * Math.PI) / 180
 
-  return (
-    <SimpleChart
-      data={chartData}
-      title="Tendência de Performance"
-      type="line"
-      height={200}
-      showValues={false}
-      showPercentages={false}
-    />
+            const x1 = centerX + radius * Math.cos(startAngleRad)
+            const y1 = centerY + radius * Math.sin(startAngleRad)
+            const x2 = centerX + radius * Math.cos(endAngleRad)
+            const y2 = centerY + radius * Math.sin(endAngleRad)
+
+            const largeArcFlag = percentage > 50 ? 1 : 0
+
+            const pathData = [
+              `M ${centerX} ${centerY}`,
+              `L ${x1} ${y1}`,
+              `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+              'Z'
+            ].join(' ')
+
+            return (
+              <path
+                key={index}
+                d={pathData}
+                fill={item.color || colors[index % colors.length]}
+                className="transition-all duration-500 ease-out hover:opacity-80"
+              />
+            )
+          })}
+        </svg>
+      </div>
+      
+      <div className="mt-4 space-y-2">
+        {data.map((item, index) => (
+          <div key={index} className="flex items-center justify-between text-sm">
+            <div className="flex items-center">
+              <div
+                className="w-3 h-3 rounded-full mr-2"
+                style={{ backgroundColor: item.color || colors[index % colors.length] }}
+              />
+              <span className="text-gray-700">{item.label}</span>
+            </div>
+            <span className="text-gray-600 font-medium">
+              {((item.value / total) * 100).toFixed(1)}%
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }

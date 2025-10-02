@@ -1,343 +1,422 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { useTheme } from '@/lib/contexts/ThemeContext'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 
-// Hook para micro-interações
-export const useMicroInteractions = () => {
-  const [isHovered, setIsHovered] = useState(false)
-  const [isPressed, setIsPressed] = useState(false)
-  const [isFocused, setIsFocused] = useState(false)
-  const elementRef = useRef<HTMLElement>(null)
-
-  const handleMouseEnter = () => setIsHovered(true)
-  const handleMouseLeave = () => setIsHovered(false)
-  const handleMouseDown = () => setIsPressed(true)
-  const handleMouseUp = () => setIsPressed(false)
-  const handleFocus = () => setIsFocused(true)
-  const handleBlur = () => setIsFocused(false)
-
-  // Feedback háptico para dispositivos móveis
-  const triggerHaptic = (type: 'light' | 'medium' | 'heavy' = 'light') => {
-    if ('vibrate' in navigator) {
-      const patterns = {
-        light: [10],
-        medium: [20],
-        heavy: [30, 10, 30]
-      }
-      navigator.vibrate(patterns[type])
-    }
-  }
-
-  // Feedback sonoro sutil
-  const triggerSound = (type: 'click' | 'hover' | 'success' | 'error' = 'click') => {
-    if (typeof window !== 'undefined' && window.AudioContext) {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-      const oscillator = audioContext.createOscillator()
-      const gainNode = audioContext.createGain()
-      
-      oscillator.connect(gainNode)
-      gainNode.connect(audioContext.destination)
-      
-      const frequencies = {
-        click: 800,
-        hover: 600,
-        success: 1000,
-        error: 400
-      }
-      
-      oscillator.frequency.setValueAtTime(frequencies[type], audioContext.currentTime)
-      oscillator.type = 'sine'
-      
-      gainNode.gain.setValueAtTime(0, audioContext.currentTime)
-      gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01)
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1)
-      
-      oscillator.start(audioContext.currentTime)
-      oscillator.stop(audioContext.currentTime + 0.1)
-    }
-  }
-
-  return {
-    isHovered,
-    isPressed,
-    isFocused,
-    elementRef,
-    handlers: {
-      onMouseEnter: handleMouseEnter,
-      onMouseLeave: handleMouseLeave,
-      onMouseDown: handleMouseDown,
-      onMouseUp: handleMouseUp,
-      onFocus: handleFocus,
-      onBlur: handleBlur
-    },
-    feedback: {
-      haptic: triggerHaptic,
-      sound: triggerSound
-    }
-  }
-}
-
-// Componente de card com micro-interações
-interface InteractiveCardProps {
+// Componente de card interativo com animações
+export const InteractiveCard: React.FC<{
   children: React.ReactNode
   className?: string
-  onClick?: () => void
+  hover?: boolean
+  click?: boolean
   disabled?: boolean
-  variant?: 'default' | 'elevated' | 'outlined'
-  size?: 'sm' | 'md' | 'lg'
-  ariaLabel?: string
-  role?: string
+}> = ({ children, className = '', hover = true, click = true, disabled = false }) => {
+  const [isHovered, setIsHovered] = useState(false)
+  const [isClicked, setIsClicked] = useState(false)
+
+  const handleMouseEnter = useCallback(() => {
+    if (!disabled && hover) {
+      setIsHovered(true)
+    }
+  }, [disabled, hover])
+
+  const handleMouseLeave = useCallback(() => {
+    if (!disabled && hover) {
+      setIsHovered(false)
+    }
+  }, [disabled, hover])
+
+  const handleMouseDown = useCallback(() => {
+    if (!disabled && click) {
+      setIsClicked(true)
+    }
+  }, [disabled, click])
+
+  const handleMouseUp = useCallback(() => {
+    if (!disabled && click) {
+      setIsClicked(false)
+    }
+  }, [disabled, click])
+
+  const baseClasses = "transition-all duration-200 ease-in-out"
+  const hoverClasses = hover && !disabled ? "hover:shadow-lg hover:scale-105" : ""
+  const clickClasses = click && !disabled ? "active:scale-95" : ""
+  const disabledClasses = disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+
+  return (
+    <div
+      className={`${baseClasses} ${hoverClasses} ${clickClasses} ${disabledClasses} ${className}`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      style={{
+        transform: isClicked ? 'scale(0.95)' : isHovered ? 'scale(1.05)' : 'scale(1)',
+        boxShadow: isHovered ? '0 10px 25px rgba(0,0,0,0.1)' : '0 4px 6px rgba(0,0,0,0.1)'
+      }}
+    >
+      {children}
+    </div>
+  )
 }
 
-export const InteractiveCard = ({
-  children,
-  className = '',
-  onClick,
-  disabled = false,
-  variant = 'default',
-  size = 'md',
-  ariaLabel,
-  role = 'button'
-}: InteractiveCardProps) => {
-  const { theme } = useTheme()
-  const { isHovered, isPressed, isFocused, handlers, feedback } = useMicroInteractions()
+// Container animado com entrada suave
+export const AnimatedContainer: React.FC<{
+  children: React.ReactNode
+  className?: string
+  delay?: number
+  direction?: 'up' | 'down' | 'left' | 'right' | 'fade'
+  duration?: number
+}> = ({ 
+  children, 
+  className = '', 
+  delay = 0, 
+  direction = 'fade', 
+  duration = 500 
+}) => {
+  const [isVisible, setIsVisible] = useState(false)
+  const [isInView, setIsInView] = useState(false)
+  const elementRef = useRef<HTMLDivElement>(null)
 
-  const baseClasses = 'relative overflow-hidden transition-all duration-300 ease-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
-  
-  const sizeClasses = {
-    sm: 'p-3 rounded-lg',
-    md: 'p-4 rounded-xl',
-    lg: 'p-6 rounded-2xl'
-  }
-  
-  const variantClasses = {
-    default: theme === 'dark' 
-      ? 'bg-gray-800 border border-gray-700 hover:bg-gray-700 hover:border-gray-600' 
-      : 'bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300',
-    elevated: theme === 'dark'
-      ? 'bg-gray-800 border border-gray-700 shadow-lg hover:shadow-xl hover:bg-gray-700'
-      : 'bg-white border border-gray-200 shadow-lg hover:shadow-xl hover:bg-gray-50',
-    outlined: theme === 'dark'
-      ? 'bg-transparent border-2 border-gray-600 hover:border-gray-500 hover:bg-gray-800'
-      : 'bg-transparent border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50'
-  }
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true)
+          setTimeout(() => setIsVisible(true), delay)
+        }
+      },
+      { threshold: 0.1 }
+    )
 
-  const interactionClasses = `
-    ${isHovered ? 'scale-105 shadow-lg' : 'scale-100'}
-    ${isPressed ? 'scale-95' : ''}
-    ${isFocused ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
-    ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
-  `
+    if (elementRef.current) {
+      observer.observe(elementRef.current)
+    }
 
-  const handleClick = () => {
-    if (!disabled && onClick) {
-      feedback.haptic('light')
-      feedback.sound('click')
-      onClick()
+    return () => observer.disconnect()
+  }, [delay])
+
+  const getInitialTransform = () => {
+    switch (direction) {
+      case 'up': return 'translateY(20px)'
+      case 'down': return 'translateY(-20px)'
+      case 'left': return 'translateX(20px)'
+      case 'right': return 'translateX(-20px)'
+      case 'fade': return 'translateY(0)'
+      default: return 'translateY(0)'
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if ((e.key === 'Enter' || e.key === ' ') && !disabled) {
-      e.preventDefault()
-      handleClick()
+  const getFinalTransform = () => {
+    switch (direction) {
+      case 'up':
+      case 'down':
+      case 'left':
+      case 'right':
+      case 'fade': return 'translateY(0) translateX(0)'
+      default: return 'translateY(0) translateX(0)'
     }
   }
 
   return (
     <div
-      className={`${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${interactionClasses} ${className}`}
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
-      tabIndex={disabled ? -1 : 0}
-      role={role}
-      aria-label={ariaLabel}
-      aria-disabled={disabled}
-      {...handlers}
+      ref={elementRef}
+      className={className}
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? getFinalTransform() : getInitialTransform(),
+        transition: `all ${duration}ms ease-out`
+      }}
     >
-      {/* Efeito de shimmer no hover */}
-      {isHovered && (
-        <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-      )}
-      
-      {/* Conteúdo */}
-      <div className="relative z-10">
-        {children}
-      </div>
-      
-      {/* Efeito de ripple no click */}
-      {isPressed && (
-        <div className="absolute inset-0 bg-blue-500/20 animate-ping" />
-      )}
-      
-      <style jsx>{`
-        @keyframes shimmer {
-          100% { transform: translateX(100%); }
-        }
-        .animate-shimmer {
-          animation: shimmer 0.6s ease-out;
-        }
-      `}</style>
+      {children}
     </div>
   )
 }
 
-// Componente de botão com micro-interações avançadas
-interface InteractiveButtonProps {
+// Botão interativo com animações
+export const InteractiveButton: React.FC<{
   children: React.ReactNode
   onClick?: () => void
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost'
+  variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'outline'
   size?: 'sm' | 'md' | 'lg'
   disabled?: boolean
   loading?: boolean
-  icon?: React.ReactNode
   className?: string
-  ariaLabel?: string
-}
-
-export const InteractiveButton = ({
-  children,
-  onClick,
-  variant = 'primary',
-  size = 'md',
-  disabled = false,
+}> = ({ 
+  children, 
+  onClick, 
+  variant = 'primary', 
+  size = 'md', 
+  disabled = false, 
   loading = false,
-  icon,
-  className = '',
-  ariaLabel
-}: InteractiveButtonProps) => {
-  const { theme } = useTheme()
-  const { isHovered, isPressed, isFocused, handlers, feedback } = useMicroInteractions()
+  className = '' 
+}) => {
+  const [isPressed, setIsPressed] = useState(false)
 
-  const baseClasses = 'relative inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
-  
-  const sizeClasses = {
-    sm: 'px-3 py-1.5 text-sm rounded-md',
-    md: 'px-4 py-2 text-sm rounded-lg',
-    lg: 'px-6 py-3 text-base rounded-xl'
-  }
-  
-  const variantClasses = {
-    primary: theme === 'dark'
-      ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl focus:ring-blue-500'
-      : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl focus:ring-blue-500',
-    secondary: theme === 'dark'
-      ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 focus:ring-gray-500'
-      : 'bg-gray-200 hover:bg-gray-300 text-gray-900 focus:ring-gray-500',
-    outline: theme === 'dark'
-      ? 'border-2 border-gray-600 hover:border-gray-500 hover:bg-gray-800 text-gray-200 focus:ring-gray-500'
-      : 'border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-700 focus:ring-gray-500',
-    ghost: theme === 'dark'
-      ? 'hover:bg-gray-800 text-gray-200 focus:ring-gray-500'
-      : 'hover:bg-gray-100 text-gray-700 focus:ring-gray-500'
-  }
-
-  const interactionClasses = `
-    ${isHovered ? 'scale-105' : 'scale-100'}
-    ${isPressed ? 'scale-95' : ''}
-    ${loading ? 'cursor-wait' : ''}
-  `
-
-  const handleClick = () => {
-    if (!disabled && !loading && onClick) {
-      feedback.haptic('medium')
-      feedback.sound('click')
-      onClick()
+  const getVariantClasses = () => {
+    switch (variant) {
+      case 'primary':
+        return 'bg-blue-600 hover:bg-blue-700 text-white'
+      case 'secondary':
+        return 'bg-gray-600 hover:bg-gray-700 text-white'
+      case 'danger':
+        return 'bg-red-600 hover:bg-red-700 text-white'
+      case 'success':
+        return 'bg-green-600 hover:bg-green-700 text-white'
+      case 'outline':
+        return 'border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white'
+      default:
+        return 'bg-blue-600 hover:bg-blue-700 text-white'
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if ((e.key === 'Enter' || e.key === ' ') && !disabled && !loading) {
-      e.preventDefault()
-      handleClick()
+  const getSizeClasses = () => {
+    switch (size) {
+      case 'sm':
+        return 'px-3 py-1.5 text-sm'
+      case 'md':
+        return 'px-4 py-2 text-base'
+      case 'lg':
+        return 'px-6 py-3 text-lg'
+      default:
+        return 'px-4 py-2 text-base'
     }
   }
+
+  const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    if (disabled || loading) return
+    onClick?.()
+  }, [disabled, loading, onClick])
+
+  const handleMouseDown = useCallback(() => {
+    if (!disabled && !loading) {
+      setIsPressed(true)
+    }
+  }, [disabled, loading])
+
+  const handleMouseUp = useCallback(() => {
+    setIsPressed(false)
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    setIsPressed(false)
+  }, [])
 
   return (
     <button
-      className={`${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${interactionClasses} ${className}`}
       onClick={handleClick}
-      onKeyDown={handleKeyDown}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
       disabled={disabled || loading}
-      aria-label={ariaLabel}
-      {...handlers}
+      className={`
+        relative overflow-hidden rounded-lg font-medium transition-all duration-200 ease-in-out
+        ${getVariantClasses()}
+        ${getSizeClasses()}
+        ${disabled || loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+        ${isPressed ? 'scale-95' : 'hover:scale-105'}
+        ${className}
+      `}
     >
-      {/* Loading spinner */}
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-        </div>
-      )}
-      
-      {/* Conteúdo */}
-      <div className={`flex items-center space-x-2 ${loading ? 'opacity-0' : 'opacity-100'}`}>
-        {icon && <span className="flex-shrink-0">{icon}</span>}
-        <span>{children}</span>
-      </div>
-      
-      {/* Efeito de ripple */}
-      {isPressed && !loading && (
-        <div className="absolute inset-0 bg-white/20 rounded-inherit animate-ping" />
-      )}
+      <span className="relative z-10 flex items-center justify-center">
+        {loading ? (
+          <>
+            <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+            Carregando...
+          </>
+        ) : (
+          children
+        )}
+      </span>
     </button>
   )
 }
 
-// Componente de input com micro-interações
-interface InteractiveInputProps {
+// Botão com micro-interações avançadas
+export const MicroButton: React.FC<{
+  children: React.ReactNode
+  onClick?: () => void
+  variant?: 'primary' | 'secondary' | 'danger' | 'success'
+  size?: 'sm' | 'md' | 'lg'
+  disabled?: boolean
+  loading?: boolean
+  className?: string
+}> = ({ 
+  children, 
+  onClick, 
+  variant = 'primary', 
+  size = 'md', 
+  disabled = false, 
+  loading = false,
+  className = '' 
+}) => {
+  const [isPressed, setIsPressed] = useState(false)
+  const [ripples, setRipples] = useState<Array<{ id: number; x: number; y: number }>>([])
+
+  const getVariantClasses = () => {
+    switch (variant) {
+      case 'primary':
+        return 'bg-blue-600 hover:bg-blue-700 text-white'
+      case 'secondary':
+        return 'bg-gray-600 hover:bg-gray-700 text-white'
+      case 'danger':
+        return 'bg-red-600 hover:bg-red-700 text-white'
+      case 'success':
+        return 'bg-green-600 hover:bg-green-700 text-white'
+      default:
+        return 'bg-blue-600 hover:bg-blue-700 text-white'
+    }
+  }
+
+  const getSizeClasses = () => {
+    switch (size) {
+      case 'sm':
+        return 'px-3 py-1.5 text-sm'
+      case 'md':
+        return 'px-4 py-2 text-base'
+      case 'lg':
+        return 'px-6 py-3 text-lg'
+      default:
+        return 'px-4 py-2 text-base'
+    }
+  }
+
+  const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    if (disabled || loading) return
+
+    // Criar efeito ripple
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const rippleId = Date.now()
+
+    setRipples(prev => [...prev, { id: rippleId, x, y }])
+
+    // Remover ripple após animação
+    setTimeout(() => {
+      setRipples(prev => prev.filter(ripple => ripple.id !== rippleId))
+    }, 600)
+
+    onClick?.()
+  }, [disabled, loading, onClick])
+
+  const handleMouseDown = useCallback(() => {
+    if (!disabled && !loading) {
+      setIsPressed(true)
+    }
+  }, [disabled, loading])
+
+  const handleMouseUp = useCallback(() => {
+    setIsPressed(false)
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    setIsPressed(false)
+  }, [])
+
+  return (
+    <button
+      onClick={handleClick}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
+      disabled={disabled || loading}
+      className={`
+        relative overflow-hidden rounded-lg font-medium transition-all duration-200 ease-in-out
+        ${getVariantClasses()}
+        ${getSizeClasses()}
+        ${disabled || loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+        ${isPressed ? 'scale-95' : 'hover:scale-105'}
+        ${className}
+      `}
+    >
+      {/* Efeito ripple */}
+      {ripples.map(ripple => (
+        <span
+          key={ripple.id}
+          className="absolute pointer-events-none animate-ping"
+          style={{
+            left: ripple.x - 10,
+            top: ripple.y - 10,
+            width: 20,
+            height: 20,
+            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+            borderRadius: '50%'
+          }}
+        />
+      ))}
+
+      {/* Conteúdo do botão */}
+      <span className="relative z-10 flex items-center justify-center">
+        {loading ? (
+          <>
+            <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+            Carregando...
+          </>
+        ) : (
+          children
+        )}
+      </span>
+    </button>
+  )
+}
+
+// Input com micro-interações
+export const MicroInput: React.FC<{
   value: string
   onChange: (value: string) => void
   placeholder?: string
+  type?: 'text' | 'email' | 'password' | 'number'
   label?: string
   error?: string
   disabled?: boolean
-  type?: 'text' | 'email' | 'password' | 'number'
   className?: string
-  ariaLabel?: string
-}
-
-export const InteractiveInput = ({
-  value,
-  onChange,
-  placeholder,
-  label,
-  error,
+}> = ({ 
+  value, 
+  onChange, 
+  placeholder, 
+  type = 'text', 
+  label, 
+  error, 
   disabled = false,
-  type = 'text',
-  className = '',
-  ariaLabel
-}: InteractiveInputProps) => {
-  const { theme } = useTheme()
-  const { isFocused, handlers } = useMicroInteractions()
-  const [isFilled, setIsFilled] = useState(value.length > 0)
+  className = '' 
+}) => {
+  const [isFocused, setIsFocused] = useState(false)
+  const [hasValue, setHasValue] = useState(!!value)
 
   useEffect(() => {
-    setIsFilled(value.length > 0)
+    setHasValue(!!value)
   }, [value])
 
-  const baseClasses = 'w-full px-4 py-3 border-2 rounded-lg transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
-  
-  const stateClasses = error
-    ? 'border-red-500 focus:border-red-500'
-    : isFocused
-      ? 'border-blue-500'
-      : theme === 'dark'
-        ? 'border-gray-600 bg-gray-800 text-white placeholder-gray-400'
-        : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'
-
-  const labelClasses = `
-    absolute left-4 transition-all duration-200 ease-out pointer-events-none
-    ${isFocused || isFilled
-      ? 'top-2 text-xs text-blue-500'
-      : 'top-3 text-sm text-gray-500'
+  const handleFocus = useCallback(() => {
+    if (!disabled) {
+      setIsFocused(true)
     }
-  `
+  }, [disabled])
+
+  const handleBlur = useCallback(() => {
+    setIsFocused(false)
+  }, [])
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(e.target.value)
+  }, [onChange])
 
   return (
     <div className={`relative ${className}`}>
       {label && (
-        <label className={labelClasses}>
+        <label className={`
+          absolute left-3 transition-all duration-200 ease-in-out pointer-events-none
+          ${isFocused || hasValue 
+            ? 'top-1 text-xs text-blue-600' 
+            : 'top-3 text-sm text-gray-500'
+          }
+        `}>
           {label}
         </label>
       )}
@@ -345,18 +424,26 @@ export const InteractiveInput = ({
       <input
         type={type}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={isFocused ? placeholder : ''}
+        onChange={handleChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        placeholder={!label ? placeholder : ''}
         disabled={disabled}
-        className={`${baseClasses} ${stateClasses} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-        aria-label={ariaLabel}
-        aria-invalid={!!error}
-        aria-describedby={error ? 'error-message' : undefined}
-        {...handlers}
+        className={`
+          w-full px-3 py-3 border rounded-lg transition-all duration-200 ease-in-out
+          ${isFocused 
+            ? 'border-blue-500 ring-2 ring-blue-200' 
+            : error 
+              ? 'border-red-500' 
+              : 'border-gray-300 hover:border-gray-400'
+          }
+          ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}
+          ${label ? 'pt-6 pb-2' : ''}
+        `}
       />
-      
+
       {error && (
-        <div id="error-message" className="mt-1 text-sm text-red-600" role="alert">
+        <div className="mt-1 text-sm text-red-600 animate-pulse">
           {error}
         </div>
       )}
@@ -364,41 +451,70 @@ export const InteractiveInput = ({
   )
 }
 
-// Hook para animações de entrada
-export const useEnterAnimation = (delay = 0) => {
-  const [isVisible, setIsVisible] = useState(false)
-  const elementRef = useRef<HTMLElement>(null)
+// Hook para micro-interações personalizadas
+export const useMicroInteractions = () => {
+  const [hoveredElement, setHoveredElement] = useState<string | null>(null)
+  const [clickedElement, setClickedElement] = useState<string | null>(null)
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(true)
-    }, delay)
+  const handleElementHover = useCallback((elementId: string) => {
+    setHoveredElement(elementId)
+  }, [])
 
-    return () => clearTimeout(timer)
-  }, [delay])
+  const handleElementLeave = useCallback(() => {
+    setHoveredElement(null)
+  }, [])
+
+  const handleElementClick = useCallback((elementId: string) => {
+    setClickedElement(elementId)
+    setTimeout(() => setClickedElement(null), 200)
+  }, [])
 
   return {
-    isVisible,
-    elementRef,
-    animationClasses: isVisible 
-      ? 'opacity-100 translate-y-0 scale-100' 
-      : 'opacity-0 translate-y-4 scale-95'
+    hoveredElement,
+    clickedElement,
+    handleElementHover,
+    handleElementLeave,
+    handleElementClick
   }
 }
 
-// Componente com animação de entrada
-interface AnimatedContainerProps {
-  children: React.ReactNode
-  delay?: number
-  className?: string
-}
+// Componente de loading com micro-animações
+export const MicroLoading: React.FC<{
+  size?: 'sm' | 'md' | 'lg'
+  color?: 'blue' | 'green' | 'red' | 'yellow'
+  text?: string
+}> = ({ size = 'md', color = 'blue', text }) => {
+  const getSizeClasses = () => {
+    switch (size) {
+      case 'sm': return 'w-4 h-4'
+      case 'md': return 'w-8 h-8'
+      case 'lg': return 'w-12 h-12'
+      default: return 'w-8 h-8'
+    }
+  }
 
-export const AnimatedContainer = ({ children, delay = 0, className = '' }: AnimatedContainerProps) => {
-  const { isVisible, animationClasses } = useEnterAnimation(delay)
+  const getColorClasses = () => {
+    switch (color) {
+      case 'blue': return 'text-blue-600'
+      case 'green': return 'text-green-600'
+      case 'red': return 'text-red-600'
+      case 'yellow': return 'text-yellow-600'
+      default: return 'text-blue-600'
+    }
+  }
 
   return (
-    <div className={`transition-all duration-500 ease-out ${animationClasses} ${className}`}>
-      {children}
+    <div className="flex items-center justify-center space-x-2">
+      <div className={`
+        ${getSizeClasses()} 
+        ${getColorClasses()} 
+        animate-spin rounded-full border-2 border-gray-300 border-t-current
+      `} />
+      {text && (
+        <span className={`text-sm ${getColorClasses()}`}>
+          {text}
+        </span>
+      )}
     </div>
   )
 }

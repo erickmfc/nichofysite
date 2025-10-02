@@ -7,10 +7,43 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { Button } from '@/components/ui/Button'
 
 interface BusinessProfile {
+  // Informações Básicas
   nomeNegocio: string
-  nicho: string
+  logoUrl?: string
   descricaoNegocio: string
-  publicoAlvo: string
+  siteUrl?: string
+  instagramUrl?: string
+  linkedinUrl?: string
+  whatsappUrl?: string
+  localizacao: {
+    cidade: string
+    estado: string
+    pais: string
+  }
+  
+  // Nicho Inteligente
+  nicho: string
+  nichosSecundarios: string[]
+  tagsPersonalizadas: string[]
+  historicoNichos: Array<{
+    nicho: string
+    dataMudanca: Date
+    motivo?: string
+  }>
+  
+  // Informações Avançadas
+  publicoAlvo: {
+    idade: string
+    genero: string
+    renda: string
+    interesses: string[]
+  }
+  objetivosNegocio: string[]
+  orcamentoMarketing: string
+  experienciaRedesSociais: string
+  principaisConcorrentes: string[]
+  
+  // Tom de Voz
   tomVoz: string[]
 }
 
@@ -45,10 +78,43 @@ export const UserProfile = () => {
   const [userData, setUserData] = useState<any>(null)
   
   const [formData, setFormData] = useState({
+    // Informações Básicas
     nomeNegocio: '',
-    nicho: '',
+    logoUrl: '',
     descricaoNegocio: '',
-    publicoAlvo: '',
+    siteUrl: '',
+    instagramUrl: '',
+    linkedinUrl: '',
+    whatsappUrl: '',
+    localizacao: {
+      cidade: '',
+      estado: '',
+      pais: 'Brasil'
+    },
+    
+    // Nicho Inteligente
+    nicho: '',
+    nichosSecundarios: [] as string[],
+    tagsPersonalizadas: [] as string[],
+    historicoNichos: [] as Array<{
+      nicho: string
+      dataMudanca: Date
+      motivo?: string
+    }>,
+    
+    // Informações Avançadas
+    publicoAlvo: {
+      idade: '',
+      genero: '',
+      renda: '',
+      interesses: [] as string[]
+    },
+    objetivosNegocio: [] as string[],
+    orcamentoMarketing: '',
+    experienciaRedesSociais: '',
+    principaisConcorrentes: [] as string[],
+    
+    // Tom de Voz
     tomVoz: [] as string[]
   })
 
@@ -70,10 +136,39 @@ export const UserProfile = () => {
         
         if (data.businessProfile) {
           setFormData({
+            // Informações Básicas
             nomeNegocio: data.businessProfile.nomeNegocio || '',
-            nicho: data.businessProfile.nicho || '',
+            logoUrl: data.businessProfile.logoUrl || '',
             descricaoNegocio: data.businessProfile.descricaoNegocio || '',
-            publicoAlvo: data.businessProfile.publicoAlvo || '',
+            siteUrl: data.businessProfile.siteUrl || '',
+            instagramUrl: data.businessProfile.instagramUrl || '',
+            linkedinUrl: data.businessProfile.linkedinUrl || '',
+            whatsappUrl: data.businessProfile.whatsappUrl || '',
+            localizacao: data.businessProfile.localizacao || {
+              cidade: '',
+              estado: '',
+              pais: 'Brasil'
+            },
+            
+            // Nicho Inteligente
+            nicho: data.businessProfile.nicho || '',
+            nichosSecundarios: data.businessProfile.nichosSecundarios || [],
+            tagsPersonalizadas: data.businessProfile.tagsPersonalizadas || [],
+            historicoNichos: data.businessProfile.historicoNichos || [],
+            
+            // Informações Avançadas
+            publicoAlvo: data.businessProfile.publicoAlvo || {
+              idade: '',
+              genero: '',
+              renda: '',
+              interesses: []
+            },
+            objetivosNegocio: data.businessProfile.objetivosNegocio || [],
+            orcamentoMarketing: data.businessProfile.orcamentoMarketing || '',
+            experienciaRedesSociais: data.businessProfile.experienciaRedesSociais || '',
+            principaisConcorrentes: data.businessProfile.principaisConcorrentes || [],
+            
+            // Tom de Voz
             tomVoz: data.businessProfile.tomVoz || []
           })
         }
@@ -100,10 +195,30 @@ export const UserProfile = () => {
     try {
       await setDoc(doc(db, 'users', user.uid), {
         businessProfile: {
+          // Informações Básicas
           nomeNegocio: formData.nomeNegocio,
-          nicho: formData.nicho,
+          logoUrl: formData.logoUrl,
           descricaoNegocio: formData.descricaoNegocio,
+          siteUrl: formData.siteUrl,
+          instagramUrl: formData.instagramUrl,
+          linkedinUrl: formData.linkedinUrl,
+          whatsappUrl: formData.whatsappUrl,
+          localizacao: formData.localizacao,
+          
+          // Nicho Inteligente
+          nicho: formData.nicho,
+          nichosSecundarios: formData.nichosSecundarios,
+          tagsPersonalizadas: formData.tagsPersonalizadas,
+          historicoNichos: formData.historicoNichos,
+          
+          // Informações Avançadas
           publicoAlvo: formData.publicoAlvo,
+          objetivosNegocio: formData.objetivosNegocio,
+          orcamentoMarketing: formData.orcamentoMarketing,
+          experienciaRedesSociais: formData.experienciaRedesSociais,
+          principaisConcorrentes: formData.principaisConcorrentes,
+          
+          // Tom de Voz
           tomVoz: formData.tomVoz
         },
         updatedAt: serverTimestamp()

@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [initialized, setInitialized] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -15,15 +16,30 @@ export const useAuth = () => {
     const unsubscribe = onAuthStateChanged(auth, (user: User | null) => {
       console.log('🔐 useAuth: Estado mudou', { 
         user: !!user,
-        email: user?.email
+        email: user?.email,
+        initialized: true
       })
       
       setUser(user)
-      setLoading(false)
+      setInitialized(true)
+      
+      // Reduzir tempo de loading após primeira verificação
+      setTimeout(() => {
+        setLoading(false)
+      }, 100)
+      
+      // CORREÇÃO: Redirecionar após autenticação bem-sucedida
+      if (user && typeof window !== 'undefined') {
+        const currentPath = window.location.pathname
+        if (currentPath === '/login' || currentPath === '/') {
+          console.log('🔄 Redirecionando para dashboard após login')
+          router.push('/dashboard')
+        }
+      }
     })
 
     return () => unsubscribe()
-  }, [])
+  }, [router])
 
   // Otimizar logout com useCallback
   const logout = useCallback(async () => {

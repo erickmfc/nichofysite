@@ -1,12 +1,16 @@
 'use client'
 
 import { useTheme } from '@/lib/contexts/ThemeContext'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useRealStats } from '@/hooks/useRealStats'
 import { useGoals } from '@/hooks/useGoals'
 import { SimpleChart } from '@/components/ui/SimpleChart'
 import { SkeletonStats, LoadingState } from '@/components/ui/LoadingStates'
 import { EmptyStatsState, EmptyChartState } from '@/components/ui/EmptyStates'
+import { StatCard, StatChart, StatAlert, GoalProgress } from './StatComponents'
+import { InteractiveCard, AnimatedContainer } from '@/components/ui/MicroInteractions'
+import { FocusableElement, LiveRegion, AccessibleError } from '@/components/ui/Accessibility'
+import { useLazyLoading, useDebounce, useMemoizedCalculation } from '@/hooks/usePerformance'
 
 interface StatsModuleProps {
   totalPosts?: number
@@ -18,6 +22,8 @@ export const StatsModule = ({ totalPosts, postsThisMonth, favoritePosts }: Stats
   const { theme } = useTheme()
   const realStats = useRealStats()
   const { activeGoals, goalProgress, alerts, stats: goalsStats } = useGoals()
+  const { isVisible, elementRef } = useLazyLoading()
+  
   const [animatedStats, setAnimatedStats] = useState({
     totalPosts: 0,
     postsThisMonth: 0,
@@ -30,9 +36,73 @@ export const StatsModule = ({ totalPosts, postsThisMonth, favoritePosts }: Stats
     averagePostLength: 0
   })
 
-  // Animação dos números
+  // Debounce dos dados para evitar animações excessivas
+  const debouncedRealStats = useDebounce(realStats, 100)
+
+  // Memoizar dados calculados para performance
+  const statsToAnimate = useMemoizedCalculation(() => {
+    return {
+      totalPosts: debouncedRealStats.totalPosts || totalPosts || 0,
+      postsThisMonth: debouncedRealStats.postsThisMonth || postsThisMonth || 0,
+      uniqueCategories: debouncedRealStats.uniqueCategories || 0,
+      engagementRate: debouncedRealStats.engagementRate || 0,
+      followersGained: debouncedRealStats.followersGained || 0,
+      totalLikes: debouncedRealStats.totalLikes || 0,
+      totalShares: debouncedRealStats.totalShares || 0,
+      totalSaved: debouncedRealStats.totalSaved || 0,
+      averagePostLength: debouncedRealStats.averagePostLength || 0
+    }
+  }, [debouncedRealStats, totalPosts, postsThisMonth, favoritePosts])
+
+  // Memoizar configuração das estatísticas
+  const statsConfig = useMemo(() => [
+    {
+      label: 'Posts Criados',
+      value: animatedStats.totalPosts,
+      icon: '📝',
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+      borderColor: 'border-blue-200',
+      gradient: 'from-blue-500 to-cyan-500',
+      description: 'Conteúdo publicado'
+    },
+    {
+      label: 'Nichos Usados',
+      value: animatedStats.uniqueCategories,
+      icon: '🎯',
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+      borderColor: 'border-purple-200',
+      gradient: 'from-purple-500 to-pink-500',
+      description: realStats.mostUsedCategory ? `Mais usado: ${realStats.mostUsedCategory}` : 'Categorias exploradas'
+    },
+    {
+      label: 'Taxa de Engajamento',
+      value: animatedStats.engagementRate,
+      icon: '📈',
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
+      borderColor: 'border-green-200',
+      gradient: 'from-green-500 to-emerald-500',
+      description: 'Baseado em dados reais',
+      suffix: '%'
+    },
+    {
+      label: 'Interações Totais',
+      value: animatedStats.totalLikes + animatedStats.totalShares + animatedStats.totalSaved,
+      icon: '❤️',
+      color: 'text-red-600',
+      bgColor: 'bg-red-50',
+      borderColor: 'border-red-200',
+      gradient: 'from-red-500 to-pink-500',
+      description: `${animatedStats.totalLikes} curtidas, ${animatedStats.totalShares} compartilhamentos`,
+      prefix: '+'
+    }
+  ], [animatedStats, realStats.mostUsedCategory])
+
+  // Animação dos números otimizada
   useEffect(() => {
-    if (realStats.loading) return
+    if (debouncedRealStats.loading) return
 
     const animateValue = (start: number, end: number, duration: number, callback: (value: number) => void) => {
       const startTime = Date.now()
@@ -49,18 +119,7 @@ export const StatsModule = ({ totalPosts, postsThisMonth, favoritePosts }: Stats
       animate()
     }
 
-    // Usar dados reais ou fallback para props
-    const statsToAnimate = {
-      totalPosts: realStats.totalPosts || totalPosts || 0,
-      postsThisMonth: realStats.postsThisMonth || postsThisMonth || 0,
-      uniqueCategories: realStats.uniqueCategories || 0,
-      engagementRate: realStats.engagementRate || 0,
-      followersGained: realStats.followersGained || 0,
-      totalLikes: realStats.totalLikes || 0,
-      totalShares: realStats.totalShares || 0,
-      totalSaved: realStats.totalSaved || 0,
-      averagePostLength: realStats.averagePostLength || 0
-    }
+    // Usar dados memoizados para animação
 
     // Animar estatísticas com dados reais
     animateValue(0, statsToAnimate.totalPosts, 1000, (value) => {
@@ -142,18 +201,43 @@ export const StatsModule = ({ totalPosts, postsThisMonth, favoritePosts }: Stats
     }
   ]
 
+  // Callbacks otimizados
+  const handleCardClick = useCallback((statLabel: string) => {
+    console.log(`Card clicked: ${statLabel}`)
+    // Implementar ação específica para cada card
+  }, [])
+
+  const handleGoalClick = useCallback((goalId: string) => {
+    console.log(`Goal clicked: ${goalId}`)
+    // Implementar navegação para detalhes da meta
+  }, [])
+
+  const handleAlertAction = useCallback((alertId: string) => {
+    console.log(`Alert action: ${alertId}`)
+    // Implementar ação do alerta
+  }, [])
+
   return (
-    <div className={`rounded-2xl p-6 shadow-lg transition-all duration-300 hover:shadow-xl ${
-      theme === 'dark'
-        ? 'bg-gray-800 border border-gray-700'
-        : 'bg-white border border-gray-200'
-    }`}>
+    <FocusableElement
+      className={`rounded-2xl p-6 shadow-lg transition-all duration-300 hover:shadow-xl ${
+        theme === 'dark'
+          ? 'bg-gray-800 border border-gray-700'
+          : 'bg-white border border-gray-200'
+      }`}
+      ariaLabel="Módulo de estatísticas do usuário"
+      role="region"
+    >
+      {/* Skip link para acessibilidade */}
+      <a href="#stats-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 px-4 py-2 bg-blue-600 text-white rounded-lg">
+        Pular para conteúdo das estatísticas
+      </a>
+
       <div className="flex items-center justify-between mb-6">
-        <h3 className={`text-lg font-semibold ${
+        <h2 className={`text-lg font-semibold ${
           theme === 'dark' ? 'text-white' : 'text-gray-900'
         }`}>
           📊 Suas Estatísticas
-        </h3>
+        </h2>
         <div className={`px-3 py-1 rounded-full text-xs font-medium ${
           theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'
         }`}>
@@ -161,59 +245,15 @@ export const StatsModule = ({ totalPosts, postsThisMonth, favoritePosts }: Stats
         </div>
       </div>
       
-      <div className="grid grid-cols-2 gap-4">
-        {stats.map((stat, index) => (
-          <div 
-            key={index} 
-            className={`relative p-4 rounded-xl border transition-all duration-300 hover:shadow-lg hover:scale-105 group ${
-              theme === 'dark'
-                ? 'bg-gray-700 border-gray-600 hover:bg-gray-600'
-                : `${stat.bgColor} ${stat.borderColor} hover:shadow-xl`
-            }`}
-          >
-            {/* Badge para funcionalidades especiais */}
-            {stat.label === 'Interações Totais' && (
-              <div className={`absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg animate-pulse`}>
-                Novo!
-              </div>
-            )}
-            
-            <div className="flex items-center justify-between mb-3">
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${stat.gradient} flex items-center justify-center text-white text-xl group-hover:scale-110 transition-transform duration-300`}>
-                {stat.icon}
-              </div>
-              <div className="text-right">
-                <p className={`text-2xl font-bold ${
-                  theme === 'dark' ? 'text-white' : stat.color
-                }`}>
-                  {stat.prefix || ''}{stat.value}{stat.suffix || ''}
-                </p>
-                <p className={`text-xs ${
-                  theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-                }`}>
-                  {stat.description}
-                </p>
-              </div>
-            </div>
-            
-            <div className={`text-sm font-medium ${
-              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-            }`}>
-              {stat.label}
-            </div>
-            
-            {/* Barra de progresso animada */}
-            <div className={`mt-3 w-full rounded-full h-2 ${
-              theme === 'dark' ? 'bg-gray-600' : 'bg-gray-200'
-            }`}>
-              <div 
-                className={`h-2 rounded-full bg-gradient-to-r ${stat.gradient} transition-all duration-1000 ease-out`}
-                style={{ 
-                  width: `${Math.min((stat.value / (stat.label === 'Taxa de Engajamento' ? 100 : Math.max(stat.value, 10))) * 100, 100)}%` 
-                }}
-              ></div>
-            </div>
-          </div>
+      <div id="stats-content" className="grid grid-cols-2 gap-4" role="group" aria-label="Estatísticas principais">
+        {statsConfig.map((stat, index) => (
+          <StatCard
+            key={index}
+            stat={stat}
+            theme={theme}
+            onCardClick={() => handleCardClick(stat.label)}
+            delay={index * 100}
+          />
         ))}
       </div>
       
@@ -225,38 +265,12 @@ export const StatsModule = ({ totalPosts, postsThisMonth, favoritePosts }: Stats
       )}
 
       {realStats.error && (
-        <div className={`mt-6 p-6 rounded-lg border-l-4 border-red-500 ${
-          theme === 'dark' ? 'bg-red-900/20 border-red-400' : 'bg-red-50 border-red-200'
-        }`}>
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <div className="text-2xl">⚠️</div>
-            </div>
-            <div className="ml-3">
-              <h3 className={`text-sm font-medium ${
-                theme === 'dark' ? 'text-red-300' : 'text-red-800'
-              }`}>
-                Erro ao carregar estatísticas
-              </h3>
-              <p className={`text-sm mt-1 ${
-                theme === 'dark' ? 'text-red-400' : 'text-red-700'
-              }`}>
-                {realStats.error}
-              </p>
-              <div className="mt-3">
-                <button
-                  onClick={() => window.location.reload()}
-                  className={`text-sm px-3 py-1 rounded-md font-medium transition-colors ${
-                    theme === 'dark' 
-                      ? 'bg-red-800 hover:bg-red-700 text-red-200' 
-                      : 'bg-red-200 hover:bg-red-300 text-red-800'
-                  }`}
-                >
-                  Tentar novamente
-                </button>
-              </div>
-            </div>
-          </div>
+        <div className="mt-6">
+          <AccessibleError
+            title="Erro ao carregar estatísticas"
+            message={realStats.error}
+            onRetry={() => window.location.reload()}
+          />
         </div>
       )}
 
@@ -314,46 +328,42 @@ export const StatsModule = ({ totalPosts, postsThisMonth, favoritePosts }: Stats
         <div className="mt-6 space-y-4">
           {/* Resumo de Metas */}
           {activeGoals.length > 0 && (
-            <div className={`p-4 rounded-lg ${
-              theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'
-            }`}>
-              <div className="flex items-center justify-between mb-3">
-                <h4 className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                  🎯 Progresso das Metas
-                </h4>
-                <span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {goalsStats.activeGoals} ativas
-                </span>
-              </div>
-              
-              <div className="space-y-2">
-                {activeGoals.slice(0, 3).map(goal => {
-                  const progress = goalProgress.get(goal.id)
-                  return (
-                    <div key={goal.id} className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
-                          {goal.title}
-                        </span>
-                        <span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
-                          {Math.round(progress?.progress || 0)}%
-                        </span>
-                      </div>
-                      <div className={`w-full rounded-full h-1.5 ${
-                        theme === 'dark' ? 'bg-gray-600' : 'bg-gray-200'
-                      }`}>
-                        <div
-                          className={`h-1.5 rounded-full transition-all duration-500 ${
-                            progress?.needsAttention ? 'bg-red-500' : 'bg-green-500'
-                          }`}
-                          style={{ width: `${Math.min(progress?.progress || 0, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
+            <AnimatedContainer delay={400}>
+              <InteractiveCard
+                variant="default"
+                size="md"
+                ariaLabel="Progresso das metas ativas"
+                className="hover:shadow-lg"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                    🎯 Progresso das Metas
+                  </h4>
+                  <span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {goalsStats.activeGoals} ativas
+                  </span>
+                </div>
+                
+                <div className="space-y-2">
+                  {activeGoals.slice(0, 3).map((goal, index) => {
+                    const progress = goalProgress.get(goal.id)
+                    return (
+                      <GoalProgress
+                        key={goal.id}
+                        goal={{
+                          id: goal.id,
+                          title: goal.title,
+                          progress: progress?.progress || 0,
+                          color: progress?.needsAttention ? '#EF4444' : '#10B981'
+                        }}
+                        onGoalClick={handleGoalClick}
+                        delay={index * 50}
+                      />
+                    )
+                  })}
+                </div>
+              </InteractiveCard>
+            </AnimatedContainer>
           )}
 
           {/* Gráfico de Categorias */}
@@ -419,19 +429,29 @@ export const StatsModule = ({ totalPosts, postsThisMonth, favoritePosts }: Stats
 
           {/* Alertas Importantes */}
           {alerts.filter(a => !a.isRead && a.priority === 'high').length > 0 && (
-            <div className={`p-4 rounded-lg border-l-4 border-red-500 bg-red-50`}>
-              <h4 className="font-medium text-red-900 mb-2">🚨 Alertas Importantes</h4>
-              <div className="space-y-2">
-                {alerts.filter(a => !a.isRead && a.priority === 'high').slice(0, 2).map(alert => (
-                  <div key={alert.id} className="text-sm text-red-800">
-                    • {alert.message}
-                  </div>
-                ))}
-              </div>
+            <div className="space-y-3">
+              <h4 className={`text-md font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                🚨 Alertas Importantes
+              </h4>
+              {alerts.filter(a => !a.isRead && a.priority === 'high').slice(0, 2).map((alert, index) => (
+                <StatAlert
+                  key={alert.id}
+                  alert={alert}
+                  onAction={handleAlertAction}
+                  delay={index * 100}
+                />
+              ))}
             </div>
           )}
         </div>
       )}
-    </div>
+
+      {/* Live region para screen readers */}
+      <LiveRegion className="sr-only">
+        {realStats.loading && 'Carregando estatísticas...'}
+        {realStats.error && `Erro: ${realStats.error}`}
+        {!realStats.loading && !realStats.error && `Estatísticas carregadas: ${animatedStats.totalPosts} posts, ${animatedStats.uniqueCategories} nichos`}
+      </LiveRegion>
+    </FocusableElement>
   )
 }

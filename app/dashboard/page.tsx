@@ -12,6 +12,7 @@ import { CategoryModule } from '@/components/dashboard/modules/CategoryModule'
 import { SuggestionsModule } from '@/components/dashboard/modules/SuggestionsModule'
 import { StatsModule } from '@/components/dashboard/modules/StatsModule'
 import { QuickActionsModule } from '@/components/dashboard/modules/QuickActionsModule'
+import { PlanInfo } from '@/components/dashboard/modules/PlanInfo'
 import { usePosts } from '@/hooks/usePosts'
 import PostManagementService from '@/lib/services/PostManagementService'
 
@@ -242,6 +243,9 @@ export default function DashboardPage() {
             {/* Sidebar */}
             <div className="space-y-8">
               
+              {/* Informações do Plano */}
+              <PlanInfo />
+
               {/* Ações Rápidas */}
               <QuickActionsModule />
 

@@ -1,175 +1,209 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { db } from '@/lib/firebase'
+import { collection, query, where, orderBy, getDocs, updateDoc, doc, Timestamp } from 'firebase/firestore'
 import { AdminAuthService } from '@/lib/services/AdminAuthService'
 
-interface ContentItem {
+interface ContentRequest {
   id: string
+  userId: string
+  userEmail: string
+  userName: string
   title: string
   description: string
-  content: string
   category: string
   platform: string
-  status: 'pending' | 'approved' | 'rejected'
-  userId: string
-  userName: string
-  userEmail: string
-  createdAt: Date
-  reviewedAt?: Date
+  objective: string
+  tone: string
+  targetAudience: string
+  keywords: string
+  size: string
+  includeHashtags: boolean
+  includeCTA: boolean
+  urgency: string
+  references: string
+  notes: string
+  status: 'pending' | 'in_progress' | 'ready_for_review' | 'approved' | 'rejected' | 'published'
+  createdAt: Timestamp
+  assignedTo?: string
+  reviewedAt?: Timestamp
   reviewedBy?: string
+  adminNotes?: string
+  generatedContent?: string
+  generatedImageUrl?: string
+  hashtags?: string[]
+  callToAction?: string
+  userFeedback?: string
+  userRating?: number
+  publishedAt?: Timestamp
 }
 
 export default function AdminContentPage() {
-  const [content, setContent] = useState<ContentItem[]>([])
+  const [requests, setRequests] = useState<ContentRequest[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filterStatus, setFilterStatus] = useState<string>('all')
-  const [filterPlatform, setFilterPlatform] = useState<string>('all')
+  const [selectedRequest, setSelectedRequest] = useState<ContentRequest | null>(null)
+  const [isCreating, setIsCreating] = useState(false)
+  const [filter, setFilter] = useState<'all' | 'pending' | 'in_progress' | 'ready_for_review'>('pending')
+  const [currentAdmin, setCurrentAdmin] = useState<any>(null)
 
   useEffect(() => {
-    loadContent()
-  }, [])
+    loadAdmin()
+    loadRequests()
+  }, [filter])
 
-  const loadContent = async () => {
+  const loadAdmin = async () => {
+    try {
+      const admin = await AdminAuthService.getCurrentAdmin()
+      setCurrentAdmin(admin)
+    } catch (error) {
+      console.error('Erro ao carregar admin:', error)
+    }
+  }
+
+  const loadRequests = async () => {
     try {
       setLoading(true)
-      // Simular carregamento de conteúdo
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const q = query(
+        collection(db, 'contentRequests'),
+        orderBy('createdAt', 'desc')
+      )
       
-      const mockContent: ContentItem[] = [
-        {
-          id: 'content-001',
-          title: 'Direito Trabalhista - Nova Lei',
-          description: 'Post sobre as mudanças na legislação trabalhista',
-          content: '🎯 Nova Lei Trabalhista\n\nAs principais mudanças que afetam empresas e trabalhadores...',
-          category: 'Direito',
-          platform: 'Instagram',
-          status: 'pending',
-          userId: 'user-001',
-          userName: 'João Silva',
-          userEmail: 'joao@email.com',
-          createdAt: new Date('2024-01-20'),
-        },
-        {
-          id: 'content-002',
-          title: 'Dicas de Saúde Mental',
-          description: 'Conteúdo educativo sobre bem-estar mental',
-          content: '💡 Dicas de Saúde Mental\n\n5 estratégias para manter sua saúde mental em dia...',
-          category: 'Saúde',
-          platform: 'LinkedIn',
-          status: 'approved',
-          userId: 'user-002',
-          userName: 'Maria Santos',
-          userEmail: 'maria@email.com',
-          createdAt: new Date('2024-01-19'),
-          reviewedAt: new Date('2024-01-19'),
-          reviewedBy: 'admin@nichofy.com'
-        },
-        {
-          id: 'content-003',
-          title: 'Tecnologia e IA',
-          description: 'Post sobre inteligência artificial',
-          content: '🤖 Inteligência Artificial\n\nComo a IA está transformando o mundo dos negócios...',
-          category: 'Tecnologia',
-          platform: 'Instagram',
-          status: 'rejected',
-          userId: 'user-003',
-          userName: 'Pedro Costa',
-          userEmail: 'pedro@email.com',
-          createdAt: new Date('2024-01-18'),
-          reviewedAt: new Date('2024-01-18'),
-          reviewedBy: 'admin@nichofy.com'
-        }
-      ]
+      const querySnapshot = await getDocs(q)
+      const allRequests = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as ContentRequest[]
       
-      setContent(mockContent)
+      if (filter === 'all') {
+        setRequests(allRequests)
+      } else {
+        setRequests(allRequests.filter(req => req.status === filter))
+      }
     } catch (error) {
-      console.error('Erro ao carregar conteúdo:', error)
+      console.error('Erro ao carregar pedidos:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const filteredContent = content.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.userName.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = filterStatus === 'all' || item.status === filterStatus
-    const matchesPlatform = filterPlatform === 'all' || item.platform === filterPlatform
-    return matchesSearch && matchesStatus && matchesPlatform
-  })
-
-  const handleContentAction = async (contentId: string, action: 'approve' | 'reject') => {
+  const handleAssignRequest = async (requestId: string) => {
     try {
-      // Simular ação
-      await new Promise(resolve => setTimeout(resolve, 500))
+      if (!currentAdmin) return
       
-      setContent(prev => prev.map(item => {
-        if (item.id === contentId) {
-          return {
-            ...item,
-            status: action === 'approve' ? 'approved' : 'rejected',
-            reviewedAt: new Date(),
-            reviewedBy: 'admin@nichofy.com'
-          }
-        }
-        return item
-      }))
+      const requestRef = doc(db, 'contentRequests', requestId)
+      await updateDoc(requestRef, {
+        status: 'in_progress',
+        assignedTo: currentAdmin.id,
+      })
       
-      showNotification(`Conteúdo ${action === 'approve' ? 'aprovado' : 'rejeitado'} com sucesso!`)
+      await loadRequests()
+      alert('✅ Pedido atribuído com sucesso!')
     } catch (error) {
-      console.error('Erro ao executar ação:', error)
-      showNotification('Erro ao executar ação', 'error')
+      console.error('Erro ao atribuir pedido:', error)
+      alert('❌ Erro ao atribuir pedido')
     }
   }
 
-  const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
-    const notification = document.createElement('div')
-    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transform transition-all duration-300 ${
-      type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-    }`
-    notification.innerHTML = `
-      <div class="flex items-center">
-        <span class="text-xl mr-2">${type === 'success' ? '✅' : '❌'}</span>
-        <div class="font-semibold">${message}</div>
-      </div>
-    `
-    document.body.appendChild(notification)
-    
-    setTimeout(() => {
-      notification.style.transform = 'translateX(100%)'
-      setTimeout(() => document.body.removeChild(notification), 300)
-    }, 3000)
+  const handleCreateContent = async (requestId: string, contentData: {
+    generatedContent: string
+    generatedImageUrl?: string
+    hashtags?: string[]
+    callToAction?: string
+    adminNotes?: string
+  }) => {
+    try {
+      setIsCreating(true)
+      
+      const requestRef = doc(db, 'contentRequests', requestId)
+      await updateDoc(requestRef, {
+        status: 'ready_for_review',
+        ...contentData,
+      })
+      
+      await loadRequests()
+      setSelectedRequest(null)
+      alert('✅ Conteúdo criado com sucesso!')
+    } catch (error) {
+      console.error('Erro ao criar conteúdo:', error)
+      alert('❌ Erro ao criar conteúdo')
+    } finally {
+      setIsCreating(false)
+    }
+  }
+
+  const handleApproveContent = async (requestId: string, notes?: string) => {
+    try {
+      if (!currentAdmin) return
+      
+      const requestRef = doc(db, 'contentRequests', requestId)
+      await updateDoc(requestRef, {
+        status: 'approved',
+        reviewedAt: Timestamp.now(),
+        reviewedBy: currentAdmin.id,
+        adminNotes: notes || '',
+      })
+      
+      await loadRequests()
+      alert('✅ Conteúdo aprovado!')
+    } catch (error) {
+      console.error('Erro ao aprovar conteúdo:', error)
+      alert('❌ Erro ao aprovar conteúdo')
+    }
+  }
+
+  const handleRejectContent = async (requestId: string, reason: string) => {
+    try {
+      if (!currentAdmin) return
+      
+      const requestRef = doc(db, 'contentRequests', requestId)
+      await updateDoc(requestRef, {
+        status: 'rejected',
+        reviewedAt: Timestamp.now(),
+        reviewedBy: currentAdmin.id,
+        adminNotes: reason,
+      })
+      
+      await loadRequests()
+      alert('❌ Conteúdo rejeitado')
+    } catch (error) {
+      console.error('Erro ao rejeitar conteúdo:', error)
+      alert('❌ Erro ao rejeitar conteúdo')
+    }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved': return 'bg-green-500'
-      case 'rejected': return 'bg-red-500'
-      case 'pending': return 'bg-yellow-500'
-      default: return 'bg-gray-500'
+      case 'pending': return 'bg-yellow-500 text-yellow-900'
+      case 'in_progress': return 'bg-blue-500 text-blue-900'
+      case 'ready_for_review': return 'bg-green-500 text-green-900'
+      case 'approved': return 'bg-emerald-500 text-emerald-900'
+      case 'rejected': return 'bg-red-500 text-red-900'
+      case 'published': return 'bg-purple-500 text-purple-900'
+      default: return 'bg-gray-500 text-gray-900'
     }
   }
 
   const getStatusText = (status: string) => {
     switch (status) {
+      case 'pending': return 'Pendente'
+      case 'in_progress': return 'Em Progresso'
+      case 'ready_for_review': return 'Pronto para Revisão'
       case 'approved': return 'Aprovado'
       case 'rejected': return 'Rejeitado'
-      case 'pending': return 'Pendente'
+      case 'published': return 'Publicado'
       default: return 'Desconhecido'
     }
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto mb-6"></div>
-          <h2 className="text-2xl font-bold text-white mb-2">Carregando Conteúdo</h2>
-          <p className="text-gray-400">Aguarde enquanto buscamos os dados...</p>
-        </div>
-      </div>
-    )
+  const getUrgencyColor = (urgency: string) => {
+    switch (urgency) {
+      case 'urgente': return 'text-red-600 bg-red-100'
+      case 'alta': return 'text-orange-600 bg-orange-100'
+      case 'normal': return 'text-blue-600 bg-blue-100'
+      case 'baixa': return 'text-gray-600 bg-gray-100'
+      default: return 'text-gray-600 bg-gray-100'
+    }
   }
 
   return (
@@ -179,15 +213,25 @@ export default function AdminContentPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-white">Gestão de Conteúdo</h1>
-              <p className="text-gray-400 mt-1">Aprove ou rejeite conteúdo enviado pelos usuários</p>
+              <h1 className="text-3xl font-bold text-white">🎨 Criação de Conteúdo</h1>
+              <p className="text-gray-400 mt-1">Crie conteúdo profissional para os usuários</p>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-                📊 Relatório
-              </button>
-              <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
-                📈 Analytics
+              <select
+                value={filter}
+                onChange={(e) => setFilter(e.target.value as any)}
+                className="bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white"
+              >
+                <option value="pending">Pendentes</option>
+                <option value="in_progress">Em Progresso</option>
+                <option value="ready_for_review">Prontos para Revisão</option>
+                <option value="all">Todos</option>
+              </select>
+              <button
+                onClick={loadRequests}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                🔄 Atualizar
               </button>
             </div>
           </div>
@@ -195,171 +239,257 @@ export default function AdminContentPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Filters */}
-        <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
-                🔍 Buscar Conteúdo
-              </label>
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Título, descrição ou usuário..."
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-400"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
-                📊 Status
-              </label>
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-400"
-              >
-                <option value="all">Todos</option>
-                <option value="pending">Pendentes</option>
-                <option value="approved">Aprovados</option>
-                <option value="rejected">Rejeitados</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
-                📱 Plataforma
-              </label>
-              <select
-                value={filterPlatform}
-                onChange={(e) => setFilterPlatform(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-400"
-              >
-                <option value="all">Todas</option>
-                <option value="Instagram">Instagram</option>
-                <option value="LinkedIn">LinkedIn</option>
-                <option value="Facebook">Facebook</option>
-                <option value="Twitter">Twitter</option>
-              </select>
-            </div>
-            <div className="flex items-end">
-              <button
-                onClick={loadContent}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                🔄 Atualizar
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Content List */}
-        <div className="space-y-6">
-          {filteredContent.map((item) => (
-            <div key={item.id} className="bg-gray-800 rounded-xl border border-gray-700 p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
-                  <p className="text-gray-400 mb-3">{item.description}</p>
-                  <div className="flex items-center space-x-4 text-sm text-gray-500">
-                    <span>👤 {item.userName}</span>
-                    <span>📱 {item.platform}</span>
-                    <span>🏷️ {item.category}</span>
-                    <span>📅 {item.createdAt.toLocaleDateString('pt-BR')}</span>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full text-white ${getStatusColor(item.status)}`}>
-                    {getStatusText(item.status)}
-                  </span>
-                  {item.status === 'pending' && (
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleContentAction(item.id, 'approve')}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors text-sm"
-                      >
-                        ✅ Aprovar
-                      </button>
-                      <button
-                        onClick={() => handleContentAction(item.id, 'reject')}
-                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors text-sm"
-                      >
-                        ❌ Rejeitar
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              <div className="bg-gray-700 rounded-lg p-4 mb-4">
-                <h4 className="text-sm font-semibold text-gray-300 mb-2">Conteúdo:</h4>
-                <pre className="text-gray-200 whitespace-pre-wrap text-sm leading-relaxed">
-                  {item.content}
-                </pre>
-              </div>
-              
-              {item.reviewedAt && (
-                <div className="text-sm text-gray-500">
-                  <span>Revisado em {item.reviewedAt.toLocaleDateString('pt-BR')} por {item.reviewedBy}</span>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {filteredContent.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">📝</div>
-            <h3 className="text-xl font-semibold text-white mb-2">Nenhum conteúdo encontrado</h3>
-            <p className="text-gray-400">Tente ajustar os filtros ou aguarde novos envios.</p>
-          </div>
-        )}
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
-          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-gray-300 mb-2">Total</h3>
-                <p className="text-3xl font-bold text-white">{content.length}</p>
+                <p className="text-3xl font-bold text-white">{requests.length}</p>
               </div>
               <div className="text-3xl text-blue-500">📝</div>
             </div>
           </div>
           
-          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+          <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-gray-300 mb-2">Pendentes</h3>
                 <p className="text-3xl font-bold text-yellow-500">
-                  {content.filter(c => c.status === 'pending').length}
+                  {requests.filter(r => r.status === 'pending').length}
                 </p>
               </div>
               <div className="text-3xl text-yellow-500">⏳</div>
             </div>
           </div>
           
-          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+          <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-gray-300 mb-2">Aprovados</h3>
+                <h3 className="text-lg font-semibold text-gray-300 mb-2">Em Progresso</h3>
+                <p className="text-3xl font-bold text-blue-500">
+                  {requests.filter(r => r.status === 'in_progress').length}
+                </p>
+              </div>
+              <div className="text-3xl text-blue-500">🔄</div>
+            </div>
+          </div>
+          
+          <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-300 mb-2">Prontos</h3>
                 <p className="text-3xl font-bold text-green-500">
-                  {content.filter(c => c.status === 'approved').length}
+                  {requests.filter(r => r.status === 'ready_for_review').length}
                 </p>
               </div>
               <div className="text-3xl text-green-500">✅</div>
             </div>
           </div>
+        </div>
+
+        {/* Lista de Pedidos */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-300 mb-2">Rejeitados</h3>
-                <p className="text-3xl font-bold text-red-500">
-                  {content.filter(c => c.status === 'rejected').length}
-                </p>
-              </div>
-              <div className="text-3xl text-red-500">❌</div>
+          {/* Lista de Pedidos */}
+          <div className="lg:col-span-1">
+            <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
+              <h2 className="text-xl font-bold text-white mb-4">
+                📋 Pedidos ({requests.length})
+              </h2>
+              
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {requests.map((request) => (
+                    <div
+                      key={request.id}
+                      onClick={() => setSelectedRequest(request)}
+                      className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
+                        selectedRequest?.id === request.id
+                          ? 'border-blue-400 bg-blue-900/20'
+                          : 'border-gray-600 hover:border-gray-500 hover:bg-gray-700'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-semibold text-white text-sm">
+                          {request.title}
+                        </h3>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
+                          {getStatusText(request.status)}
+                        </span>
+                      </div>
+                      
+                      <div className="text-xs text-gray-400 space-y-1">
+                        <div>👤 {request.userName}</div>
+                        <div>📱 {request.platform}</div>
+                        <div>🏷️ {request.category}</div>
+                        <div>📅 {request.createdAt?.toDate().toLocaleDateString('pt-BR')}</div>
+                        <div className={`inline-block px-2 py-1 rounded text-xs font-medium ${getUrgencyColor(request.urgency)}`}>
+                          {request.urgency.toUpperCase()}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
+          </div>
+
+          {/* Detalhes do Pedido */}
+          <div className="lg:col-span-2">
+            {selectedRequest ? (
+              <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-white mb-2">{selectedRequest.title}</h2>
+                    <div className="flex items-center space-x-4 text-sm text-gray-400">
+                      <span>👤 {selectedRequest.userName}</span>
+                      <span>📧 {selectedRequest.userEmail}</span>
+                      <span>📅 {selectedRequest.createdAt?.toDate().toLocaleDateString('pt-BR')}</span>
+                    </div>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedRequest.status)}`}>
+                    {getStatusText(selectedRequest.status)}
+                  </span>
+                </div>
+
+                {/* Informações do Pedido */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-300 mb-2">📱 Plataforma</h3>
+                      <p className="text-white">{selectedRequest.platform}</p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-300 mb-2">🏷️ Categoria</h3>
+                      <p className="text-white">{selectedRequest.category}</p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-300 mb-2">🎯 Objetivo</h3>
+                      <p className="text-white">{selectedRequest.objective}</p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-300 mb-2">🎭 Tom</h3>
+                      <p className="text-white">{selectedRequest.tone}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-300 mb-2">👥 Público-Alvo</h3>
+                      <p className="text-white">{selectedRequest.targetAudience || 'Não especificado'}</p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-300 mb-2">🔑 Palavras-Chave</h3>
+                      <p className="text-white">{selectedRequest.keywords || 'Não especificado'}</p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-300 mb-2">📏 Tamanho</h3>
+                      <p className="text-white">{selectedRequest.size}</p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-300 mb-2">⏰ Urgência</h3>
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${getUrgencyColor(selectedRequest.urgency)}`}>
+                        {selectedRequest.urgency.toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Descrição */}
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-gray-300 mb-2">📝 Descrição</h3>
+                  <div className="bg-gray-700 rounded-lg p-4">
+                    <p className="text-white whitespace-pre-wrap">{selectedRequest.description}</p>
+                  </div>
+                </div>
+
+                {/* Observações */}
+                {selectedRequest.notes && (
+                  <div className="mb-6">
+                    <h3 className="text-sm font-semibold text-gray-300 mb-2">📝 Observações</h3>
+                    <div className="bg-gray-700 rounded-lg p-4">
+                      <p className="text-white whitespace-pre-wrap">{selectedRequest.notes}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Conteúdo Gerado */}
+                {selectedRequest.generatedContent && (
+                  <div className="mb-6">
+                    <h3 className="text-sm font-semibold text-gray-300 mb-2">📄 Conteúdo Gerado</h3>
+                    <div className="bg-gray-700 rounded-lg p-4">
+                      <pre className="text-white whitespace-pre-wrap text-sm">{selectedRequest.generatedContent}</pre>
+                    </div>
+                  </div>
+                )}
+
+                {/* Ações */}
+                <div className="flex flex-wrap gap-3">
+                  {selectedRequest.status === 'pending' && (
+                    <button
+                      onClick={() => handleAssignRequest(selectedRequest.id)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                      📝 Atribuir a Mim
+                    </button>
+                  )}
+                  
+                  {selectedRequest.status === 'in_progress' && (
+                    <button
+                      onClick={() => {
+                        const content = prompt('Digite o conteúdo gerado:')
+                        if (content) {
+                          handleCreateContent(selectedRequest.id, {
+                            generatedContent: content,
+                            hashtags: selectedRequest.includeHashtags ? ['#conteudo', '#profissional'] : [],
+                            callToAction: selectedRequest.includeCTA ? 'Entre em contato conosco!' : undefined
+                          })
+                        }
+                      }}
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                      ✍️ Criar Conteúdo
+                    </button>
+                  )}
+                  
+                  {selectedRequest.status === 'ready_for_review' && (
+                    <>
+                      <button
+                        onClick={() => {
+                          const notes = prompt('Observações (opcional):')
+                          handleApproveContent(selectedRequest.id, notes || undefined)
+                        }}
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+                      >
+                        ✅ Aprovar
+                      </button>
+                      <button
+                        onClick={() => {
+                          const reason = prompt('Motivo da rejeição:')
+                          if (reason) {
+                            handleRejectContent(selectedRequest.id, reason)
+                          }
+                        }}
+                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                      >
+                        ❌ Rejeitar
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 text-center">
+                <div className="text-6xl mb-4">📝</div>
+                <h3 className="text-xl font-semibold text-white mb-2">Selecione um pedido</h3>
+                <p className="text-gray-400">Escolha um pedido da lista para ver os detalhes e tomar ações</p>
+              </div>
+            )}
           </div>
         </div>
       </main>

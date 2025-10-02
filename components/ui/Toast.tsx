@@ -1,12 +1,12 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 
-export interface Toast {
+export interface ToastProps {
   id: string
   type: 'success' | 'error' | 'warning' | 'info'
   title: string
-  message?: string
+  message: string
   duration?: number
   action?: {
     label: string
@@ -15,41 +15,29 @@ export interface Toast {
 }
 
 interface ToastContextType {
-  toasts: Toast[]
-  addToast: (toast: Omit<Toast, 'id'>) => void
+  toasts: ToastProps[]
+  addToast: (toast: Omit<ToastProps, 'id'>) => void
   removeToast: (id: string) => void
   clearAll: () => void
 }
 
-const ToastContext = createContext<ToastContextType | undefined>(undefined)
+const ToastContext = React.createContext<ToastContextType | undefined>(undefined)
 
-export const useToast = () => {
-  const context = useContext(ToastContext)
-  if (!context) {
-    throw new Error('useToast must be used within a ToastProvider')
-  }
-  return context
-}
+export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [toasts, setToasts] = useState<ToastProps[]>([])
 
-interface ToastProviderProps {
-  children: ReactNode
-}
-
-export const ToastProvider = ({ children }: ToastProviderProps) => {
-  const [toasts, setToasts] = useState<Toast[]>([])
-
-  const addToast = useCallback((toast: Omit<Toast, 'id'>) => {
+  const addToast = useCallback((toast: Omit<ToastProps, 'id'>) => {
     const id = Math.random().toString(36).substr(2, 9)
-    const newToast: Toast = {
-      id,
-      duration: 5000,
+    const newToast: ToastProps = {
       ...toast,
+      id,
+      duration: toast.duration || 5000
     }
 
     setToasts(prev => [...prev, newToast])
 
-    // Auto remove after duration
-    if (newToast.duration && newToast.duration > 0) {
+    // Auto remove após duração
+    if (newToast.duration > 0) {
       setTimeout(() => {
         removeToast(id)
       }, newToast.duration)
@@ -72,137 +60,110 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
   )
 }
 
-interface ToastContainerProps {
-  toasts: Toast[]
-  onRemove: (id: string) => void
+export const useToast = () => {
+  const context = React.useContext(ToastContext)
+  if (!context) {
+    throw new Error('useToast deve ser usado dentro de ToastProvider')
+  }
+  return context
 }
 
-const ToastContainer = ({ toasts, onRemove }: ToastContainerProps) => {
+const ToastContainer: React.FC<{
+  toasts: ToastProps[]
+  onRemove: (id: string) => void
+}> = ({ toasts, onRemove }) => {
   if (toasts.length === 0) return null
 
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-3 max-w-sm w-full">
+    <div className="fixed top-4 right-4 z-50 space-y-2">
       {toasts.map(toast => (
-        <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
+        <Toast key={toast.id} toast={toast} onRemove={onRemove} />
       ))}
     </div>
   )
 }
 
-interface ToastItemProps {
-  toast: Toast
+const Toast: React.FC<{
+  toast: ToastProps
   onRemove: (id: string) => void
-}
+}> = ({ toast, onRemove }) => {
+  const [isVisible, setIsVisible] = useState(false)
+  const [isLeaving, setIsLeaving] = useState(false)
 
-const ToastItem = ({ toast, onRemove }: ToastItemProps) => {
+  useEffect(() => {
+    // Animação de entrada
+    const timer = setTimeout(() => setIsVisible(true), 100)
+    return () => clearTimeout(timer)
+  }, [])
+
+  const handleRemove = useCallback(() => {
+    setIsLeaving(true)
+    setTimeout(() => onRemove(toast.id), 300)
+  }, [toast.id, onRemove])
+
   const getToastStyles = () => {
+    const baseStyles = "max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden"
+    const animationStyles = isVisible && !isLeaving 
+      ? "transform translate-x-0 opacity-100" 
+      : "transform translate-x-full opacity-0"
+    
+    return `${baseStyles} ${animationStyles} transition-all duration-300 ease-in-out`
+  }
+
+  const getIconAndColor = () => {
     switch (toast.type) {
       case 'success':
-        return {
-          bg: 'bg-green-50 dark:bg-green-900/20',
-          border: 'border-green-200 dark:border-green-800',
-          icon: '✅',
-          iconBg: 'bg-green-100 dark:bg-green-800',
-          titleColor: 'text-green-800 dark:text-green-200',
-          messageColor: 'text-green-600 dark:text-green-300'
-        }
+        return { icon: '✅', bgColor: 'bg-green-50', borderColor: 'border-green-200', textColor: 'text-green-800' }
       case 'error':
-        return {
-          bg: 'bg-red-50 dark:bg-red-900/20',
-          border: 'border-red-200 dark:border-red-800',
-          icon: '❌',
-          iconBg: 'bg-red-100 dark:bg-red-800',
-          titleColor: 'text-red-800 dark:text-red-200',
-          messageColor: 'text-red-600 dark:text-red-300'
-        }
+        return { icon: '❌', bgColor: 'bg-red-50', borderColor: 'border-red-200', textColor: 'text-red-800' }
       case 'warning':
-        return {
-          bg: 'bg-yellow-50 dark:bg-yellow-900/20',
-          border: 'border-yellow-200 dark:border-yellow-800',
-          icon: '⚠️',
-          iconBg: 'bg-yellow-100 dark:bg-yellow-800',
-          titleColor: 'text-yellow-800 dark:text-yellow-200',
-          messageColor: 'text-yellow-600 dark:text-yellow-300'
-        }
+        return { icon: '⚠️', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-200', textColor: 'text-yellow-800' }
       case 'info':
-        return {
-          bg: 'bg-blue-50 dark:bg-blue-900/20',
-          border: 'border-blue-200 dark:border-blue-800',
-          icon: 'ℹ️',
-          iconBg: 'bg-blue-100 dark:bg-blue-800',
-          titleColor: 'text-blue-800 dark:text-blue-200',
-          messageColor: 'text-blue-600 dark:text-blue-300'
-        }
+        return { icon: 'ℹ️', bgColor: 'bg-blue-50', borderColor: 'border-blue-200', textColor: 'text-blue-800' }
       default:
-        return {
-          bg: 'bg-gray-50 dark:bg-gray-900/20',
-          border: 'border-gray-200 dark:border-gray-800',
-          icon: '📢',
-          iconBg: 'bg-gray-100 dark:bg-gray-800',
-          titleColor: 'text-gray-800 dark:text-gray-200',
-          messageColor: 'text-gray-600 dark:text-gray-300'
-        }
+        return { icon: 'ℹ️', bgColor: 'bg-gray-50', borderColor: 'border-gray-200', textColor: 'text-gray-800' }
     }
   }
 
-  const styles = getToastStyles()
+  const { icon, bgColor, borderColor, textColor } = getIconAndColor()
 
   return (
-    <div
-      className={`
-        ${styles.bg} ${styles.border} border rounded-xl shadow-lg p-4 
-        transform transition-all duration-300 ease-in-out
-        animate-in slide-in-from-right-full
-        hover:shadow-xl
-      `}
-    >
-      <div className="flex items-start space-x-3">
-        {/* Icon */}
-        <div className={`
-          ${styles.iconBg} rounded-full p-2 flex-shrink-0
-          flex items-center justify-center
-        `}>
-          <span className="text-lg">{styles.icon}</span>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <h4 className={`font-semibold text-sm ${styles.titleColor}`}>
-            {toast.title}
-          </h4>
-          {toast.message && (
-            <p className={`text-sm mt-1 ${styles.messageColor}`}>
+    <div className={getToastStyles()}>
+      <div className={`p-4 ${bgColor} ${borderColor} border-l-4`}>
+        <div className="flex items-start">
+          <div className="flex-shrink-0">
+            <span className="text-lg">{icon}</span>
+          </div>
+          <div className="ml-3 w-0 flex-1">
+            <p className={`text-sm font-medium ${textColor}`}>
+              {toast.title}
+            </p>
+            <p className={`mt-1 text-sm ${textColor} opacity-90`}>
               {toast.message}
             </p>
-          )}
-          
-          {/* Action Button */}
-          {toast.action && (
+            {toast.action && (
+              <div className="mt-3">
+                <button
+                  onClick={toast.action.onClick}
+                  className={`text-sm font-medium ${textColor} hover:opacity-80 transition-opacity`}
+                >
+                  {toast.action.label}
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="ml-4 flex-shrink-0 flex">
             <button
-              onClick={toast.action.onClick}
-              className={`
-                mt-2 text-xs font-medium px-3 py-1 rounded-lg
-                ${styles.titleColor} ${styles.bg} border ${styles.border}
-                hover:opacity-80 transition-opacity
-              `}
+              onClick={handleRemove}
+              className={`inline-flex ${textColor} hover:opacity-80 transition-opacity`}
             >
-              {toast.action.label}
+              <span className="sr-only">Fechar</span>
+              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
             </button>
-          )}
+          </div>
         </div>
-
-        {/* Close Button */}
-        <button
-          onClick={() => onRemove(toast.id)}
-          className={`
-            flex-shrink-0 p-1 rounded-full hover:bg-black/10 
-            transition-colors ${styles.messageColor}
-          `}
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
       </div>
     </div>
   )
@@ -212,21 +173,60 @@ const ToastItem = ({ toast, onRemove }: ToastItemProps) => {
 export const useToastNotifications = () => {
   const { addToast } = useToast()
 
-  const success = useCallback((title: string, message?: string, action?: Toast['action']) => {
+  const showSuccess = useCallback((title: string, message: string, action?: ToastProps['action']) => {
     addToast({ type: 'success', title, message, action })
   }, [addToast])
 
-  const error = useCallback((title: string, message?: string, action?: Toast['action']) => {
+  const showError = useCallback((title: string, message: string, action?: ToastProps['action']) => {
     addToast({ type: 'error', title, message, action })
   }, [addToast])
 
-  const warning = useCallback((title: string, message?: string, action?: Toast['action']) => {
+  const showWarning = useCallback((title: string, message: string, action?: ToastProps['action']) => {
     addToast({ type: 'warning', title, message, action })
   }, [addToast])
 
-  const info = useCallback((title: string, message?: string, action?: Toast['action']) => {
+  const showInfo = useCallback((title: string, message: string, action?: ToastProps['action']) => {
     addToast({ type: 'info', title, message, action })
   }, [addToast])
 
-  return { success, error, warning, info }
+  return {
+    showSuccess,
+    showError,
+    showWarning,
+    showInfo
+  }
+}
+
+// Componente de exemplo de uso
+export const ToastExample: React.FC = () => {
+  const { showSuccess, showError, showWarning, showInfo } = useToastNotifications()
+
+  return (
+    <div className="space-x-2">
+      <button
+        onClick={() => showSuccess('Sucesso!', 'Operação realizada com sucesso.')}
+        className="bg-green-500 text-white px-4 py-2 rounded"
+      >
+        Sucesso
+      </button>
+      <button
+        onClick={() => showError('Erro!', 'Algo deu errado.')}
+        className="bg-red-500 text-white px-4 py-2 rounded"
+      >
+        Erro
+      </button>
+      <button
+        onClick={() => showWarning('Atenção!', 'Verifique os dados.')}
+        className="bg-yellow-500 text-white px-4 py-2 rounded"
+      >
+        Aviso
+      </button>
+      <button
+        onClick={() => showInfo('Informação', 'Nova atualização disponível.')}
+        className="bg-blue-500 text-white px-4 py-2 rounded"
+      >
+        Info
+      </button>
+    </div>
+  )
 }

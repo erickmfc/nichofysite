@@ -1,46 +1,81 @@
 'use client'
 
 import { useAuth } from '@/hooks/useAuth'
+import { useUserPlan } from '@/hooks/useUserPlan'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { AuthLoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { PlanSelection } from './PlanSelection'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
+  requirePlan?: boolean
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
+  children, 
+  requirePlan = true 
+}) => {
   const { user, loading } = useAuth()
+  const { hasSelectedPlan, isLoading: planLoading } = useUserPlan()
   const router = useRouter()
 
   useEffect(() => {
     console.log('🛡️ ProtectedRoute: Verificando autenticação', { 
       user: !!user, 
-      loading
+      loading,
+      hasSelectedPlan,
+      planLoading
     })
     
-    if (!loading && !user) {
-      console.log('🛡️ ProtectedRoute: Usuário não autenticado, redirecionando para login')
-      router.push('/login')
+    // CORREÇÃO: Evitar redirecionamento desnecessário
+    if (!loading && !user && typeof window !== 'undefined') {
+      const currentPath = window.location.pathname
+      if (currentPath !== '/login' && currentPath !== '/') {
+        console.log('🛡️ ProtectedRoute: Usuário não autenticado, redirecionando para login')
+        router.push('/login')
+      }
     }
-  }, [user, loading, router])
+  }, [user, loading, hasSelectedPlan, planLoading, router])
 
-  if (loading) {
+  const handlePlanSelected = (planId: string) => {
+    console.log('🎯 Plano selecionado:', planId)
+    // Recarregar a página para aplicar as mudanças
+    window.location.reload()
+  }
+
+  // CORREÇÃO: Melhorar estado de carregamento
+  if (loading || planLoading) {
     console.log('🛡️ ProtectedRoute: Carregando...')
+    return <AuthLoadingSpinner />
+  }
+
+  // CORREÇÃO: Renderizar conteúdo apenas se usuário estiver autenticado
+  if (!user) {
+    console.log('🛡️ ProtectedRoute: Usuário não encontrado')
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Verificando autenticação...</p>
+          <div className="text-red-500 text-6xl mb-4">🔒</div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Acesso Negado</h2>
+          <p className="text-gray-600 mb-4">Você precisa estar logado para acessar esta página.</p>
+          <button 
+            onClick={() => router.push('/login')}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+          >
+            Fazer Login
+          </button>
         </div>
       </div>
     )
   }
 
-  if (!user) {
-    console.log('🛡️ ProtectedRoute: Usuário não encontrado, não renderizando')
-    return null // Será redirecionado pelo useEffect
+  // Verificar se precisa selecionar plano
+  if (requirePlan && !hasSelectedPlan) {
+    console.log('🎯 ProtectedRoute: Usuário precisa selecionar plano')
+    return <PlanSelection onPlanSelected={handlePlanSelected} />
   }
 
-  console.log('🛡️ ProtectedRoute: Usuário autenticado, renderizando conteúdo')
+  console.log('🛡️ ProtectedRoute: Usuário autenticado e com plano, renderizando conteúdo')
   return <>{children}</>
 }

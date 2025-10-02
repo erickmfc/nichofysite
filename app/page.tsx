@@ -6,7 +6,7 @@ import { PublicNavbar } from '@/components/layout/PublicNavbar'
 import Footer from '@/components/Footer'
 import { ImageCarousel } from '@/components/ui/ImageCarousel'
 import { Testimonials } from '@/components/ui/Testimonials'
-import { ImageGenerator } from '@/components/ui/ImageGenerator'
+import { TextGeneratorWithPreview } from '@/components/ui/TextGeneratorWithPreview'
 
 export default function HomePage() {
   // Dados das imagens para o carrossel
@@ -53,7 +53,7 @@ export default function HomePage() {
           </h1>
           
           <p className="text-xl md:text-2xl text-gray-600 leading-relaxed mb-12 max-w-4xl mx-auto animate-fade-in-delay">
-            Crie conteúdo profissional em segundos com nossa IA especializada. 
+            Crie textos publicitários persuasivos e criativos com nossa IA especializada. 
             Mais de 100 nichos, resultados comprovados e suporte 24/7.
           </p>
 
@@ -69,7 +69,7 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-300">
                 <span className="text-blue-600 text-2xl">✓</span>
               </div>
-              <span className="text-gray-700 font-semibold text-lg">IA Especializada</span>
+              <span className="text-gray-700 font-semibold text-lg">IA Copywriting</span>
             </div>
             <div className="flex flex-col items-center space-y-3 animate-bounce-in" style={{animationDelay: '0.3s'}}>
               <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-300">
@@ -131,7 +131,7 @@ export default function HomePage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               <div className="text-center animate-bounce-in" style={{animationDelay: '0.1s'}}>
                 <div className="text-4xl font-bold text-orange-500 mb-2">10K+</div>
-                <div className="text-gray-600 font-medium">Posts Criados</div>
+                <div className="text-gray-600 font-medium">Textos Criados</div>
               </div>
               <div className="text-center animate-bounce-in" style={{animationDelay: '0.2s'}}>
                 <div className="text-4xl font-bold text-blue-500 mb-2">500+</div>
@@ -148,9 +148,9 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Image Generator */}
+          {/* Text Generator */}
           <div className="mb-20">
-            <ImageGenerator />
+            <TextGeneratorWithPreview />
           </div>
 
           {/* Features Section */}
@@ -161,7 +161,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">Velocidade</h3>
               <p className="text-gray-600 text-center">
-                Crie conteúdo profissional em segundos. Nossa IA especializada trabalha 24/7 para você.
+                Crie textos publicitários persuasivos em segundos. Nossa IA especializada em copywriting trabalha 24/7 para você.
               </p>
             </div>
 
@@ -181,7 +181,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">Resultados</h3>
               <p className="text-gray-600 text-center">
-                Mais de 10.000 posts criados com resultados comprovados em engajamento e vendas.
+                Mais de 10.000 textos publicitários criados com resultados comprovados em conversão e vendas.
               </p>
             </div>
           </div>

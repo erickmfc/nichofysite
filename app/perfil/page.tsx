@@ -1,10 +1,10 @@
-import { UserProfile } from '@/components/ui/UserProfile'
+import { UserProfileExpanded } from '@/components/ui/UserProfileExpanded'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 export default function ProfilePage() {
   return (
     <ProtectedRoute>
-      <UserProfile />
+      <UserProfileExpanded />
     </ProtectedRoute>
   )
 }

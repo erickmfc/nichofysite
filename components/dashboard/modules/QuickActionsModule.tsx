@@ -61,21 +61,87 @@ export const QuickActionsModule = () => {
       icon: '📊',
       color: 'from-red-500 to-rose-500',
       hoverColor: 'from-red-600 to-rose-600',
-      onClick: () => router.push('/analytics'),
+      onClick: () => router.push('/analytics-pessoais'),
       badge: 'Pro',
       badgeColor: 'bg-red-500'
     },
     {
-      id: 'settings',
-      title: 'Configurações',
-      description: 'Ajustar perfil',
-      icon: '⚙️',
-      color: 'from-gray-500 to-slate-500',
-      hoverColor: 'from-gray-600 to-slate-600',
-      onClick: () => router.push('/configuracoes'),
-      badge: null,
-      badgeColor: ''
-    }
+      id: 'gamification',
+      title: 'Gamificação',
+      description: 'Badges e níveis',
+      icon: '🎮',
+      color: 'from-purple-500 to-pink-600',
+      hoverColor: 'from-purple-600 to-pink-700',
+      onClick: () => router.push('/gamificacao'),
+      badge: 'Novo',
+      badgeColor: 'bg-purple-500'
+    },
+    {
+      id: 'personal-dashboard',
+      title: 'Dashboard Pessoal',
+      description: 'Métricas avançadas',
+      icon: '📊',
+      color: 'from-teal-500 to-cyan-500',
+      hoverColor: 'from-teal-600 to-cyan-600',
+      onClick: () => router.push('/dashboard-pessoal'),
+      badge: 'Avançado',
+      badgeColor: 'bg-teal-500'
+    },
+    {
+      id: 'extra-resources',
+      title: 'Recursos Extras',
+      description: 'Biblioteca completa',
+      icon: '🛠️',
+      color: 'from-indigo-500 to-purple-500',
+      hoverColor: 'from-indigo-600 to-purple-600',
+      onClick: () => router.push('/recursos-extras'),
+      badge: 'Novo',
+      badgeColor: 'bg-indigo-500'
+    },
+    {
+      id: 'payment-approved',
+      title: 'Pagamento Aprovado',
+      description: 'Página de sucesso',
+      icon: '✅',
+      color: 'from-green-500 to-emerald-500',
+      hoverColor: 'from-green-600 to-emerald-600',
+      onClick: () => router.push('/pagamento-aprovado'),
+      badge: 'Demo',
+      badgeColor: 'bg-green-500'
+    },
+    {
+      id: 'thank-you',
+      title: 'Página Obrigado',
+      description: 'Agradecimento personalizado',
+      icon: '🎉',
+      color: 'from-blue-500 to-purple-500',
+      hoverColor: 'from-blue-600 to-purple-600',
+      onClick: () => router.push('/obrigado'),
+      badge: 'Demo',
+      badgeColor: 'bg-blue-500'
+    },
+    {
+      id: 'upsell',
+      title: 'Página Upsell',
+      description: 'Ofertas especiais',
+      icon: '🚀',
+      color: 'from-purple-500 to-pink-500',
+      hoverColor: 'from-purple-600 to-pink-600',
+      onClick: () => router.push('/upsell'),
+      badge: 'Demo',
+      badgeColor: 'bg-purple-500'
+    },
+    {
+      id: 'plans',
+      title: 'Planos',
+      description: 'Ver e alterar plano',
+      icon: '💎',
+      color: 'from-yellow-500 to-orange-500',
+      hoverColor: 'from-yellow-600 to-orange-600',
+      onClick: () => router.push('/planos'),
+      badge: 'Upgrade',
+      badgeColor: 'bg-yellow-500'
+    },
   ]
 
   return (

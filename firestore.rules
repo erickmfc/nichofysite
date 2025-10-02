@@ -68,6 +68,26 @@ service cloud.firestore {
       
       // Permitir criação de novos usuários
       allow create: if isAuthenticated() && request.auth.uid == userId;
+      
+      // ===== SUBCOLEÇÕES DO USUÁRIO =====
+      
+      // Conteúdo gerado pelo usuário
+      match /generatedContent/{contentId} {
+        allow read, write, delete: if isOwner(userId);
+        allow create: if isAuthenticated() && request.auth.uid == userId;
+      }
+      
+      // Templates personalizados do usuário
+      match /customTemplates/{templateId} {
+        allow read, write, delete: if isOwner(userId);
+        allow create: if isAuthenticated() && request.auth.uid == userId;
+      }
+      
+      // Analytics do usuário
+      match /analytics/{analyticsId} {
+        allow read, write, delete: if isOwner(userId);
+        allow create: if isAuthenticated() && request.auth.uid == userId;
+      }
     }
     
     // ========================================
@@ -86,6 +106,31 @@ service cloud.firestore {
       
       // Usuários podem atualizar apenas seu próprio conteúdo
       allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
+    }
+    
+    // ========================================
+    // POSTS - Conteúdo dos Usuários
+    // ========================================
+    
+    match /posts/{postId} {
+      // Admin tem controle total sobre todos os posts
+      allow read, write, delete: if isAdmin();
+      
+      // Usuários podem criar posts apenas com userId correto
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid;
+      
+      // Usuários podem ler apenas seus próprios posts
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Usuários podem atualizar apenas seus próprios posts
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
+      
+      // Usuários podem deletar apenas seus próprios posts
+      allow delete: if isAuthenticated() && 
                        resource.data.userId == request.auth.uid;
     }
     
@@ -147,6 +192,56 @@ service cloud.firestore {
       
       // Usuários não podem modificar templates
       allow write: if false;
+    }
+    
+    // ========================================
+    // EVENTOS DO CALENDÁRIO - Agendamento
+    // ========================================
+    
+    match /calendarEvents/{eventId} {
+      // Admin tem controle total sobre eventos
+      allow read, write, delete: if isAdmin();
+      
+      // Usuários podem criar eventos apenas com userId correto
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid;
+      
+      // Usuários podem ler apenas seus próprios eventos
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Usuários podem atualizar apenas seus próprios eventos
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
+      
+      // Usuários podem deletar apenas seus próprios eventos
+      allow delete: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
+    }
+    
+    // ========================================
+    // SUGESTÕES - Sistema de Recomendações
+    // ========================================
+    
+    match /suggestions/{suggestionId} {
+      // Admin tem controle total sobre sugestões
+      allow read, write, delete: if isAdmin();
+      
+      // Usuários podem criar sugestões apenas com userId correto
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid;
+      
+      // Usuários podem ler apenas suas próprias sugestões
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Usuários podem atualizar apenas suas próprias sugestões
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
+      
+      // Usuários podem deletar apenas suas próprias sugestões
+      allow delete: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
     }
     
     // ========================================

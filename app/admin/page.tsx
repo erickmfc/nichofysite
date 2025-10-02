@@ -113,21 +113,54 @@ export default function AdminPage() {
       {/* Navigation */}
       <nav className="bg-gray-800 border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
-            <a href="/admin" className="text-white border-b-2 border-blue-500 py-4 px-1">
-              Dashboard
+          <div className="flex space-x-8 overflow-x-auto">
+            <a href="/admin" className="text-white border-b-2 border-blue-500 py-4 px-1 whitespace-nowrap">
+              📊 Dashboard
             </a>
-            <a href="/admin/users" className="text-gray-400 hover:text-white py-4 px-1">
-              Usuários
+            <a href="/admin/analytics" className="text-gray-400 hover:text-white py-4 px-1 whitespace-nowrap">
+              📈 Analytics
             </a>
-            <a href="/admin/content" className="text-gray-400 hover:text-white py-4 px-1">
-              Conteúdo
+            <a href="/admin/reports" className="text-gray-400 hover:text-white py-4 px-1 whitespace-nowrap">
+              📋 Relatórios
             </a>
-            <a href="/admin/approvals" className="text-gray-400 hover:text-white py-4 px-1">
-              Aprovações
+            <a href="/admin/notifications" className="text-gray-400 hover:text-white py-4 px-1 whitespace-nowrap">
+              🔔 Notificações
             </a>
-            <a href="/admin/settings" className="text-gray-400 hover:text-white py-4 px-1">
-              Configurações
+            <a href="/admin/users" className="text-gray-400 hover:text-white py-4 px-1 whitespace-nowrap">
+              👥 Usuários
+            </a>
+            <a href="/admin/moderation" className="text-gray-400 hover:text-white py-4 px-1 whitespace-nowrap">
+              🛡️ Moderação
+            </a>
+            <a href="/admin/content" className="text-gray-400 hover:text-white py-4 px-1 whitespace-nowrap">
+              📝 Conteúdo
+            </a>
+            <a href="/admin/approvals" className="text-gray-400 hover:text-white py-4 px-1 whitespace-nowrap">
+              ⏳ Aprovações
+            </a>
+            <a href="/admin/settings" className="text-gray-400 hover:text-white py-4 px-1 whitespace-nowrap">
+              ⚙️ Configurações
+            </a>
+            <a href="/admin/backup" className="text-gray-400 hover:text-white py-4 px-1 whitespace-nowrap">
+              💾 Backup
+            </a>
+            <a href="/admin/logs" className="text-gray-400 hover:text-white py-4 px-1 whitespace-nowrap">
+              📋 Logs
+            </a>
+            <a href="/admin/communication" className="text-gray-400 hover:text-white py-4 px-1 whitespace-nowrap">
+              📧 Comunicação
+            </a>
+            <a href="/admin/apis" className="text-gray-400 hover:text-white py-4 px-1 whitespace-nowrap">
+              🔌 APIs
+            </a>
+            <a href="/admin/advanced-dashboard" className="text-gray-400 hover:text-white py-4 px-1 whitespace-nowrap">
+              📊 Dashboard Avançado
+            </a>
+            <a href="/admin/advanced-search" className="text-gray-400 hover:text-white py-4 px-1 whitespace-nowrap">
+              🔍 Busca Avançada
+            </a>
+            <a href="/admin/performance" className="text-gray-400 hover:text-white py-4 px-1 whitespace-nowrap">
+              ⚡ Performance
             </a>
           </div>
         </div>
@@ -219,18 +252,45 @@ export default function AdminPage() {
           <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
             <h3 className="text-xl font-bold text-white mb-4">Ações Rápidas</h3>
             <div className="space-y-3">
-              <button className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg transition-colors text-left">
-                📊 Ver Relatórios Detalhados
-              </button>
-              <button className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg transition-colors text-left">
-                👥 Gerenciar Usuários
-              </button>
-              <button className="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 rounded-lg transition-colors text-left">
-                ⏳ Revisar Pendências
-              </button>
-              <button className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-lg transition-colors text-left">
-                ⚙️ Configurações do Sistema
-              </button>
+              <a href="/admin/content" className="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 py-3 rounded-lg transition-colors text-left block">
+                🎨 Criação de Conteúdo
+              </a>
+              <a href="/admin/analytics" className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg transition-colors text-left block">
+                📈 Analytics Avançado
+              </a>
+              <a href="/admin/reports" className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg transition-colors text-left block">
+                📋 Sistema de Relatórios
+              </a>
+              <a href="/admin/notifications" className="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 py-3 rounded-lg transition-colors text-left block">
+                🔔 Notificações e Alertas
+              </a>
+              <a href="/admin/users" className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-lg transition-colors text-left block">
+                👥 Gestão de Usuários
+              </a>
+              <a href="/admin/moderation" className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg transition-colors text-left block">
+                🛡️ Sistema de Moderação
+              </a>
+              <a href="/admin/backup" className="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded-lg transition-colors text-left block">
+                💾 Backup e Manutenção
+              </a>
+              <a href="/admin/logs" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-lg transition-colors text-left block">
+                📋 Logs e Auditoria
+              </a>
+              <a href="/admin/communication" className="w-full bg-pink-600 hover:bg-pink-700 text-white px-4 py-3 rounded-lg transition-colors text-left block">
+                📧 Sistema de Comunicação
+              </a>
+         <a href="/admin/apis" className="w-full bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 rounded-lg transition-colors text-left block">
+           🔌 APIs Externas
+         </a>
+         <a href="/admin/advanced-dashboard" className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-3 rounded-lg transition-colors text-left block">
+           📊 Dashboard Avançado
+         </a>
+         <a href="/admin/advanced-search" className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-4 py-3 rounded-lg transition-colors text-left block">
+           🔍 Busca Avançada
+         </a>
+         <a href="/admin/performance" className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-4 py-3 rounded-lg transition-colors text-left block">
+           ⚡ Monitoramento de Performance
+         </a>
             </div>
           </div>
 
