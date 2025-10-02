@@ -2,340 +2,102 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // ========================================
-    // FUNÇÕES AUXILIARES
-    // ========================================
-    
-    // Função para verificar se é admin
-    function isAdmin() {
-      return request.auth != null && 
-             request.auth.token.email == 'admin@nichofy.com' &&
-             request.auth.token.email_verified == true;
-    }
-    
-    // Função para verificar se é usuário autenticado
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-    
-    // Função para verificar se é usuário autenticado com email verificado
-    function isVerifiedUser() {
-      return request.auth != null && 
-             request.auth.token.email_verified == true;
-    }
-    
-    // Função para verificar se é o próprio usuário
-    function isOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
-    }
-    
-    // ========================================
-    // PEDIDOS (ORDERS) - Sistema Principal
-    // ========================================
-    
-    match /orders/{orderId} {
-      // Admin tem controle total sobre todos os pedidos
-      allow read, write, delete: if isAdmin();
-      
-      // Usuários podem criar pedidos (formulário público)
-      // Mas apenas com campos obrigatórios
-      allow create: if request.resource.data.keys().hasAll(['name', 'email', 'message', 'createdAt']) &&
-                       request.resource.data.keys().size() >= 4;
-      
-      // Usuários autenticados podem ler seus próprios pedidos
-      allow read: if isAuthenticated() && 
-                     resource.data.userId == request.auth.uid;
-      
-      // Usuários podem atualizar apenas feedback dos seus pedidos
-      allow update: if isAuthenticated() && 
-                       resource.data.userId == request.auth.uid &&
-                       // Apenas campos específicos podem ser atualizados
-                       request.resource.data.keys().hasAll(['feedback', 'updatedAt']) &&
-                       request.resource.data.keys().size() <= 2;
-    }
-    
-    // ========================================
-    // USUÁRIOS (USERS) - Gestão de Contas
-    // ========================================
-    
+    // Regras para usuários autenticados
     match /users/{userId} {
-      // Admin tem controle total sobre todos os usuários
-      allow read, write, delete: if isAdmin();
-      
-      // Usuários podem ler e escrever apenas seus próprios dados
-      allow read, write: if isOwner(userId);
-      
-      // Permitir criação de novos usuários
-      allow create: if isAuthenticated() && request.auth.uid == userId;
-      
-      // ===== SUBCOLEÇÕES DO USUÁRIO =====
-      
-      // Conteúdo gerado pelo usuário
-      match /generatedContent/{contentId} {
-        allow read, write, delete: if isOwner(userId);
-        allow create: if isAuthenticated() && request.auth.uid == userId;
-      }
-      
-      // Templates personalizados do usuário
-      match /customTemplates/{templateId} {
-        allow read, write, delete: if isOwner(userId);
-        allow create: if isAuthenticated() && request.auth.uid == userId;
-      }
-      
-      // Analytics do usuário
-      match /analytics/{analyticsId} {
-        allow read, write, delete: if isOwner(userId);
-        allow create: if isAuthenticated() && request.auth.uid == userId;
-      }
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // ========================================
-    // CONTEÚDO (CONTENT) - Posts e Artigos
-    // ========================================
-    
-    match /content/{contentId} {
-      // Admin tem controle total sobre todo conteúdo
-      allow read, write, delete: if isAdmin();
-      
-      // Conteúdo público para leitura
-      allow read: if true;
-      
-      // Usuários autenticados podem criar conteúdo
-      allow create: if isAuthenticated();
-      
-      // Usuários podem atualizar apenas seu próprio conteúdo
-      allow update: if isAuthenticated() && 
-                       resource.data.userId == request.auth.uid;
+    // Regras para pedidos de conteúdo
+    match /contentRequests/{requestId} {
+      allow read, write: if request.auth != null;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
     }
     
-    // ========================================
-    // POSTS - Conteúdo dos Usuários
-    // ========================================
-    
-    match /posts/{postId} {
-      // Admin tem controle total sobre todos os posts
-      allow read, write, delete: if isAdmin();
-      
-      // Usuários podem criar posts apenas com userId correto
-      allow create: if isAuthenticated() && 
-                       request.resource.data.userId == request.auth.uid;
-      
-      // Usuários podem ler apenas seus próprios posts
-      allow read: if isAuthenticated() && 
-                     resource.data.userId == request.auth.uid;
-      
-      // Usuários podem atualizar apenas seus próprios posts
-      allow update: if isAuthenticated() && 
-                       resource.data.userId == request.auth.uid;
-      
-      // Usuários podem deletar apenas seus próprios posts
-      allow delete: if isAuthenticated() && 
-                       resource.data.userId == request.auth.uid;
-    }
-    
-    // ========================================
-    // CONFIGURAÇÕES (SETTINGS) - Sistema
-    // ========================================
-    
-    match /settings/{settingId} {
-      // Admin tem controle total sobre configurações
-      allow read, write, delete: if isAdmin();
-      
-      // Configurações públicas para leitura
-      allow read: if true;
-      
-      // Usuários não podem modificar configurações
-      allow write: if false;
-    }
-    
-    // ========================================
-    // NICHOS (NICHOS) - Categorias
-    // ========================================
-    
-    match /nichos/{nichoId} {
-      // Admin tem controle total sobre nichos
-      allow read, write, delete: if isAdmin();
-      
-      // Nichos públicos para leitura
-      allow read: if true;
-      
-      // Usuários não podem modificar nichos
-      allow write: if false;
-    }
-    
-    // ========================================
-    // PROJETOS (PROJECTS) - Portfolio
-    // ========================================
-    
-    match /projects/{projectId} {
-      // Admin tem controle total sobre projetos
-      allow read, write, delete: if isAdmin();
-      
-      // Projetos públicos para leitura
-      allow read: if true;
-      
-      // Usuários não podem modificar projetos
-      allow write: if false;
-    }
-    
-    // ========================================
-    // TEMPLATES - Modelos de Conteúdo
-    // ========================================
-    
-    match /templates/{templateId} {
-      // Admin tem controle total sobre templates
-      allow read, write, delete: if isAdmin();
-      
-      // Templates públicos para leitura
-      allow read: if true;
-      
-      // Usuários não podem modificar templates
-      allow write: if false;
-    }
-    
-    // ========================================
-    // EVENTOS DO CALENDÁRIO - Agendamento
-    // ========================================
-    
-    match /calendarEvents/{eventId} {
-      // Admin tem controle total sobre eventos
-      allow read, write, delete: if isAdmin();
-      
-      // Usuários podem criar eventos apenas com userId correto
-      allow create: if isAuthenticated() && 
-                       request.resource.data.userId == request.auth.uid;
-      
-      // Usuários podem ler apenas seus próprios eventos
-      allow read: if isAuthenticated() && 
-                     resource.data.userId == request.auth.uid;
-      
-      // Usuários podem atualizar apenas seus próprios eventos
-      allow update: if isAuthenticated() && 
-                       resource.data.userId == request.auth.uid;
-      
-      // Usuários podem deletar apenas seus próprios eventos
-      allow delete: if isAuthenticated() && 
-                       resource.data.userId == request.auth.uid;
-    }
-    
-    // ========================================
-    // SUGESTÕES - Sistema de Recomendações
-    // ========================================
-    
-    match /suggestions/{suggestionId} {
-      // Admin tem controle total sobre sugestões
-      allow read, write, delete: if isAdmin();
-      
-      // Usuários podem criar sugestões apenas com userId correto
-      allow create: if isAuthenticated() && 
-                       request.resource.data.userId == request.auth.uid;
-      
-      // Usuários podem ler apenas suas próprias sugestões
-      allow read: if isAuthenticated() && 
-                     resource.data.userId == request.auth.uid;
-      
-      // Usuários podem atualizar apenas suas próprias sugestões
-      allow update: if isAuthenticated() && 
-                       resource.data.userId == request.auth.uid;
-      
-      // Usuários podem deletar apenas suas próprias sugestões
-      allow delete: if isAuthenticated() && 
-                       resource.data.userId == request.auth.uid;
-    }
-    
-    // ========================================
-    // NOTIFICAÇÕES - Sistema de Alertas
-    // ========================================
-    
+    // Regras para notificações
     match /notifications/{notificationId} {
-      // Admin tem controle total sobre notificações
-      allow read, write, delete: if isAdmin();
-      
-      // Usuários podem ler suas próprias notificações
-      allow read: if isAuthenticated() && 
-                     resource.data.userId == request.auth.uid;
-      
-      // Usuários podem marcar como lida
-      allow update: if isAuthenticated() && 
-                       resource.data.userId == request.auth.uid &&
-                       request.resource.data.keys().hasAll(['isRead', 'readAt']);
+      allow read, write: if request.auth != null;
+      allow create: if request.auth != null;
     }
     
-    // ========================================
-    // PAGAMENTOS - Sistema Financeiro
-    // ========================================
-    
-    match /payments/{paymentId} {
-      // Admin tem controle total sobre pagamentos
-      allow read, write, delete: if isAdmin();
-      
-      // Usuários podem ler seus próprios pagamentos
-      allow read: if isAuthenticated() && 
-                     resource.data.userId == request.auth.uid;
-      
-      // Usuários não podem modificar pagamentos
-      allow write: if false;
+    // Regras para preferências de conteúdo
+    match /userPreferences/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // ========================================
-    // ANALYTICS - Métricas e Estatísticas
-    // ========================================
-    
-    match /analytics/{analyticsId} {
-      // Admin tem controle total sobre métricas
-      allow read, write, delete: if isAdmin();
-      
-      // Usuários podem ler suas próprias métricas
-      allow read: if isAuthenticated() && 
-                     resource.data.userId == request.auth.uid;
-      
-      // Sistema pode criar métricas automaticamente
-      allow create: if true;
-      
-      // Usuários não podem modificar métricas
-      allow update, delete: if false;
+    // Regras para comunicação com admin
+    match /chatMessages/{messageId} {
+      allow read, write: if request.auth != null;
     }
     
-    // ========================================
-    // FEEDBACK - Avaliações e Comentários
-    // ========================================
+    match /tickets/{ticketId} {
+      allow read, write: if request.auth != null;
+    }
     
     match /feedback/{feedbackId} {
-      // Admin tem controle total sobre feedback
-      allow read, write, delete: if isAdmin();
-      
-      // Feedback público para leitura
-      allow read: if true;
-      
-      // Usuários autenticados podem criar feedback
-      allow create: if isAuthenticated();
-      
-      // Usuários podem atualizar apenas seu próprio feedback
-      allow update: if isAuthenticated() && 
-                       resource.data.userId == request.auth.uid;
+      allow read, write: if request.auth != null;
     }
     
-    // ========================================
-    // LOGS - Registro de Atividades
-    // ========================================
-    
-    match /logs/{logId} {
-      // Apenas admin pode ler logs
-      allow read: if isAdmin();
-      
-      // Sistema pode criar logs automaticamente
-      allow create: if true;
-      
-      // Ninguém pode modificar ou deletar logs
-      allow update, delete: if false;
+    // Regras para gamificação
+    match /gamificationProfiles/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // ========================================
-    // REGRAS PADRÃO - Negar tudo não especificado
-    // ========================================
+    match /userBadges/{badgeId} {
+      allow read, write: if request.auth != null;
+    }
     
-    // Negar acesso a qualquer documento não especificado
+    // Regras para configurações avançadas
+    match /userSettings/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Regras para histórico de pagamentos
+    match /paymentHistory/{paymentId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Regras para métricas de conversão
+    match /conversionMetrics/{metricId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Regras para onboarding
+    match /onboardingProgress/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Regras para atividade do usuário
+    match /userActivity/{activityId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Regras para performance de conteúdo
+    match /contentPerformance/{performanceId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Regras para transações de pontos de fidelidade
+    match /loyaltyPointTransactions/{transactionId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Regras para histórico de interações
+    match /interactionHistory/{interactionId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Regras para preferências de serviço
+    match /servicePreferences/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Regras para coleção de teste (apenas para desenvolvimento)
+    match /test/{testId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Regra padrão - negar acesso a documentos não especificados
     match /{document=**} {
       allow read, write: if false;
     }

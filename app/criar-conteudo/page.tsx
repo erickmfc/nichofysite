@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { db } from '@/lib/firebase'
 import { collection, addDoc, Timestamp, doc, getDoc } from 'firebase/firestore'
 import { ContentPreferencesService, ContentPreferences } from '@/lib/services/ContentPreferencesService'
+import { testFirebaseConnection, testContentRequestSubmission } from '@/lib/utils/firebaseTest'
 
 export default function CriarConteudoPage() {
   const { user } = useAuth()
@@ -15,6 +16,7 @@ export default function CriarConteudoPage() {
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
   const [currentStep, setCurrentStep] = useState(1)
   const [userPreferences, setUserPreferences] = useState<ContentPreferences | null>(null)
+  const [isTestingConnection, setIsTestingConnection] = useState(false)
   const [formData, setFormData] = useState({
     // Informações básicas
     tipo: 'Post para Instagram',
@@ -108,9 +110,21 @@ export default function CriarConteudoPage() {
   }
 
   const handleSubmit = async () => {
-    if (!user) return
+    if (!user) {
+      console.error('❌ Usuário não autenticado')
+      alert('❌ Você precisa estar logado para enviar pedidos.')
+      return
+    }
+
+    // Validação básica
+    if (!formData.topico || !formData.descricao || !formData.nicho) {
+      alert('❌ Por favor, preencha pelo menos o tópico, descrição e nicho.')
+      return
+    }
 
     setIsSubmitting(true)
+    console.log('🚀 Iniciando envio do pedido...')
+    
     try {
       // Criar pedido detalhado para o admin
       const requestData = {
@@ -145,9 +159,36 @@ export default function CriarConteudoPage() {
         createdAt: Timestamp.now()
       }
 
+      console.log('📦 Dados do pedido:', requestData)
+      console.log('🔥 Tentando conectar com Firebase...')
+
+      // Testar conexão com Firebase primeiro
+      const testRef = collection(db, 'test')
+      console.log('✅ Conexão com Firebase OK')
+
       const docRef = await addDoc(collection(db, 'contentRequests'), requestData)
       
-      console.log('Pedido enviado com ID:', docRef.id)
+      console.log('✅ Pedido enviado com sucesso! ID:', docRef.id)
+      
+      // Criar notificação para o usuário
+      try {
+        await addDoc(collection(db, 'notifications'), {
+          userId: user.uid,
+          type: 'content_request_submitted',
+          title: '📝 Pedido Enviado!',
+          message: `Seu pedido "${formData.topico}" foi enviado com sucesso. Você receberá uma notificação quando estiver pronto.`,
+          status: 'unread',
+          createdAt: Timestamp.now(),
+          metadata: {
+            requestId: docRef.id,
+            platform: formData.tipo,
+            urgency: formData.urgencia
+          }
+        })
+        console.log('✅ Notificação criada')
+      } catch (notificationError) {
+        console.warn('⚠️ Erro ao criar notificação:', notificationError)
+      }
       
       // Mostrar confirmação
       alert('✅ Pedido enviado com sucesso! Você receberá uma notificação quando estiver pronto.')
@@ -157,11 +198,66 @@ export default function CriarConteudoPage() {
         router.push(`/meus-pedidos?pedido=${docRef.id}`)
       }, 2000)
 
-    } catch (error) {
-      console.error('Erro ao enviar pedido:', error)
-      alert('❌ Erro ao enviar pedido. Tente novamente.')
+    } catch (error: any) {
+      console.error('❌ Erro detalhado ao enviar pedido:', error)
+      console.error('❌ Código do erro:', error.code)
+      console.error('❌ Mensagem do erro:', error.message)
+      
+      // Mostrar erro mais específico
+      let errorMessage = '❌ Erro ao enviar pedido. Tente novamente.'
+      
+      if (error.code === 'permission-denied') {
+        errorMessage = '❌ Erro de permissão. Verifique se você está logado corretamente.'
+      } else if (error.code === 'unavailable') {
+        errorMessage = '❌ Serviço temporariamente indisponível. Tente novamente em alguns minutos.'
+      } else if (error.code === 'failed-precondition') {
+        errorMessage = '❌ Erro de configuração. Entre em contato com o suporte.'
+      } else if (error.code === 'invalid-argument') {
+        errorMessage = '❌ Dados inválidos. Verifique se todos os campos estão preenchidos corretamente.'
+      } else if (error.message) {
+        errorMessage = `❌ Erro: ${error.message}`
+      }
+      
+      alert(errorMessage)
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleTestConnection = async () => {
+    if (!user) {
+      alert('❌ Você precisa estar logado para testar a conexão.')
+      return
+    }
+
+    setIsTestingConnection(true)
+    console.log('🧪 Iniciando teste de conectividade...')
+
+    try {
+      // Teste 1: Conexão básica
+      const connectionTest = await testFirebaseConnection()
+      console.log('🔗 Resultado do teste de conexão:', connectionTest)
+
+      if (!connectionTest.success) {
+        alert(`❌ Erro de conexão: ${connectionTest.error}`)
+        return
+      }
+
+      // Teste 2: Envio de pedido
+      const requestTest = await testContentRequestSubmission(user.uid)
+      console.log('📝 Resultado do teste de pedido:', requestTest)
+
+      if (requestTest.success) {
+        alert(`✅ Teste concluído com sucesso!\n\nConexão: OK\nPedido de teste: ${requestTest.requestId}`)
+      } else {
+        alert(`❌ Erro no teste de pedido: ${requestTest.error}`)
+      }
+
+    } catch (error: any) {
+      console.error('❌ Erro no teste:', error)
+      alert(`❌ Erro no teste: ${error.message}`)
+    } finally {
+      setIsTestingConnection(false)
     }
   }
 
@@ -203,7 +299,7 @@ export default function CriarConteudoPage() {
                 </div>
               </div>
               
-              {/* Progress Indicator */}
+              {/* Progress Indicator e Botão de Teste */}
               <div className="flex items-center space-x-4">
                 <div className="text-sm text-gray-500 font-medium">
                   Passo {currentStep} de 4
@@ -214,6 +310,13 @@ export default function CriarConteudoPage() {
                     style={{ width: `${(currentStep / 4) * 100}%` }}
                   ></div>
                 </div>
+                <button
+                  onClick={handleTestConnection}
+                  disabled={isTestingConnection}
+                  className="px-4 py-2 bg-yellow-500 text-white rounded-lg text-sm font-medium hover:bg-yellow-600 transition-colors disabled:opacity-50"
+                >
+                  {isTestingConnection ? '🧪 Testando...' : '🧪 Testar Conexão'}
+                </button>
               </div>
             </div>
           </div>

@@ -3,8 +3,24 @@
 import { ResponsiveTemplate } from '@/components/ui/ResponsiveTemplate'
 import { Button } from '@/components/ui/Button'
 import { PublicNavbar } from '@/components/layout/PublicNavbar'
+import { useRouter } from 'next/navigation'
 
 export default function PrecosPage() {
+  const router = useRouter()
+
+  const handlePlanClick = (planType: string) => {
+    if (planType === 'free') {
+      // Redirecionar para login para plano gratuito
+      router.push('/login')
+    } else if (planType === 'basic') {
+      // Redirecionar para Kirvano - Plano Básico
+      window.open('https://pay.kirvano.com/e727b9f0-bf05-4862-b4ec-ba31d0f33c93', '_blank', 'noopener,noreferrer')
+    } else if (planType === 'pro') {
+      // Redirecionar para Kirvano - Plano Profissional
+      window.open('https://pay.kirvano.com/e727b9f0-bf05-4862-b4ec-ba31d0f33c93', '_blank', 'noopener,noreferrer')
+    }
+  }
+
   return (
     <div className="min-h-screen">
       <PublicNavbar />
@@ -78,6 +94,7 @@ export default function PrecosPage() {
             
             <Button 
               variant="outline" 
+              onClick={() => handlePlanClick('free')}
               className="w-full group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all duration-300"
             >
               Começar meu teste grátis
@@ -121,6 +138,7 @@ export default function PrecosPage() {
             
             <Button 
               variant="outline" 
+              onClick={() => handlePlanClick('basic')}
               className="w-full group-hover:bg-green-600 group-hover:text-white group-hover:border-green-600 transition-all duration-300"
             >
               Assinar Plano Básico
@@ -181,6 +199,7 @@ export default function PrecosPage() {
             </ul>
             
             <Button 
+              onClick={() => handlePlanClick('pro')}
               className="w-full bg-orange-500 hover:bg-orange-600 text-white transition-all duration-300"
             >
               Assinar Plano Profissional
